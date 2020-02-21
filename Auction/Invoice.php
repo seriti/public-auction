@@ -21,8 +21,8 @@ class Invoice extends Table
         $param = ['row_name'=>'Invoice','col_label'=>'invoice_no'];
         parent::setup($param); 
 
-        //$access['read_only']=true;
-        //$this->modifyAccess($access);       
+        $access['add'] = false;
+        $this->modifyAccess($access);       
 
         $this->addTableCol(array('id'=>'invoice_id','type'=>'INTEGER','title'=>'Invoice ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'invoice_no','type'=>'STRING','title'=>'Invoice no','edit'=>false));

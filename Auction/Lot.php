@@ -6,6 +6,7 @@ use Seriti\Tools\STORAGE;
 use Seriti\Tools\Form;
 use Seriti\Tools\Secure;
 use Seriti\Tools\Validate;
+use Seriti\Tools\Audit;
 
 class Lot extends Table 
 {
@@ -24,7 +25,7 @@ class Lot extends Table
         $this->addTableCol(array('id'=>'name','type'=>'STRING','title'=>'Lot Name','hint'=>'Lots are ordered by category and then name'));
         $this->addTableCol(array('id'=>'condition_id','type'=>'INTEGER','title'=>'Condition','join'=>'name FROM '.TABLE_PREFIX.'condition WHERE condition_id'));
         $this->addTableCol(array('id'=>'description','type'=>'TEXT','title'=>'Lot Description','list'=>false));
-        $this->addTableCol(array('id'=>'index_terms','type'=>'TEXT','title'=>'Index on terms','hint'=>'Use comma to separate multiple index terms for catalogue index'));
+        $this->addTableCol(array('id'=>'index_terms','type'=>'TEXT','title'=>'Index on terms','hint'=>'Use comma to separate multiple index terms for catalogue index','required'=>false));
         $this->addTableCol(array('id'=>'postal_only','type'=>'BOOLEAN','title'=>'Postal only'));
         $this->addTableCol(array('id'=>'price_reserve','type'=>'DECIMAL','title'=>'Reserve Price'));
         $this->addTableCol(array('id'=>'price_estimate','type'=>'DECIMAL','title'=>'Estimate Price'));
@@ -181,7 +182,7 @@ class Lot extends Table
                         $audit_str .= 'Lot ID['.$lot_id.'] ';
                                             
                         if($action === 'STATUS_CHANGE') {
-                            $sql = 'lot_id '.$this->table.' SET status = "'.$this->db->escapeSql($status_change).'" '.
+                            $sql = 'UPDATE '.$this->table.' SET status = "'.$this->db->escapeSql($status_change).'" '.
                                    'WHERE lot_id = "'.$this->db->escapeSql($lot_id).'" ';
                             $this->db->executeSql($sql,$error_tmp);
                             if($error_tmp === '') {

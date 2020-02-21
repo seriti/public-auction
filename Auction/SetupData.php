@@ -91,12 +91,8 @@ class SetupData extends SetupModuledata
                               `date_update` DATETIME NOT NULL,
                               `status` VARCHAR(64) NOT NULL,
                               `no_items` INT NOT NULL,
-                              `subtotal` DECIMAL(12,2) NOT NULL,
-                              `tax` DECIMAL(12,2) NOT NULL,
-                              `ship_cost` DECIMAL(12,2) NOT NULL,
-                              `total` DECIMAL(12,2) NOT NULL,
-                              `weight` DECIMAL(12,2) NOT NULL,
-                              `volume` DECIMAL(12,2) NOT NULL,
+                              `total_bid` decimal(12,2) NOT NULL,
+                              `total_success` decimal(12,2) NOT NULL,
                               `ship_address` text NOT NULL,
                               `ship_location_id` INT NOT NULL,
                               `ship_option_id` INT NOT NULL,
@@ -105,7 +101,7 @@ class SetupData extends SetupModuledata
                               KEY `idx_auction_order2` (`auction_id`),
                               KEY `idx_auction_order3` (`user_id`)
                             ) ENGINE = MyISAM DEFAULT CHARSET=utf8');
-
+        
         $this->addCreateSql('order_item',
                             'CREATE TABLE `TABLE_NAME` (
                               `item_id` INT NOT NULL AUTO_INCREMENT,
@@ -265,7 +261,7 @@ class SetupData extends SetupModuledata
                             ) ENGINE = MyISAM DEFAULT CHARSET=utf8');
 
         //initialisation
-        $this->addInitialSql('INSERT INTO `TABLE_PREFIXseller` (name,rank,status) '.
+        $this->addInitialSql('INSERT INTO `TABLE_PREFIXseller` (name,sort,status) '.
                              'VALUES("INTERNAL",1,"OK")','Created default internal seller');
 
         $this->addInitialSql('INSERT INTO `TABLE_PREFIXauction` (name,summary,description,status) '.
