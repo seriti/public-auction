@@ -34,7 +34,7 @@ class Auction extends Table
         
         $this->addSearch(array('name','summary','description','date_start_postal','date_start_live','status'),array('rows'=>2));
 
-        $this->setupFiles(array('table'=>TABLE_PREFIX.'file','location'=>'AUC','max_no'=>10,
+        $this->setupFiles(array('table'=>TABLE_PREFIX.'file','location'=>'AUCD','max_no'=>10,
                                   'icon'=>'<span class="glyphicon glyphicon-file" aria-hidden="true"></span>&nbsp;manage',
                                   'list'=>true,'list_no'=>1,'storage'=>STORAGE,
                                   'link_page'=>'auction_file','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));

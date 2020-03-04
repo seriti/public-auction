@@ -66,6 +66,7 @@ class SetupData extends SetupModuledata
                             'CREATE TABLE `TABLE_NAME` (
                               `condition_id` int(11) NOT NULL AUTO_INCREMENT,
                               `name` varchar(250) NOT NULL,
+                              `description` varchar(250) NOT NULL,
                               `sort` int(11) NOT NULL,
                               `status` varchar(64) NOT NULL,
                                PRIMARY KEY (`condition_id`)
