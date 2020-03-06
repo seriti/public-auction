@@ -60,6 +60,7 @@ class LotList extends Listing
         $this->addListCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>false));
         $this->addListCol(array('id'=>'category_id','type'=>'INTEGER','title'=>'Category','list'=>false,'tree'=>'CT'));
         $this->addListCol(array('id'=>'name','type'=>'STRING','title'=>'Name','class'=>'list_item_title'));
+        $this->addListCol(array('id'=>'location_id','type'=>'INTEGER','title'=>'Country','join'=>'name FROM '.$this->table_prefix.'location WHERE location_id'));
         $this->addListCol(array('id'=>'description','type'=>'TEXT','title'=>'Description','class'=>'list_item_text'));
         $this->addListCol(array('id'=>'price_reserve','type'=>'DECIMAL','title'=>'Reserve Price','prefix'=>$currency));
         $this->addListCol(array('id'=>'price_estimate','type'=>'DECIMAL','title'=>'Estimate Price','prefix'=>$currency));
@@ -77,15 +78,18 @@ class LotList extends Listing
 
         $sql_cat = 'SELECT id,CONCAT(IF(level > 1,REPEAT("--",level - 1),""),title) FROM '.$this->table_prefix.'category  ORDER BY rank';
         $this->addSelect('category_id',$sql_cat);
+
+        $this->addSelect('location_id','SELECT location_id,name FROM '.$this->table_prefix.'location WHERE status <> "HIDE" ORDER BY sort');
         
-        $this->addSearch(array('name','description','category_id','index_terms'),array('rows'=>2));
+        //left out index_terms for now
+        $this->addSearch(array('category_id','name','location_id','description'),array('rows'=>2));
 
         $this->setupListImages(array('table'=>$this->table_prefix.'file','location'=>'LOT','max_no'=>100,'manage'=>false,
                                      'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Product',
                                      'link_page'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
 
         $this->setupAuction();
-        
+       
     }
 
     protected function modifyRowFormatted($row_no,&$actions_left,&$actions_right,&$images,&$files,&$items)

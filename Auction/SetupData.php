@@ -8,7 +8,7 @@ class SetupData extends SetupModuledata
 
     public function setupSql()
     {
-        $this->tables = ['auction','lot','condition','category','file','order','order_item','order_message','invoice','invoice_item',
+        $this->tables = ['auction','lot','condition','category','location','file','order','order_item','order_message','invoice','invoice_item',
                          'pay_option','ship_option','ship_location','ship_cost','payment','user_extend','seller','index_term'];
 
         $this->addCreateSql('category',
@@ -24,6 +24,15 @@ class SetupData extends SetupModuledata
                               `category_link` varchar(255) NOT NULL,
                               PRIMARY KEY (`id`)
                             ) ENGINE=MyISAM DEFAULT CHARSET=utf8'); 
+
+        $this->addCreateSql('location',
+                            'CREATE TABLE `TABLE_NAME` (
+                              `location_id` int(11) NOT NULL AUTO_INCREMENT,
+                              `name` varchar(250) NOT NULL,
+                              `sort` int(11) NOT NULL,
+                              `status` varchar(64) NOT NULL,
+                               PRIMARY KEY (`location_id`)
+                            ) ENGINE=MyISAM DEFAULT CHARSET=utf8');
 
         $this->addCreateSql('auction',
                             'CREATE TABLE `TABLE_NAME` (
@@ -43,6 +52,7 @@ class SetupData extends SetupModuledata
                               `auction_id` int(11) NOT NULL,
                               `seller_id` int(11) NOT NULL,
                               `category_id` int(11) NOT NULL,
+                              `location_id` int(11) NOT NULL,
                               `condition_id` int(11) NOT NULL,
                               `postal_only` tinyint(1) NOT NULL,
                               `name` varchar(250) NOT NULL,

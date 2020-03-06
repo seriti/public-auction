@@ -29,7 +29,8 @@ class AuctionDocumentList extends Upload
         $param = ['row_name'=>'Document',
                   'show_info'=>false,
                   'nav_show'=>'NONE',
-                  'prefix'=>$this->id_prefix];
+                  'prefix'=>$this->id_prefix,
+                  'excel_csv'=>false];
         parent::setup($param);
      
         //NB: only want to list and search images, NOTHING ELSE

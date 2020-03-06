@@ -58,6 +58,19 @@ class Order extends Table
                                 'link_page'=>'template_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
     }
 
+    protected function beforeUpdate($id,$context,&$data,&$error) 
+    {
+        if($context === 'UPDATE') {
+            Helpers::checkOrderUpdateOk($this->db,TABLE_PREFIX,$id,$error);    
+        }
+    }
+    
+    protected function beforeDelete($id,&$error) 
+    {
+        Helpers::checkOrderUpdateOk($this->db,TABLE_PREFIX,$id,$error);
+    }
+
+
     protected function afterUpdate($id,$edit_type,$form) {
         $error = '';
         if($edit_type === 'INSERT') {
@@ -72,5 +85,12 @@ class Order extends Table
             $this->db->executeSql($sql,$error);
         }    
     }
+
+    protected function afterDelete($id) {
+        $error = '';
+
+        $sql = 'DELETE FROM '.TABLE_PREFIX.'order_item WHERE order_id = "'.$this->db->escapeSql($id).'" ';
+        $this->db->executeSql($sql,$error); 
+    } 
 }
 ?>

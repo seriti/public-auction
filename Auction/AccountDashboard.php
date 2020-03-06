@@ -60,7 +60,7 @@ class AccountDashboard extends DashboardTool
         $this->addBlock('CART',2,1,'Cart contents');
         $this->addItem('CART',$cart_html);  
 
-        $this->addBlock('ORDERS',2,2,'Outstanding Orders');
+        $this->addBlock('ORDERS',2,2,'ACTIVE Orders');
         $this->addItem('ORDERS',$order_html);  
         
     }

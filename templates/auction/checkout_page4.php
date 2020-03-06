@@ -6,7 +6,6 @@ $list_param['class'] = 'form-control edit_input';
 $text_param['class'] = 'form-control edit_input';
 $textarea_param['class'] = 'form-control edit_input';
 
-$totals = $data['totals']
 ?>
 
 <div id="checkout_div">

@@ -61,7 +61,7 @@ class Cart extends Table
 
     }
 
-    //NB: this will update cart item with latest lot tax
+    //NB: this will update cart item with latest lot totals
     protected function afterUpdate($id,$context,$data) 
     {
         $error = '';

@@ -47,11 +47,12 @@ class AuctionImageList extends Upload
 
         $param = ['row_name'=>'Image',
                   'show_info'=>false,
-                  'prefix'=>$this->id_prefix];
+                  'prefix'=>$this->id_prefix,
+                  'excel_csv'=>false];
         parent::setup($param);
      
         //NB: only want to list and search images, NOTHING ELSE
-        $access = ['read_only' => true];
+        $access = ['read_only'=>true];
         $this->modifyAccess($access);    
 
         //thumbnail display parameters           
@@ -67,9 +68,16 @@ class AuctionImageList extends Upload
         $this->addFileCol(['id'=>$this->file_cols['file_date'],'title'=>'File date','type'=>'DATE','list'=>false]);
         $this->addFileCol(['id'=>$this->file_cols['file_size'],'title'=>'File size','type'=>'INTEGER','list'=>false]);
         //NB: only need to add non-standard file cols here, or if you need to modify standard file col setup
-        $this->addFileCol(array('id'=>'caption','type'=>'STRING','title'=>'Caption','upload'=>true,'required'=>false));
+        $this->addFileCol(array('id'=>'caption','type'=>'STRING','title'=>'Lot No.','upload'=>true,'required'=>false));
 
         $this->addSearch(array('file_name_orig','caption'),array('rows'=>1));
+
+        $this->addSortOrder('T.file_id','Lot Number','DEFAULT');
+
+        if(isset($_GET['mode']) and $_GET['mode'] === 'list_all' ) {
+            $this->addMessage('Click <b>Search</b> link below to search image names and captions. Default search method is a <b>partial</b> match(so "Lot 1" will return "Lot 1" and "Lot 10" and "lot 11"...etc<br/>For an <b>exact</b> match add "=" before search term(ie: "=Lot 1" will only return "Lot 1" and NOT "Lot 10" ). If looking for an <b>exact</b> match on file name don`t forget the ".jpg" file extension ');
+            
+        }
         
     }
 }  

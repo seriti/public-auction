@@ -24,6 +24,7 @@ class Task extends SeritiTask
         $this->addTask('LOT','LOT_CONDITION','Manage lot conditions options');    
         $this->addTask('LOT','LOT_INDEX','Manage lot index terms'); 
         $this->addTask('LOT','LOT_CATEGORY','Manage lot categories'); 
+        $this->addTask('LOT','LOT_LOCATION','Manage lot location'); 
 
         if($login_user->getAccessLevel() === 'GOD') {
             $this->addBlock('SHIP',1,2,'Setup shipping');
@@ -82,6 +83,12 @@ class Task extends SeritiTask
 
         if($id === 'LOT_CATEGORY') {
             $location = 'category';
+            header('location: '.$location);
+            exit;
+        }
+
+        if($id === 'LOT_LOCATION') {
+            $location = 'location';
             header('location: '.$location);
             exit;
         }

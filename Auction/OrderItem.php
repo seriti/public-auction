@@ -8,7 +8,7 @@ class OrderItem extends Table
     //configure
     public function setup($param = []) 
     {
-        $param = ['row_name'=>'Lot','col_label'=>'lot_id','pop_up'=>true];
+        $param = ['row_name'=>'Lot','col_label'=>'lot_id','pop_up'=>true,'update_calling_page'=>true,];
         parent::setup($param);        
                        
         //NB: specify master table relationship
@@ -45,6 +45,9 @@ class OrderItem extends Table
 
     protected function beforeUpdate($id,$context,&$data,&$error) 
     {
+        //$order_id = $this->master['key_val'];
+        //Helpers::checkOrderUpdateOk($this->db,$this->table_prefix,$order_id,$error);
+
         //check lot exists and assigned to correct auction as well as check pricing
         $sql = 'SELECT lot_id,auction_id,name,price_reserve FROM '.TABLE_PREFIX.'lot '.
                'WHERE lot_id = "'.$this->db->escapeSql($data['lot_id']).'" ';
@@ -64,7 +67,27 @@ class OrderItem extends Table
             $exist = $this->db->readSqlValue($sql);
             if($exist) $this->addError('Lot is already part of order. Please update that record.');
         }
-    }  
+    } 
+
+    protected function afterUpdate($id,$context,$data) 
+    {
+        $order_id = $this->master['key_val'];
+        Helpers::updateOrderTotals($this->db,TABLE_PREFIX,$order_id,$error);
+    } 
+
+    /* ASSUME ADMIN PEOPLE WILL KNOW WHAT THEY ARE DOING???    
+    protected function beforeDelete($id,&$error) 
+    {
+        $order_id = $this->master['key_val'];
+        Helpers::checkOrderUpdateOk($this->db,$this->table_prefix,$order_id,$error);
+    }
+    */
+
+    protected function afterDelete($id) 
+    {
+        $order_id = $this->master['key_val'];
+        Helpers::updateOrderTotals($this->db,TABLE_PREFIX,$order_id,$error);
+    }
 }
 
 ?>

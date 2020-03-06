@@ -8,6 +8,7 @@ use Seriti\Tools\Validate;
 use Seriti\Tools\Html;
 use Seriti\Tools\Image;
 use Seriti\Tools\Calc;
+use Seriti\Tools\Date;
 use Seriti\Tools\Audit;
 
 use Seriti\Tools\MAIL_FROM;
@@ -147,6 +148,33 @@ class Helpers {
         if($error_tmp != '') $error .= 'Could not set other users order item status = OUT_BID for Lot['.$lot_id.'] user['.$user_id.'] '; 
     }
 
+    public static function checkOrderUpdateOk($db,$table_prefix,$order_id,&$error)
+    {
+        $error = '';
+        $error_tmp = '';
+
+        $table_auction = $table_prefix.'auction';
+        $table_order = $table_prefix.'order';
+
+        $sql = 'SELECT T.order_id,T.auction_id,T.status,'.
+                      'A.status AS auction_status,A.date_start_postal,A.date_start_live '.
+               'FROM '.$table_order.' AS T JOIN '.$table_auction.' AS A ON(T.auction_id = A.auction_id) '.
+               'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
+        $data = $db->readSqlRecord($sql);       
+        if($data == 0) {
+            $error .= 'Could not find order details.';
+        } else {
+            $date_cut = Date::mysqlGetDate($data['date_start_live']);
+            $time_now = time();
+            if($time_now >= $date_cut[0]) $error .= 'You cannot modify an order after auction start date. ';
+
+            if($data['status'] === 'CLOSED') $error .= 'You cannot modify a CLOSED order. ';
+            if($data['auction_status'] === 'CLOSED') $error .= 'You cannot modify an order for a CLOSED auction. ';
+        }
+
+        if($error === '') return true; else return false;
+    }
+
     public static function updateAuctionStatus($db,$auction_id,$status_new,&$error)
     {
         $error = '';
@@ -173,6 +201,30 @@ class Helpers {
             }    
         }
     }
+
+    public static function updateOrderTotals($db,$table_prefix,$order_id,&$error)
+    {
+        $error = '';
+        $error_tmp = '';
+
+        $table_order = $table_prefix.'order';
+        $table_item = $table_prefix.'order_item';
+
+        $sql = 'SELECT SUM(price) as total_bid,COUNT(*) as no_items FROM '.$table_item.' '.
+               'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
+        $totals = $db->readSqlRecord($sql);
+        if($totals == 0) {
+            //maybe just delete order if not closed
+            $error .= 'No order items exist.';
+        } else {
+            $sql = 'UPDATE '.$table_order.' SET total_bid = "'.$totals['total_bid'].'", no_items = "'.$totals['no_items'].'" '.
+                   'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
+            $db->executeSql($sql,$error_tmp);
+            if($error_tmp !== '') $error = 'could not update order totals';
+        }
+
+        if($error === '') return $totals; else return false;
+    }    
 
     public static function getOrderDetails($db,$table_prefix,$order_id,&$error)
     {
@@ -243,10 +295,11 @@ class Helpers {
         if($param['cc_admin']) $mail_param['bcc'] = MAIL_FROM;
        
         $data = self::getOrderDetails($db,$table_prefix,$order_id,$error_tmp);
-
         if($data === false or $error_tmp !== '') {
             $error .= 'Could not get order details: '.$error_tmp;
-        }
+        } else {
+            if($data['order']['user_id'] == 0 or $data['order']['user_email'] === '') $error .= 'No user data linked to order';
+        }    
 
         if($error === '') {
             $mail_from = ''; //will use default MAIL_FROM
@@ -640,7 +693,7 @@ class Helpers {
 
         //validate lot setup and status
         if($error === '') {
-            $sql = 'SELECT lot_id,auction_id,name,status,price_reserve '.
+            $sql = 'SELECT lot_id,auction_id,name,status,price_reserve,weight,volume '.
                    'FROM '.$table_prefix.'lot '.
                    'WHERE lot_id = "'.$db->escapeSql($lot_id).'" ';
             $lot = $db->readSqlRecord($sql);

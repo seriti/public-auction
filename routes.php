@@ -8,16 +8,19 @@ copy the "/auction" group into the existing "/admin" group within existing "src/
 //*** BEGIN admin access ***
 $app->group('/admin', function () {
 
-    $this->group('/auction', function () {
+     $this->group('/auction', function () {
         $this->any('/category', \App\Auction\CategoryController::class);
         $this->any('/condition', \App\Auction\ConditionController::class);
         $this->any('/auction', \App\Auction\AuctionController::class);
+        $this->any('/auction_image', \App\Auction\AuctionImageController::class);
+        $this->any('/auction_file', \App\Auction\AuctionFileController::class);
         $this->any('/index_term', \App\Auction\IndexTermController::class);
         $this->any('/invoice_wizard', \App\Auction\InvoiceWizardController::class);
         $this->any('/invoice', \App\Auction\InvoiceController::class);
         $this->any('/invoice_file', \App\Auction\InvoiceFileController::class);
         $this->any('/invoice_item', \App\Auction\InvoiceItemController::class);
         $this->any('/invoice_payment', \App\Auction\InvoicePaymentController::class);
+        $this->any('/location', \App\Auction\LocationController::class);
         $this->any('/lot', \App\Auction\LotController::class);
         $this->any('/lot_auction', \App\Auction\LotAuctionController::class);
         $this->any('/lot_image', \App\Auction\LotImageController::class);
@@ -62,9 +65,12 @@ $app->group('/public', function () {
     $this->get('/image_popup', \App\Auction\ImagePopupController::class);
 
     $this->group('/account', function () {
+        $this->redirect('', '/public/account/dashboard', 301);
+        $this->redirect('/', 'dashboard', 301);
+
         $this->get('/dashboard', \App\Auction\AccountDashboardController::class);
-        $this->get('/order', \App\Auction\AccountOrderController::class);
-        $this->get('/order_item', \App\Auction\AccountOrderItemController::class);
+        $this->any('/order', \App\Auction\AccountOrderController::class);
+        $this->any('/order_item', \App\Auction\AccountOrderItemController::class);
         $this->get('/invoice', \App\Auction\AccountInvoiceController::class);
         $this->get('/invoice_item', \App\Auction\AccountInvoiceItemController::class);
         $this->get('/invoice_payment', \App\Auction\AccountInvoicePaymentController::class);

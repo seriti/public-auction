@@ -22,7 +22,7 @@ class AccountProfileController
 
         $param = [];
         $param['user_id'] = $user->getId();
-        $param['table_prefix'] = $table_prefix;
+        $param['table_prefix'] = TABLE_PREFIX_AUCTION;
         $record->setup($param);
         $html = $record->processRecord();
         

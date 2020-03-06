@@ -30,7 +30,7 @@ class CheckoutWizard extends Wizard
         $this->user = $this->getContainer('user');
         $this->temp_token = $this->user->getTempToken();
 
-        //will return 0 if no logged in user
+        //will return 0 if NO logged in user
         $this->user_id = $this->user->getId();
 
         $param['bread_crumbs'] = true;
@@ -134,7 +134,7 @@ class CheckoutWizard extends Wizard
                     $this->data['password'] = $password;
                     $this->data['user_id'] = $user[$this->user_cols['id']];
                     //set user_id so wizard knows user created 
-                    $this->user_id == $this->data['user_id'];
+                    $this->user_id = $this->data['user_id'];
 
                     $mailer = $this->getContainer('mail');
                     $to = $email;
@@ -187,10 +187,11 @@ class CheckoutWizard extends Wizard
             if(!$this->errors_found) {
                 $table_order = TABLE_PREFIX_AUCTION.'order';
                 $data = [];
-                //NB: assign user id which turns cart into order
+                //NB: assigning user_id, removing temp_token, status = ACTIVE: turns "cart" into valid order
                 $data['user_id'] = $this->user_id;
                 $data['date_create'] = date('Y-m-d H:i:s');
                 $data['ship_address'] = $this->form['user_ship_address'];
+                $data['status'] = 'ACTIVE';
                 $data['temp_token'] = '';
 
                 $where = ['temp_token' => $this->temp_token];
