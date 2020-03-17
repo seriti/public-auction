@@ -49,6 +49,12 @@ class AuctionImage extends Upload
         
         //NB: only need to add non-standard file cols here, or if you need to modify standard file col setup
         $this->addFileCol(array('id'=>'caption','type'=>'STRING','title'=>'Caption','upload'=>true,'required'=>false));
+        $this->addFileCol(['id'=>'location_rank','title'=>'Location rank','type'=>'INTEGER','upload'=>true,'list'=>true,'update'=>true]);
+
+        $this->addSortOrder('T.location_rank','Location rank modified','DEFAULT');
+        
+        $this->addSearch(array('file_name_orig','caption'),array('rows'=>1));
+        
     }
 }
 ?>

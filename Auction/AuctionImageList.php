@@ -72,7 +72,7 @@ class AuctionImageList extends Upload
 
         $this->addSearch(array('file_name_orig','caption'),array('rows'=>1));
 
-        $this->addSortOrder('T.file_id','Lot Number','DEFAULT');
+        $this->addSortOrder('T.location_rank','Lot Number','DEFAULT');
 
         if(isset($_GET['mode']) and $_GET['mode'] === 'list_all' ) {
             $this->addMessage('Click <b>Search</b> link below to search image names and captions. Default search method is a <b>partial</b> match(so "Lot 1" will return "Lot 1" and "Lot 10" and "lot 11"...etc<br/>For an <b>exact</b> match add "=" before search term(ie: "=Lot 1" will only return "Lot 1" and NOT "Lot 10" ). If looking for an <b>exact</b> match on file name don`t forget the ".jpg" file extension ');
