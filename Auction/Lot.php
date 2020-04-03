@@ -21,8 +21,8 @@ class Lot extends Table
 
         $this->addTableCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'seller_id','type'=>'INTEGER','title'=>'Seller','join'=>'name FROM '.TABLE_PREFIX.'seller WHERE seller_id'));
-        $this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>'Category','join'=>'title FROM '.TABLE_PREFIX.'category WHERE id'));
-        $this->addTableCol(array('id'=>'location_id','type'=>'INTEGER','title'=>'Location','join'=>'name FROM '.TABLE_PREFIX.'location WHERE location_id'));
+        $this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>CATEGORY_NAME,'join'=>'title FROM '.TABLE_PREFIX.'category WHERE id'));
+        $this->addTableCol(array('id'=>'type_id','type'=>'INTEGER','title'=>TYPE_NAME,'join'=>'name FROM '.TABLE_PREFIX.'type WHERE type_id'));
         $this->addTableCol(array('id'=>'name','type'=>'STRING','title'=>'Lot Name','hint'=>'Lots are ordered by category and then name'));
         $this->addTableCol(array('id'=>'condition_id','type'=>'INTEGER','title'=>'Condition','join'=>'name FROM '.TABLE_PREFIX.'condition WHERE condition_id'));
         $this->addTableCol(array('id'=>'description','type'=>'TEXT','title'=>'Lot Description','list'=>false));
@@ -52,7 +52,7 @@ class Lot extends Table
         $this->addSelect('status',$sql_status);
 
         $this->addSelect('seller_id','SELECT seller_id,name FROM '.TABLE_PREFIX.'seller WHERE status <> "HIDE" ORDER BY sort');
-        $this->addSelect('location_id','SELECT location_id,name FROM '.TABLE_PREFIX.'location WHERE status <> "HIDE" ORDER BY sort');
+        $this->addSelect('type_id','SELECT type_id,name FROM '.TABLE_PREFIX.'type WHERE status <> "HIDE" ORDER BY sort');
 
 
         $this->addSearch(array('name','description','category_id','index_terms','postal_only','price_reserve','status'),array('rows'=>2));

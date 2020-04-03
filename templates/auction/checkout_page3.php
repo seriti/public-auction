@@ -9,7 +9,7 @@ $textarea_param['class'] = 'form-control edit_input';
 
 <div id="checkout_div">
 
-  <h2>The final order amount including packaging and shipping charges are dependant on which bids are successful. 
+  <h2>The final amount including packaging and shipping charges are dependant on which bids are successful. 
   You will be contacted to confirm all details after auction finalised.</h2>
   
   <div class="row">
@@ -81,7 +81,7 @@ $textarea_param['class'] = 'form-control edit_input';
   </div>
 
   <div class="row">
-    <div class="col-sm-6"><input type="submit" name="Submit" value="Confirm Order" class="btn btn-primary"></div>
+    <div class="col-sm-6"><input type="submit" name="Submit" value="Confirm <?php echo AUCTION_ORDER_NAME;?>" class="btn btn-primary"></div>
   </div>  
 
 </div>

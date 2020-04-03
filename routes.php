@@ -20,7 +20,7 @@ $app->group('/admin', function () {
         $this->any('/invoice_file', \App\Auction\InvoiceFileController::class);
         $this->any('/invoice_item', \App\Auction\InvoiceItemController::class);
         $this->any('/invoice_payment', \App\Auction\InvoicePaymentController::class);
-        $this->any('/location', \App\Auction\LocationController::class);
+        $this->any('/type', \App\Auction\TypeController::class);
         $this->any('/lot', \App\Auction\LotController::class);
         $this->any('/lot_auction', \App\Auction\LotAuctionController::class);
         $this->any('/lot_image', \App\Auction\LotImageController::class);

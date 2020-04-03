@@ -6,7 +6,7 @@ use Seriti\Tools\Html;
 
 <div id="checkout_div">
 
-  <h2>The final order amount including packaging and shipping charges are dependant on which bids are successful. 
+  <h2>The final amount including packaging and shipping charges are dependant on which bids are successful. 
   You will be contacted to confirm all details after auction finalised.</h2>
   
   <div class="row">

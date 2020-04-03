@@ -11,14 +11,14 @@ class Order extends Table
     //configure
     public function setup($param = []) 
     {
-        $param = ['row_name'=>'Order','col_label'=>'order_id'];
+        $param = ['row_name'=>AUCTION_ORDER_NAME,'col_label'=>'order_id'];
         parent::setup($param);
          
         $this->addForeignKey(array('table'=>TABLE_PREFIX.'order_item','col_id'=>'order_id','message'=>'Order lots'));
         $this->addForeignKey(array('table'=>TABLE_PREFIX.'order_message','col_id'=>'order_id','message'=>'Order message'));
         $this->addForeignKey(array('table'=>TABLE_PREFIX.'payment','col_id'=>'order_id','message'=>'Order Payment'));
 
-        $this->addTableCol(array('id'=>'order_id','type'=>'INTEGER','title'=>'Order ID','key'=>true,'key_auto'=>true,'list'=>true));
+        $this->addTableCol(array('id'=>'order_id','type'=>'INTEGER','title'=>AUCTION_ORDER_NAME.' ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'User','join'=>'CONCAT(name,": ",email) FROM '.TABLE_USER.' WHERE user_id'));
         //$this->addTableCol(array('id'=>'auction_id','type'=>'INTEGER','title'=>'Auction','join'=>'name FROM '.TABLE_PREFIX.'auction WHERE auction_id'));
         $this->addTableCol(array('id'=>'date_create','type'=>'DATETIME','title'=>'Date created','edit'=>false));

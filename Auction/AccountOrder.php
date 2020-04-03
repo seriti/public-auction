@@ -16,19 +16,20 @@ class AccountOrder extends Table
     //configure
     public function setup($param = []) 
     {
-        $table_param = ['row_name'=>'Order','col_label'=>'order_id'];
-        parent::setup($table_param);
-       
         if(isset($param['table_prefix'])) $this->table_prefix = $param['table_prefix'];
         if(isset($param['user_id'])) $this->user_id = $param['user_id'];
+        $order_name = $param['labels']['order'];
 
+        $table_param = ['row_name'=>$order_name,'col_label'=>'order_id'];
+        parent::setup($table_param);
+        
         $access = [];
         $access['add'] = false;
         $access['edit'] = true;                                                  
         $access['delete'] = true;                         
         $this->modifyAccess($access);
 
-        $this->addTableCol(array('id'=>'order_id','type'=>'INTEGER','title'=>'Order ID','key'=>true,'key_auto'=>true,'list'=>true));
+        $this->addTableCol(array('id'=>'order_id','type'=>'INTEGER','title'=>$order_name.' ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'auction_id','type'=>'INTEGER','title'=>'Auction','join'=>'CONCAT(name," @",DATE_FORMAT(date_start_live,"%d %M %Y")) FROM '.$this->table_prefix.'auction WHERE auction_id','edit'=>false));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','edit'=>false));
         $this->addTableCol(array('id'=>'date_create','type'=>'DATETIME','title'=>'Date created','edit'=>false));

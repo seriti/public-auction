@@ -197,7 +197,7 @@ class CheckoutWizard extends Wizard
                 $where = ['temp_token' => $this->temp_token];
                 $this->db->updateRecord($table_order,$data,$where,$error_tmp);
                 if($error_tmp !== '') {
-                    $error = 'We could not update order details.';
+                    $error = 'We could not update '.AUCTION_ORDER_NAME.' details.';
                     if($this->debug) $error .= $error_tmp;
                     $this->addError($error);
                 }
@@ -205,16 +205,16 @@ class CheckoutWizard extends Wizard
 
             //finally email order details 
             if(!$this->errors_found) {
-                $subject = 'Initial order details';
+                $subject = 'Initial '.AUCTION_ORDER_NAME.' details';
                 $message = 'You will be contacted after completion of auction. Please contact us if you wish to cancel your order.';
                 $param = [];
                 Helpers::sendOrderMessage($this->db,TABLE_PREFIX_AUCTION,$this->container,$this->data['order_id'],$subject,$message,$param,$error_tmp);
                 if($error_tmp == '') {
-                    $this->addMessage('Order details sent to email address['.$this->data['user_email'].'] '); 
+                    $this->addMessage(AUCTION_ORDER_NAME.' details sent to email address['.$this->data['user_email'].'] '); 
                 } else {
-                    $this->addMessage('We could not send order details to['.$this->data['user_email'].']. Please check order details on your account page.'); 
+                    $this->addMessage('We could not send '.AUCTION_ORDER_NAME.' details to['.$this->data['user_email'].']. Please check '.AUCTION_ORDER_NAME.' details on your account page.'); 
                 }
-            }   
+            }    
         }  
     }
 

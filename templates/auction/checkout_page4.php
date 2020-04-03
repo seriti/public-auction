@@ -60,11 +60,11 @@ $textarea_param['class'] = 'form-control edit_input';
             echo '<h2>You are now registered with us and logged in. You have been emailed your password.</h2>';
           } 
 
-          echo '<h2>Your auction order has been processed and we will contact you once auction results are finalised.</h2>';
+          echo '<h2>Your auction '.AUCTION_ORDER_NAME.' has been processed and we will contact you once auction results are finalised.</h2>';
 
-          
+          echo  '<p>You can <a href="account/dashboard">Manage your account</a> and '.AUCTION_ORDER_NAME.'s, or create another '.AUCTION_ORDER_NAME.'.</p>';
           ?>
-          <p>You can <a href="account/dashboard">Manage your account</a> and orders, or create another order.</p>
+          
 
         </div>
       </div>

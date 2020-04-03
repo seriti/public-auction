@@ -21,6 +21,9 @@ class AccountDashboard extends DashboardTool
         //Class accessed outside /App/Auction so cannot use TABLE_PREFIX constant
         $module = $this->container->config->get('module','auction');
         $table_prefix = $module['table_prefix'];
+        $order_name = $module['labels']['order'];
+        $order_name_plural = $order_name.'s';
+
 
         $sql = 'SELECT * FROM '.$table_prefix.'user_extend WHERE user_id = "'.$user->getId().'" ';
         $user_extend = $this->db->readSqlRecord($sql);
@@ -38,12 +41,12 @@ class AccountDashboard extends DashboardTool
                'ORDER BY O.date_create DESC ';
         $new_orders = $this->db->readSqlArray($sql);
         if($new_orders === 0) {
-            $order_html = 'NO outstanding active orders';
+            $order_html = 'NO outstanding active '.$order_name_plural;
         } else {
             $order_html .= '<ul>';
             foreach($new_orders as $order_id => $order) {
                $item_href = "javascript:open_popup('order_item?id=".$order_id."',600,600)";
-               $order_html .= '<li>Order ID['.$order_id.'] for auction <b>'.$order['auction'].'</b><br/>'.
+               $order_html .= '<li>'.$order_name.' ID['.$order_id.'] for auction <b>'.$order['auction'].'</b><br/>'.
                               'Created on '.Date::formatDate($order['date_create']).' <a href="'.$item_href.'">'.$order['no_items'].' items</a> '.
                               'total bid value:'.CURRENCY_SYMBOL.$order['total_bid'].'</li>'; 
             }
@@ -60,7 +63,7 @@ class AccountDashboard extends DashboardTool
         $this->addBlock('CART',2,1,'Cart contents');
         $this->addItem('CART',$cart_html);  
 
-        $this->addBlock('ORDERS',2,2,'ACTIVE Orders');
+        $this->addBlock('ORDERS',2,2,'ACTIVE '.$order_name_plural);
         $this->addItem('ORDERS',$order_html);  
         
     }

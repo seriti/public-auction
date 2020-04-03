@@ -16,7 +16,7 @@ $list_param['class'] = 'form-control edit_input';
       echo '<h2>If you are not a user then you can proceed and you will be registered automatically.</h2>';
   }
   ?>
-  <h2>NB: The final order amount and shipping charges are dependant on which bids are successful. 
+  <h2>NB: The final amount and shipping charges are dependant on which bids are successful. 
   The below options are for indication purposes only. You will be contacted to confirm all details after auction finalised.</h2>
   <br/>
   </p>

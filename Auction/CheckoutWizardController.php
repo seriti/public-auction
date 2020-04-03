@@ -44,7 +44,7 @@ class CheckoutWizardController
         $html = $wizard->process();
 
         $template['html'] = $html;
-        $template['title'] = 'Auction <b>'.$cart['auction'].'</b> Order Checkout';
+        $template['title'] = 'Auction <b>'.$cart['auction'].'</b> '.AUCTION_ORDER_NAME.' Checkout';
         //$template['javascript'] = $wizard->getJavascript();
 
         return $this->container->view->render($response,'public.php',$template);

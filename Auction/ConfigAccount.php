@@ -53,7 +53,9 @@ class ConfigAccount
             return $response->withRedirect('/'.$redirect_route);
         }
 
-        $routes = ['dashboard'=>'Dashboard','profile'=>'Profile','order'=>'Orders','invoice'=>'Invoices'];
+        $order_name = AUCTION_ORDER_NAME.'s';
+
+        $routes = ['dashboard'=>'Dashboard','profile'=>'Profile','order'=>$order_name,'invoice'=>'Invoices'];
         $submenu_html = $menu->buildNav($routes,URL_CLEAN_LAST);
         $this->container->view->addAttribute('sub_menu',$submenu_html);
 

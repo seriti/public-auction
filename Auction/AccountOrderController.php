@@ -25,6 +25,7 @@ class AccountOrderController
         //NB: TABLE_PREFIX constant not applicable as not called within admin module
         $module = $this->container->config->get('module','auction');
         $table_prefix = $module['table_prefix'];
+        $labels = $module['labels'];
        
         
         $table_name = $table_prefix.'order'; 
@@ -33,10 +34,11 @@ class AccountOrderController
         $param = [];
         $param['user_id'] = $user->getId();
         $param['table_prefix'] = $table_prefix;
+        $param['labels'] = $labels;
         $table->setup($param);
         $html = $table->processTable();
             
-        $template['title'] = 'Your Orders';
+        $template['title'] = 'Your '.$labels['order'].'s';
         $template['html'] = $html;
         //$template['javascript'] = $dashboard->getJavascript();
         

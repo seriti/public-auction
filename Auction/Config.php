@@ -46,6 +46,12 @@ class Config
         //can define these in setup page but hard coded for now
         define('AUCTION_FEE',0.10);
         define('AUCTION_SELLER_FEE',0.15);
+
+
+        define('AUCTION_ORDER_NAME',$module['labels']['order']);
+        define('CATEGORY_NAME',$module['labels']['category']);
+        define('TYPE_NAME',$module['labels']['type']);
+
                 
         define('MODULE_ID','AUCTION');
         define('MODULE_LOGO','<span class="glyphicon glyphicon-shopping-cart"></span> ');

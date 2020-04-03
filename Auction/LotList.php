@@ -39,12 +39,14 @@ class LotList extends Listing
            $this->addError('NO auction specified'); 
         } else {
             $this->auction_id = Secure::clean('integer',$param['auction_id']);
-            $this->addSql('WHERE','T.auction_id = "'.$this->db->escapeSql($this->auction_id).'" ');
+            //only list auction lots with status = OK 
+            $this->addSql('WHERE','T.auction_id = "'.$this->db->escapeSql($this->auction_id).'" AND T.status = "OK"');
         }
 
         //Class accessed outside /App/Auction so cannot use TABLE_PREFIX constant
         $module = $this->container->config->get('module','auction');
         $this->table_prefix = $module['table_prefix'];
+        $labels = $module['labels'];
         
         $currency = 'R';
 
@@ -54,13 +56,13 @@ class LotList extends Listing
                   'image_pos'=>'LEFT','image_width'=>200,'no_image_src'=>BASE_URL.'images/no_image.png',
                   'image_popup'=>$image_popup,'format'=>'MERGE_COLS', //'format'=>'MERGE_COLS' or 'STANDARD'
                   'action_route'=>BASE_URL.'public/ajax?mode=list_add',
-                  'action_button_text'=>'Add to order']; 
+                  'action_button_text'=>'Add to '.$labels['order']]; 
         parent::setup($param);
 
         $this->addListCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>false));
-        $this->addListCol(array('id'=>'category_id','type'=>'INTEGER','title'=>'Category','list'=>false,'tree'=>'CT'));
+        $this->addListCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$labels['category'],'list'=>false,'tree'=>'CT'));
         $this->addListCol(array('id'=>'name','type'=>'STRING','title'=>'Name','class'=>'list_item_title'));
-        $this->addListCol(array('id'=>'location_id','type'=>'INTEGER','title'=>'Country','join'=>'name FROM '.$this->table_prefix.'location WHERE location_id'));
+        $this->addListCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$labels['type'],'join'=>'name FROM '.$this->table_prefix.'type WHERE type_id'));
         $this->addListCol(array('id'=>'description','type'=>'TEXT','title'=>'Description','class'=>'list_item_text'));
         $this->addListCol(array('id'=>'price_reserve','type'=>'DECIMAL','title'=>'Reserve Price','prefix'=>$currency));
         $this->addListCol(array('id'=>'price_estimate','type'=>'DECIMAL','title'=>'Estimate Price','prefix'=>$currency));
@@ -68,9 +70,11 @@ class LotList extends Listing
 
         //NB: must have to be able to search on products below category_id in tree
         $this->addSql('JOIN','JOIN '.$this->table_prefix.'category AS CT ON(T.category_id = CT.'.$this->tree_cols['node'].')');
-        //only list auction lots with status = OK 
-        $this->addSql('WHERE','T.status = "OK"');
-        //$this->addSortOrder('CT.rank,T.name','Category, then Name','DEFAULT');
+
+        //$this->addSql('JOIN','JOIN '.$this->table_prefix.'type AS L ON(T.type_id = L.type_id)');
+        
+        //sort by primary category and then name
+        $this->addSortOrder('CT.rank,T.name,T.description ',$labels['category'].', then Name then Description','DEFAULT');
 
                 
         //add empty text action just to specify where Add to Order button appears
@@ -79,10 +83,11 @@ class LotList extends Listing
         $sql_cat = 'SELECT id,CONCAT(IF(level > 1,REPEAT("--",level - 1),""),title) FROM '.$this->table_prefix.'category  ORDER BY rank';
         $this->addSelect('category_id',$sql_cat);
 
-        $this->addSelect('location_id','SELECT location_id,name FROM '.$this->table_prefix.'location WHERE status <> "HIDE" ORDER BY sort');
+        $this->addSelect('type_id','SELECT type_id,name FROM '.$this->table_prefix.'type WHERE status <> "HIDE" ORDER BY sort');
+        $this->addSelect('index_terms','SELECT term_code,name FROM '.$this->table_prefix.'index_term WHERE status <> "HIDE" ORDER BY name');
         
         //left out index_terms for now
-        $this->addSearch(array('category_id','name','location_id','description'),array('rows'=>2));
+        $this->addSearch(array('category_id','name','type_id','description','index_terms'),array('rows'=>2));
 
         $this->setupListImages(array('table'=>$this->table_prefix.'file','location'=>'LOT','max_no'=>100,'manage'=>false,
                                      'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Product',

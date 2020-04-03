@@ -1,10 +1,10 @@
 <?php
 namespace App\Auction;
 
-use App\Auction\Location;
+use App\Auction\Type;
 use Psr\Container\ContainerInterface;
 
-class LocationController
+class TypeController
 {
     protected $container;
     
@@ -17,14 +17,14 @@ class LocationController
 
     public function __invoke($request, $response, $args)
     {
-        $table_name = TABLE_PREFIX.'location'; 
-        $table = new Location($this->container->mysql,$this->container,$table_name);
+        $table_name = TABLE_PREFIX.'type'; 
+        $table = new Type($this->container->mysql,$this->container,$table_name);
 
         $table->setup();
         $html = $table->processTable();
         
         $template['html'] = $html;
-        $template['title'] = MODULE_LOGO.'All auctions: Lot location';
+        $template['title'] = MODULE_LOGO.'All auctions: Lot '.TYPE_NAME;
         
         return $this->container->view->render($response,'admin.php',$template);
     }

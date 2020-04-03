@@ -48,7 +48,7 @@ or by using **git clone https://github.com/seriti/public-auction** from command 
 Once you have a local copy of module code check that it has following structure:
 
 /auction/(all module implementation classes are in this folder)  
-/setup_add.php  
+/setup_app.php  
 /routes.php  
 
 3.) Copy the **auction** folder and all its contents into **[directory-for-app]/app** folder.
@@ -67,6 +67,8 @@ Please check the **table_prefix** value to ensure that there will not be a clash
 "http://localhost:8000/admin/auction/dashboard" if you are using php built in server  
 OR  
 "http://www.yourdomain.com/admin/auction/dashboard" if you have configured a domain on your server  
+OR
+Click **Dashboard** menu option and you will see list of available modules, click **Auction manager**  
 
 Now click link at bottom of page **Setup Database**: This will create all necessary database tables with table_prefix as defined above.  
 Thats it, you are good to go. Add some product categories and then start adding products.

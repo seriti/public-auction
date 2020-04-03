@@ -25,6 +25,8 @@ class CartController
         //NB: TABLE_PREFIX constant not applicable as not called within admin module
         $module = $this->container->config->get('module','auction');
         $table_prefix = $module['table_prefix'];
+        $order_name = $module['labels']['order'];
+        $order_name_plural = $order_name.'s';
         
         //NB: Cart contents same as order but user_id = 0 and temp_token identifies 
         $temp_token = $user->getTempToken();
@@ -32,10 +34,10 @@ class CartController
 
         if($cart === 0) {
             $title = 'Your cart is empty!';
-            $html = '<h2>If you have just completed checkout process then <a href="account/dashboard">check your account</a> for active orders.</h2>';
-            $html = '<h2>You can start adding new auction lots to you cart.</h2>';
+            $html = '<h2>If you have just completed checkout process then <a href="account/dashboard">check your account</a> for active '.$order_name_plural.'.</h2>';
+            $html = '<h2>You can start adding new auction lots to your cart.</h2>';
         } else {
-            $title = 'Auction <b>'.$cart['auction'].'</b> order cart: <a href="checkout" class="btn btn-primary">Proceed to checkout</a>';
+            $title = 'Auction <b>'.$cart['auction'].'</b> '.$order_name.' cart: <a href="checkout" class="btn btn-primary">Proceed to checkout</a>';
 
             $table_name = $table_prefix.'order_item'; 
             $table = new Cart($this->container->mysql,$this->container,$table_name);

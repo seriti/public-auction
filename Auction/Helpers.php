@@ -107,9 +107,9 @@ class Helpers {
                     $user = Self::getUserData($db,'USER_ID',$order['user_id']);
                     $error .= 'User :'.$user['name'].' ID['.$order['user_id'].'] ';
                     if($user['bid_no'] != '') $error .= 'with Bid code['.$user['bid_no'].'] ';
-                    $error .= 'Submitted a higher online bid['.$order['price'].'] in order ID['.$order_id.']<br/>';
+                    $error .= 'Submitted a higher online bid['.$order['price'].'] in '.AUCTION_ORDER_NAME.' ID['.$order_id.']<br/>';
                 }
-                $error .= 'You can change Order status to HIDE if you wish to ignore this order.';
+                $error .= 'You can change '.AUCTION_ORDER_NAME.' status to HIDE if you wish to ignore this '.AUCTION_ORDER_NAME.'.';
             }
 
         } 
@@ -145,7 +145,7 @@ class Helpers {
                'SET I.status = "OUT_BID" '.
                'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" ';
         $db->executeSql($sql,$error_tmp); 
-        if($error_tmp != '') $error .= 'Could not set other users order item status = OUT_BID for Lot['.$lot_id.'] user['.$user_id.'] '; 
+        if($error_tmp != '') $error .= 'Could not set other users '.AUCTION_ORDER_NAME.' item status = OUT_BID for Lot['.$lot_id.'] user['.$user_id.'] '; 
     }
 
     public static function checkOrderUpdateOk($db,$table_prefix,$order_id,&$error)
@@ -162,14 +162,14 @@ class Helpers {
                'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
         $data = $db->readSqlRecord($sql);       
         if($data == 0) {
-            $error .= 'Could not find order details.';
+            $error .= 'Could not find '.AUCTION_ORDER_NAME.' details.';
         } else {
             $date_cut = Date::mysqlGetDate($data['date_start_live']);
             $time_now = time();
-            if($time_now >= $date_cut[0]) $error .= 'You cannot modify an order after auction start date. ';
+            if($time_now >= $date_cut[0]) $error .= 'You cannot modify an '.AUCTION_ORDER_NAME.' after auction start date. ';
 
-            if($data['status'] === 'CLOSED') $error .= 'You cannot modify a CLOSED order. ';
-            if($data['auction_status'] === 'CLOSED') $error .= 'You cannot modify an order for a CLOSED auction. ';
+            if($data['status'] === 'CLOSED') $error .= 'You cannot modify a CLOSED '.AUCTION_ORDER_NAME.'. ';
+            if($data['auction_status'] === 'CLOSED') $error .= 'You cannot modify an '.AUCTION_ORDER_NAME.' for a CLOSED auction. ';
         }
 
         if($error === '') return true; else return false;
@@ -196,7 +196,7 @@ class Helpers {
             }
             
             if($error_tmp != '') {
-                $error .= 'Could not close orders for auction. ';
+                $error .= 'Could not close '.AUCTION_ORDER_NAME.'s for auction. ';
                 if(DEBUG) $error .= $error_tmp;
             }    
         }
@@ -215,12 +215,12 @@ class Helpers {
         $totals = $db->readSqlRecord($sql);
         if($totals == 0) {
             //maybe just delete order if not closed
-            $error .= 'No order items exist.';
+            $error .= 'No '.AUCTION_ORDER_NAME.' items exist.';
         } else {
             $sql = 'UPDATE '.$table_order.' SET total_bid = "'.$totals['total_bid'].'", no_items = "'.$totals['no_items'].'" '.
                    'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
             $db->executeSql($sql,$error_tmp);
-            if($error_tmp !== '') $error = 'could not update order totals';
+            if($error_tmp !== '') $error = 'could not update '.AUCTION_ORDER_NAME.' totals';
         }
 
         if($error === '') return $totals; else return false;
@@ -252,7 +252,7 @@ class Helpers {
                'WHERE O.order_id = "'.$db->escapeSql($order_id).'" ';
         $order = $db->readSqlRecord($sql);
         if($order === 0) {
-            $error .= 'Invalid auction order ID['.$order_id.']. ';
+            $error .= 'Invalid auction '.AUCTION_ORDER_NAME.' ID['.$order_id.']. ';
         } else {
             $output['order'] = $order;
         }
@@ -262,7 +262,7 @@ class Helpers {
                'WHERE I.order_id = "'.$db->escapeSql($order_id).'" ';
         $items = $db->readSqlArray($sql);
         if($items === 0) {
-            $error .= 'Invalid or no auction lots for order ID['.$order_id.']. ';
+            $error .= 'Invalid or no auction lots for '.AUCTION_ORDER_NAME.' ID['.$order_id.']. ';
         } else {
             $output['items'] = $items;
         }
@@ -296,16 +296,16 @@ class Helpers {
        
         $data = self::getOrderDetails($db,$table_prefix,$order_id,$error_tmp);
         if($data === false or $error_tmp !== '') {
-            $error .= 'Could not get order details: '.$error_tmp;
+            $error .= 'Could not get '.AUCTION_ORDER_NAME.' details: '.$error_tmp;
         } else {
-            if($data['order']['user_id'] == 0 or $data['order']['user_email'] === '') $error .= 'No user data linked to order';
+            if($data['order']['user_id'] == 0 or $data['order']['user_email'] === '') $error .= 'No user data linked to '.AUCTION_ORDER_NAME;
         }    
 
         if($error === '') {
             $mail_from = ''; //will use default MAIL_FROM
             $mail_to = $data['order']['user_email'];
 
-            $mail_subject = SITE_NAME.' Order ID['.$order_id.'] ';
+            $mail_subject = SITE_NAME.' '.AUCTION_ORDER_NAME.' ID['.$order_id.'] ';
 
             if($subject !== '') $mail_subject .= ': '.$subject;
             
@@ -317,7 +317,7 @@ class Helpers {
             //do not want bootstrap class default
             $html_param = ['class'=>''];
 
-            $mail_body .= '<h3>Order lots:</h3>'.Html::arrayDumpHtml($data['items'],$html_param);
+            $mail_body .= '<h3>'.AUCTION_ORDER_NAME.' lots:</h3>'.Html::arrayDumpHtml($data['items'],$html_param);
 
             /* Payments lonked to invoices NOT orders
             if($data['payments'] !== 0) {
@@ -329,7 +329,7 @@ class Helpers {
             
             $mail->sendEmail($mail_from,$mail_to,$mail_subject,$mail_body,$error_tmp,$mail_param);
             if($error_tmp != '') { 
-                $error .= 'Error sending order details to email['. $mail_to.']:'.$error_tmp; 
+                $error .= 'Error sending '.AUCTION_ORDER_NAME.' details to email['. $mail_to.']:'.$error_tmp; 
             }
         }
 
@@ -657,7 +657,7 @@ class Helpers {
             $order_id = $db->insertRecord($table,$data,$error); 
         } else {
             if($order['auction_id'] !== $auction_id) {
-                $error = 'Your auction order cart is currently in use for another auction. Complete that order first, or delete current order cart contents.';
+                $error = 'Your auction '.AUCTION_ORDER_NAME.' cart is currently in use for another auction. Complete that '.AUCTION_ORDER_NAME.' first, or delete current '.AUCTION_ORDER_NAME.' cart contents.';
             } else {
                 $order_id = $order['order_id'];
             }
@@ -743,10 +743,10 @@ class Helpers {
                 }
 
                 if($error_tmp !== '') {
-                    $error .= 'Could not update order item: '.$error_tmp;
-                    $message .= 'Could not save order item. ';
+                    $error .= 'Could not update '.AUCTION_ORDER_NAME.' item: '.$error_tmp;
+                    $message .= 'Could not save '.AUCTION_ORDER_NAME.' item. ';
                 }  else {
-                    $message .= $lot['name'].': Successfuly added to your order. ';
+                    $message .= $lot['name'].': Successfuly added to your '.AUCTION_ORDER_NAME.'. ';
                 }  
             }
         }    
