@@ -60,7 +60,7 @@ class LotList extends Listing
         parent::setup($param);
 
         $this->addListCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>false));
-        $this->addListCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$labels['category'],'list'=>false,'tree'=>'CT'));
+        $this->addListCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$labels['category'],'list'=>true,'tree'=>'CT','join'=>'title FROM '.$this->table_prefix.'category WHERE id'));
         $this->addListCol(array('id'=>'name','type'=>'STRING','title'=>'Name','class'=>'list_item_title'));
         $this->addListCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$labels['type'],'join'=>'name FROM '.$this->table_prefix.'type WHERE type_id'));
         $this->addListCol(array('id'=>'description','type'=>'TEXT','title'=>'Description','class'=>'list_item_text'));
