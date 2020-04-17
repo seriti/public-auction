@@ -49,6 +49,10 @@ class LotImage extends Upload
         
         //NB: only need to add non-standard file cols here, or if you need to modify standard file col setup
         $this->addFileCol(array('id'=>'caption','type'=>'STRING','title'=>'Caption','upload'=>true,'required'=>false));
+        //so can modify sequence of appearance
+        $this->addFileCol(['id'=>'location_rank','title'=>'Location rank','type'=>'INTEGER','list'=>true,'update'=>true,'hint'=>'(Modify order in which images appear)']);
+
+        $this->addSortOrder('T.location_rank','Upload sequence(location rank)','DEFAULT');
     }
 }
 ?>

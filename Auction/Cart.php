@@ -17,13 +17,15 @@ class Cart extends Table
     //configure
     public function setup($param = []) 
     {
-        $table_param = ['row_name'=>'Cart item','col_label'=>'lot_id','table_edit_all'=>true];
+        //NB: csrf verification turned off as public user can update cart without being logged in or a user at all 
+        $table_param = ['row_name'=>'Cart item','col_label'=>'lot_id','table_edit_all'=>true,'verify_csrf'=>false];
         parent::setup($table_param);
        
         if(isset($param['table_prefix'])) $this->table_prefix = $param['table_prefix'];
         $this->order_id = $param['order_id'];
         $this->auction_id = $param['auction_id'];
 
+        $access['read_only'] = false;  
         $access['edit'] = true;                         
         $access['delete'] = true;
         $access['add'] = false;

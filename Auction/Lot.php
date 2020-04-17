@@ -37,7 +37,10 @@ class Lot extends Table
         
         $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'"');
         $this->addSql('JOIN','JOIN '.TABLE_PREFIX.'category AS CT ON(T.category_id = CT.'.$this->tree_cols['node'].')');
-        $this->addSortOrder('CT.rank,T.name','Category, then Name','DEFAULT');
+        //$this->addSortOrder('CT.rank,T.name','Category, then Name');
+        $this->addSortOrder('CT.rank,T.name','Category, then Name');
+        $this->addSortOrder('T.lot_id DESC','Order of creation, most recent first.','DEFAULT');
+
 
         $this->addAction(array('type'=>'check_box','text'=>''));
         $this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit'));

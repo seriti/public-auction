@@ -355,7 +355,8 @@ class Helpers {
 
         $location_id = 'LOT'.$lot_id;
         $sql = 'SELECT file_id,file_name,file_name_tn,caption AS title '.
-               'FROM '.$table_prefix.'file WHERE location_id = "'.$db->escapeSql($location_id).'" ';
+               'FROM '.$table_prefix.'file WHERE location_id = "'.$db->escapeSql($location_id).'" '.
+               'ORDER BY location_rank ';
         $images = $db->readSqlArray($sql);
         if($images != 0) {
             //setup amazon links
@@ -397,7 +398,7 @@ class Helpers {
             $html = '<p>lot no longer available.</p>';
             return $html;
         } else {
-            $html .= '&nbsp;<strong>'.$lot['name'].' (Id:'.$lot['lot_id'].')</strong><br/>'.
+            $html .= '&nbsp;<strong>'.$lot['name'].' (ID:'.$lot['lot_id'].')</strong><br/>'.
                      '&nbsp;Reserve price: '.CURRENCY_SYMBOL.number_format($lot['price_reserve'],2);
         }
 

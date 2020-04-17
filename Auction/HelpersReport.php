@@ -102,7 +102,7 @@ class HelpersReport {
             $lots = $db->readSqlArray($sql);
             if($lots == 0) $error .= 'No lots found for seller in auction!';
         }
-        
+  
         if($error !== '') return false;   
 
 
@@ -192,7 +192,7 @@ class HelpersReport {
                 if($lot['postal_only']) $postal = '(***Postal only***)'; else $postal = '';
                 $cat_data[0][$row] = $lot_id;
                 $cat_data[1][$row] = $lot['cat_name'];
-                $cat_data[2][$row] = $lot['description'].$postal;
+                $cat_data[2][$row] = utf8_decode($lot['description']).$postal;
                 $cat_data[3][$row] = CURRENCY_SYMBOL.$lot['price_reserve'];
                 $cat_data[4][$row] = CURRENCY_SYMBOL.$lot['price_estimate']; 
                 
@@ -261,7 +261,7 @@ class HelpersReport {
             exit();
         }    
                 
-        if($error_str == '') return true; else return false ;
+        if($error_str == '') return true; else return false;
     }
 
     public static function createAuctionCatalogPdf($db,$system,$auction_id,$options = [],&$doc_name,&$error)  
@@ -477,7 +477,7 @@ class HelpersReport {
                 $cat_data[1][$row] = $lot['cat_name'];
                 $cat_data[2][$row] = $lot['name'];
                 $cat_data[3][$row] = $lot['condition'];
-                $cat_data[4][$row] = $lot['description'].$postal;
+                $cat_data[4][$row] = utf8_decode($lot['description']).$postal;
                 $cat_data[5][$row] = CURRENCY_SYMBOL.$lot['price_reserve'];
  
                 if($options['layout'] === 'STANDARD') {
@@ -549,12 +549,13 @@ class HelpersReport {
             //finally create pdf file
             if($options['output'] === 'FILE') {
                 $file_path = $doc_dir.$doc_name;
-                $pdf->Output($file_path,'F');  
+                $pdf->Output($file_path,'F');
             }    
 
             //send directly to browser
             if($options['output'] === 'BROWSER') {
-                $pdf->Output($doc_name,'D');      
+                $pdf->Output($doc_name,'D'); 
+                exit();     
             }    
         }
 

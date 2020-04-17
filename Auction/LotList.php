@@ -52,14 +52,21 @@ class LotList extends Listing
 
         $image_popup = ['show'=>true,'width'=>600,'height'=>500];
 
+        //javascript to process add to bid form button
+        //cart_icon.innerHTML = "WTF";
+        $action_callback = 'var cart_icon = document.getElementById("menu_cart");
+                            cart_icon.style.display="inline";
+                           ';
+
         $param = ['row_name'=>'Lot','col_label'=>'name','show_header'=>false,'order_by'=>'name',
                   'image_pos'=>'LEFT','image_width'=>200,'no_image_src'=>BASE_URL.'images/no_image.png',
                   'image_popup'=>$image_popup,'format'=>'MERGE_COLS', //'format'=>'MERGE_COLS' or 'STANDARD'
                   'action_route'=>BASE_URL.'public/ajax?mode=list_add',
+                  'action_callback'=>$action_callback,
                   'action_button_text'=>'Add to '.$labels['order']]; 
         parent::setup($param);
 
-        $this->addListCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>false));
+        $this->addListCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addListCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$labels['category'],'list'=>true,'tree'=>'CT','join'=>'title FROM '.$this->table_prefix.'category WHERE id'));
         $this->addListCol(array('id'=>'name','type'=>'STRING','title'=>'Name','class'=>'list_item_title'));
         $this->addListCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$labels['type'],'join'=>'name FROM '.$this->table_prefix.'type WHERE type_id'));
