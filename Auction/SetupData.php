@@ -275,6 +275,9 @@ class SetupData extends SetupModuledata
         $this->addInitialSql('INSERT INTO `TABLE_PREFIXseller` (name,sort,status) '.
                              'VALUES("INTERNAL",1,"OK")','Created default internal seller');
 
+        $this->addInitialSql('INSERT INTO `TABLE_PREFIXtype` (name,sort,status) '.
+                             'VALUES("Standard",1,"OK")','Created default lot type');
+
         $this->addInitialSql('INSERT INTO `TABLE_PREFIXauction` (name,summary,description,status) '.
                              'VALUES("My first auction","Summary of your auction","Detailed description of your auction","NEW")','Created default first auction');
 

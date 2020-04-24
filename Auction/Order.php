@@ -55,7 +55,7 @@ class Order extends Table
         $this->setupFiles(array('table'=>TABLE_PREFIX.'file','location'=>'ORD','max_no'=>10,
                                 'icon'=>'<span class="glyphicon glyphicon-file" aria-hidden="true"></span>&nbsp;manage',
                                 'list'=>true,'list_no'=>1,'storage'=>STORAGE,
-                                'link_page'=>'template_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
+                                'link_url'=>'order_file','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
     }
 
     protected function beforeUpdate($id,$context,&$data,&$error) 

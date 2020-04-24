@@ -49,7 +49,7 @@ class LotAuction extends Table
         $this->setupImages(array('table'=>TABLE_PREFIX.'file','location'=>'LOT','max_no'=>10,'manage'=>false,
                                   'icon'=>'<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>&nbsp;manage',
                                   'list'=>true,'list_no'=>1,'storage'=>STORAGE,
-                                  'link_page'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
+                                  'link_url'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
 
     }
 

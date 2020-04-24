@@ -37,12 +37,12 @@ class Auction extends Table
         $this->setupFiles(array('table'=>TABLE_PREFIX.'file','location'=>'AUCD','max_no'=>10,
                                   'icon'=>'<span class="glyphicon glyphicon-file" aria-hidden="true"></span>&nbsp;manage',
                                   'list'=>true,'list_no'=>1,'storage'=>STORAGE,
-                                  'link_page'=>'auction_file','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
+                                  'link_url'=>'auction_file','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
 
         $this->setupImages(array('table'=>TABLE_PREFIX.'file','location'=>'AUC','max_no'=>10,
                                   'icon'=>'<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>&nbsp;manage',
                                   'list'=>true,'list_no'=>1,'storage'=>STORAGE,
-                                  'link_page'=>'auction_file','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
+                                  'link_url'=>'auction_file','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
     }
 
     protected function beforeUpdate($id,$context,&$data,&$error) 

@@ -55,10 +55,11 @@ class AccountDashboard extends DashboardTool
 
         //(block_id,col,row,title)
         $this->addBlock('USER',1,1,'User data: <a href="profile?mode=edit">edit</a>');
-        $this->addItem('USER','Email: '.$user->getEmail());
-        $this->addItem('USER','Cellphone: '.$user_extend['cell']);
-        $this->addItem('USER','Landline: '.$user_extend['tel']);
-        $this->addItem('USER','Address:<br/>'.nl2br($user_extend['ship_address']));
+        $this->addItem('USER','<strong>Email:</strong> '.$user->getEmail());
+        $this->addItem('USER','<strong>Cellphone:</strong> '.$user_extend['cell']);
+        $this->addItem('USER','<strong>Landline:</strong> '.$user_extend['tel']);
+        $this->addItem('USER','<strong>Shipping Address:</strong><br/>'.nl2br($user_extend['ship_address']));
+        $this->addItem('USER','<strong>Billing Address:</strong><br/>'.nl2br($user_extend['bill_address']));
         
         $this->addBlock('CART',2,1,'Cart contents');
         $this->addItem('CART',$cart_html);  

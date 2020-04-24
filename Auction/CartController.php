@@ -47,6 +47,7 @@ class CartController
             $param['auction_id'] = $cart['auction_id'];
             $param['table_prefix'] = $table_prefix;
             $table->setup($param);
+            
             $html = $table->processTable();
         
             //display cart order totals

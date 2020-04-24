@@ -16,6 +16,8 @@ class Lot extends Table
     {
         $param = ['row_name'=>'Lot','col_label'=>'name'];
         parent::setup($param);
+
+        $this->modifyAccess(['copy'=>true]);
         
         $this->addForeignKey(array('table'=>TABLE_PREFIX.'order_item ','col_id'=>'lot_id','message'=>'Auction Order item'));
 
@@ -58,12 +60,12 @@ class Lot extends Table
         $this->addSelect('type_id','SELECT type_id,name FROM '.TABLE_PREFIX.'type WHERE status <> "HIDE" ORDER BY sort');
 
 
-        $this->addSearch(array('name','description','category_id','index_terms','postal_only','price_reserve','status'),array('rows'=>2));
+        $this->addSearch(array('name','description','category_id','index_terms','postal_only','price_reserve','seller','status'),array('rows'=>2));
 
         $this->setupImages(array('table'=>TABLE_PREFIX.'file','location'=>'LOT','max_no'=>10,
                                   'icon'=>'<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>&nbsp;manage',
                                   'list'=>true,'list_no'=>1,'storage'=>STORAGE,
-                                  'link_page'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
+                                  'link_url'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
 
     }
 

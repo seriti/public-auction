@@ -30,7 +30,6 @@ $app->group('/admin', function () {
         $this->any('/order_item', \App\Auction\OrderItemController::class);
         $this->any('/order_message', \App\Auction\OrderMessageController::class);
         $this->any('/order_file', \App\Auction\OrderFileController::class);
-        $this->any('/order_payment', \App\Auction\OrderPaymentController::class);
         $this->any('/payment', \App\Auction\PaymentController::class);
         $this->any('/pay_option', \App\Auction\PayOptionController::class);
         $this->any('/report', \App\Auction\ReportController::class);

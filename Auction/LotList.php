@@ -98,7 +98,7 @@ class LotList extends Listing
 
         $this->setupListImages(array('table'=>$this->table_prefix.'file','location'=>'LOT','max_no'=>100,'manage'=>false,
                                      'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Product',
-                                     'link_page'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
+                                     'link_url'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
 
         $this->setupAuction();
        
