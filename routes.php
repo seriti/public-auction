@@ -43,7 +43,7 @@ $app->group('/admin', function () {
         $this->any('/user_extend', \App\Auction\UserExtendController::class);
     })->add(\App\Auction\Config::class);
 
-})->add(\App\ConfigAdmin::class);
+})->add(\App\User\ConfigAdmin::class);
 //*** END admin access ***
 
 /*
