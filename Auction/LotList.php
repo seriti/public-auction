@@ -67,9 +67,14 @@ class LotList extends Listing
         parent::setup($param);
 
         $this->addListCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
-        $this->addListCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$labels['category'],'list'=>true,'tree'=>'CT','join'=>'title FROM '.$this->table_prefix.'category WHERE id'));
+        $this->addListCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$labels['category'],'class'=>'list_item_title','list'=>true,'tree'=>'CT','join'=>'title FROM '.$this->table_prefix.'category WHERE id'));
         $this->addListCol(array('id'=>'name','type'=>'STRING','title'=>'Name','class'=>'list_item_title'));
+
         $this->addListCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$labels['type'],'join'=>'name FROM '.$this->table_prefix.'type WHERE type_id'));
+        $this->addListCol(array('id'=>'type_txt1','type'=>'STRING','title'=>$labels['type_txt1']));
+        $this->addListCol(array('id'=>'type_txt2','type'=>'STRING','title'=>$labels['type_txt2']));
+        $this->addListCol(array('id'=>'condition_id','type'=>'INTEGER','title'=>'Condition','join'=>'name FROM '.$this->table_prefix.'condition WHERE condition_id'));
+
         $this->addListCol(array('id'=>'description','type'=>'TEXT','title'=>'Description','class'=>'list_item_text'));
         $this->addListCol(array('id'=>'price_reserve','type'=>'DECIMAL','title'=>'Reserve Price','prefix'=>$currency));
         $this->addListCol(array('id'=>'price_estimate','type'=>'DECIMAL','title'=>'Estimate Price','prefix'=>$currency));
@@ -77,12 +82,14 @@ class LotList extends Listing
 
         //NB: must have to be able to search on products below category_id in tree
         $this->addSql('JOIN','JOIN '.$this->table_prefix.'category AS CT ON(T.category_id = CT.'.$this->tree_cols['node'].')');
+        $this->addSql('JOIN','JOIN '.$this->table_prefix.'condition AS CN ON(T.condition_id = CN.condition_id)');
 
         //$this->addSql('JOIN','JOIN '.$this->table_prefix.'type AS L ON(T.type_id = L.type_id)');
         
-        //sort by primary category and then name
-        $this->addSortOrder('CT.rank,T.name,T.description ',$labels['category'].', then Name then Description','DEFAULT');
-
+        //sort by primary category, then name, tyen description
+        //$this->addSortOrder('CT.rank,T.name,T.description ',$labels['category'].', then Name then Description','DEFAULT');
+        //if not using this sort order then JOIN to condition table above not necessary for CN.sort
+        $this->addSortOrder('CT.rank,T.type_txt1,T.type_txt2,CN.sort',$labels['category'].', then '.$labels['type_txt1'].', then '.$labels['type_txt2'].', then Condition','DEFAULT');
                 
         //add empty text action just to specify where Add to Order button appears
         $this->addListAction('submit',['type'=>'text','text'=>'','pos'=>'R']);
@@ -92,9 +99,10 @@ class LotList extends Listing
 
         $this->addSelect('type_id','SELECT type_id,name FROM '.$this->table_prefix.'type WHERE status <> "HIDE" ORDER BY sort');
         $this->addSelect('index_terms','SELECT term_code,name FROM '.$this->table_prefix.'index_term WHERE status <> "HIDE" ORDER BY name');
+        $this->addSelect('condition_id','SELECT condition_id,name FROM '.$this->table_prefix.'condition WHERE status <> "HIDE" ORDER BY sort');
         
         //left out index_terms for now
-        $this->addSearch(array('category_id','name','type_id','description','index_terms'),array('rows'=>2));
+        $this->addSearch(array('category_id','name','type_id','type_txt1','type_txt2','condition_id','description','index_terms'),array('rows'=>3));
 
         $this->setupListImages(array('table'=>$this->table_prefix.'file','location'=>'LOT','max_no'=>100,'manage'=>false,
                                      'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Product',

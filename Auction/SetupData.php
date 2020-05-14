@@ -53,6 +53,8 @@ class SetupData extends SetupModuledata
                               `seller_id` int(11) NOT NULL,
                               `category_id` int(11) NOT NULL,
                               `type_id` int(11) NOT NULL,
+                              `type_txt1` varchar(64) NOT NULL,
+                              `type_txt2` varchar(64) NOT NULL,
                               `condition_id` int(11) NOT NULL,
                               `postal_only` tinyint(1) NOT NULL,
                               `name` varchar(250) NOT NULL,
@@ -253,6 +255,8 @@ class SetupData extends SetupModuledata
                               `email` varchar(255) NOT NULL,
                               `address` TEXT NOT NULL,
                               `status` VARCHAR(64) NOT NULL,
+                              `comm_pct` DECIMAL(5,2) NOT NULL,
+                              `seller_code` VARCHAR(64) NOT NULL,
                               PRIMARY KEY (`seller_id`)
                             ) ENGINE = MyISAM DEFAULT CHARSET=utf8');  
 

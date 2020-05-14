@@ -19,12 +19,14 @@ class Lot extends Table
 
         $this->modifyAccess(['copy'=>true]);
         
-        $this->addForeignKey(array('table'=>TABLE_PREFIX.'order_item ','col_id'=>'lot_id','message'=>'Auction Order item'));
+        $this->addForeignKey(array('table'=>TABLE_PREFIX.'order_item','col_id'=>'lot_id','message'=>'Auction Order item'));
 
         $this->addTableCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'seller_id','type'=>'INTEGER','title'=>'Seller','join'=>'name FROM '.TABLE_PREFIX.'seller WHERE seller_id'));
         $this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>CATEGORY_NAME,'join'=>'title FROM '.TABLE_PREFIX.'category WHERE id'));
         $this->addTableCol(array('id'=>'type_id','type'=>'INTEGER','title'=>TYPE_NAME,'join'=>'name FROM '.TABLE_PREFIX.'type WHERE type_id'));
+        $this->addTableCol(array('id'=>'type_txt1','type'=>'STRING','title'=>TYPE_TXT1,'required'=>false));
+        $this->addTableCol(array('id'=>'type_txt2','type'=>'STRING','title'=>TYPE_TXT2,'required'=>false));
         $this->addTableCol(array('id'=>'name','type'=>'STRING','title'=>'Lot Name','hint'=>'Lots are ordered by category and then name'));
         $this->addTableCol(array('id'=>'condition_id','type'=>'INTEGER','title'=>'Condition','join'=>'name FROM '.TABLE_PREFIX.'condition WHERE condition_id'));
         $this->addTableCol(array('id'=>'description','type'=>'TEXT','title'=>'Lot Description','list'=>false));
@@ -39,8 +41,11 @@ class Lot extends Table
         
         $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'"');
         $this->addSql('JOIN','JOIN '.TABLE_PREFIX.'category AS CT ON(T.category_id = CT.'.$this->tree_cols['node'].')');
+        $this->addSql('JOIN','JOIN '.TABLE_PREFIX.'condition AS CN ON(T.condition_id = CN.condition_id)');
+
         //$this->addSortOrder('CT.rank,T.name','Category, then Name');
-        $this->addSortOrder('CT.rank,T.name','Category, then Name');
+        //$this->addSortOrder('CT.rank,T.name',CATEGORY_NAME.', then Name');
+        $this->addSortOrder('CT.rank,T.type_txt1,T.type_txt2,CN.sort',CATEGORY_NAME.', then '.TYPE_TXT1.', then '.TYPE_TXT2.', then Condition');
         $this->addSortOrder('T.lot_id DESC','Order of creation, most recent first.','DEFAULT');
 
 
@@ -60,7 +65,7 @@ class Lot extends Table
         $this->addSelect('type_id','SELECT type_id,name FROM '.TABLE_PREFIX.'type WHERE status <> "HIDE" ORDER BY sort');
 
 
-        $this->addSearch(array('name','description','category_id','index_terms','postal_only','price_reserve','seller','status'),array('rows'=>2));
+        $this->addSearch(array('type_id','type_txt1','type_txt2','name','description','category_id','index_terms','postal_only','price_reserve','seller_id','status'),array('rows'=>3));
 
         $this->setupImages(array('table'=>TABLE_PREFIX.'file','location'=>'LOT','max_no'=>10,
                                   'icon'=>'<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>&nbsp;manage',

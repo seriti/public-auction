@@ -85,20 +85,20 @@ class HelpersReport {
         }
 
         
-        $sql = 'SELECT seller_id,name,cell,tel,email,address,status '.
+        $sql = 'SELECT seller_id,name,cell,tel,email,address,status,comm_pct '.
                'FROM '.$table_seller.' WHERE seller_id = "'.$db->escapeSql($seller_id).'"';
         $seller = $db->readSqlRecord($sql,$db); 
         if($seller === 0) $error .= 'Invalid Seller['.$seller_id.'] selected.';
 
         if($error === '') {
-            //NB: Order by CT.rank automatically lists lots by categories 
             $sql = 'SELECT L.lot_id,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
                           'L.bid_open,L.bid_book_top,L.bid_final,L.status, '.  
                           'CT.level AS cat_level,CT.title AS cat_name,CN.name AS `condition` '.
-                   'FROM '.$table_lot.' AS L JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
+                   'FROM '.$table_lot.' AS L '.
+                         'JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
                          'JOIN '.$table_category.' AS CT ON(L.category_id = CT.id) '.
                    'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" AND L.seller_id = "'.$db->escapeSql($seller_id).'" '.
-                   'ORDER BY CT.rank, L.name ';
+                   'ORDER BY CT.rank,L.type_txt1,L.type_txt2,CN.sort ';
             $lots = $db->readSqlArray($sql);
             if($lots == 0) $error .= 'No lots found for seller in auction!';
         }
@@ -120,7 +120,10 @@ class HelpersReport {
         
         $total_sold = 0;
         $total_fee = 0;
-        $commission_str = (AUCTION_SELLER_FEE*100).'%';
+
+        //each seller has own commision rate
+        $comm_rate = $seller['comm_pct']/100;
+        $commission_str = $seller['comm_pct'].'%';
 
         //lot block setup
         $pdf_options = [];
@@ -192,14 +195,14 @@ class HelpersReport {
                 if($lot['postal_only']) $postal = '(***Postal only***)'; else $postal = '';
                 $cat_data[0][$row] = $lot_id;
                 $cat_data[1][$row] = $lot['cat_name'];
-                $cat_data[2][$row] = utf8_decode($lot['description']).$postal;
+                $cat_data[2][$row] = utf8_decode($lot['name'].': '.$lot['description']).$postal;
                 $cat_data[3][$row] = CURRENCY_SYMBOL.$lot['price_reserve'];
                 $cat_data[4][$row] = CURRENCY_SYMBOL.$lot['price_estimate']; 
                 
                 if($lot['status'] === 'SOLD' or $lot['bid_final'] > 0) {
                     $sold = $lot['bid_final']; 
                     $sold_str = CURRENCY_SYMBOL.number_format($sold,0);
-                    $fee = round(($lot['bid_final'] * AUCTION_SELLER_FEE),0);
+                    $fee = round(($lot['bid_final'] * $comm_rate),0);
                     $fee_str =  CURRENCY_SYMBOL.number_format($fee,0);
                 } else {
                     $sold = 0;
@@ -247,7 +250,8 @@ class HelpersReport {
 
             //send directly to browser
             if($options['output'] === 'BROWSER') {
-                $pdf->Output($doc_name,'D');      
+                $pdf->Output($doc_name,'D');
+                exit();      
             }    
         }
 
@@ -293,14 +297,14 @@ class HelpersReport {
             if($auction === 0) {
                 $error .= 'Invalid Auction['.$auction_id.'] selected.';
             } else {
-                //NB: Order by CT.rank automatically lists lots by categories 
                 $sql = 'SELECT L.lot_id,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
                               'L.bid_open,L.bid_book_top,L.bid_final,L.status, '.  
                               'CT.level AS cat_level,CT.title AS cat_name,CN.name AS `condition` '.
-                       'FROM '.$table_lot.' AS L JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
+                       'FROM '.$table_lot.' AS L '.
+                             'JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
                              'JOIN '.$table_category.' AS CT ON(L.category_id = CT.id) '.
                        'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" '.
-                       'ORDER BY CT.rank, L.name ';
+                       'ORDER BY CT.rank,L.type_txt1,L.type_txt2,CN.sort ';
                 $lots = $db->readSqlArray($sql);
                 if($lots == 0) $error .= 'No lots found for auction!';
             }    
@@ -400,7 +404,7 @@ class HelpersReport {
                 $col_type  = array('','','','','','CASH0','CASH0'); 
                
                 $cat_data_initial[0][$row] = 'Lot';
-                $cat_data_initial[1][$row] = 'Category';
+                $cat_data_initial[1][$row] = CATEGORY_NAME;
                 $cat_data_initial[2][$row] = 'Name';
                 $cat_data_initial[3][$row] = 'Cond.';
                 $cat_data_initial[4][$row] = 'Description';
@@ -413,7 +417,7 @@ class HelpersReport {
                 $col_type  = array('','','','','','CASH0',''); 
                
                 $cat_data_initial[0][$row] = 'Lot';
-                $cat_data_initial[1][$row] = 'Category';
+                $cat_data_initial[1][$row] = CATEGORY_NAME;
                 $cat_data_initial[2][$row] = 'Name';
                 $cat_data_initial[3][$row] = 'Cond.';
                 $cat_data_initial[4][$row] = 'Description';
@@ -426,7 +430,7 @@ class HelpersReport {
                 $col_type  = array('','','','','','CASH0','CASH0','','','','',''); 
                
                 $cat_data_initial[0][$row] = 'Lot';
-                $cat_data_initial[1][$row] = 'Category';
+                $cat_data_initial[1][$row] = CATEGORY_NAME;
                 $cat_data_initial[2][$row] = 'Name';
                 $cat_data_initial[3][$row] = 'Cond.';
                 $cat_data_initial[4][$row] = 'Description';

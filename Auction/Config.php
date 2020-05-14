@@ -45,12 +45,16 @@ class Config
 
         //can define these in setup page but hard coded for now
         define('AUCTION_FEE',0.10);
-        define('AUCTION_SELLER_FEE',0.15);
+        define('AUCTION_SELLER_FEE',0.20);
 
 
         define('AUCTION_ORDER_NAME',$module['labels']['order']);
         define('CATEGORY_NAME',$module['labels']['category']);
+        //label to be used to describe type select list
         define('TYPE_NAME',$module['labels']['type']);
+        //additional lot text fields for more flexible sorting
+        define('TYPE_TXT1',$module['labels']['type_txt1']);
+        define('TYPE_TXT2',$module['labels']['type_txt2']);
 
                 
         define('MODULE_ID','AUCTION');
