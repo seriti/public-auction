@@ -337,9 +337,11 @@ class Helpers {
     }
     
     //create gallery of s3 lot images 
-    public static function getLotImageGallery($db,$table_prefix,$s3,$lot_id)
+    public static function getLotImageGallery($db,$table_prefix,$s3,$lot_id,$param = [])
     {
         $html = '';
+
+        if(!isset($param['access'])) $param['access'] = 'PUBLIC';
 
         $sql = 'SELECT name,description '.
                'FROM '.$table_prefix.'lot '.
@@ -360,8 +362,9 @@ class Helpers {
         $images = $db->readSqlArray($sql);
         if($images != 0) {
             //setup amazon links
+            $s3_param['access'] = $param['access'];
             foreach($images as $id => $image) {
-                $url = $s3->getS3Url($image['file_name']);
+                $url = $s3->getS3Url($image['file_name'],$s3_param);
                 $images[$id]['src'] = $url;
             }
 

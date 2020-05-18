@@ -105,7 +105,7 @@ class LotList extends Listing
         $this->addSearch(array('category_id','name','type_id','type_txt1','type_txt2','condition_id','description','index_terms'),array('rows'=>3));
 
         $this->setupListImages(array('table'=>$this->table_prefix.'file','location'=>'LOT','max_no'=>100,'manage'=>false,
-                                     'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Product',
+                                     'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Product','access'=>$module['images']['access'],
                                      'link_url'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
 
         $this->setupAuction();

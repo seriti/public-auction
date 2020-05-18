@@ -9,7 +9,8 @@ This tells the framework about module: name, sub-memnu route list and title, dat
 $container['config']->set('module','auction',['name'=>'Auction manager',
                                             'route_root'=>'admin/auction/',
                                             'route_list'=>['dashboard'=>'Dashboard','lot'=>'Lots','order'=>'Orders','invoice'=>'Invoices',
-                                            'task'=>'Tasks','report'=>'Reports'],
+                                                           'task'=>'Tasks','report'=>'Reports'],
                                             'labels'=>['category'=>'Category','type'=>'Type','type_txt1'=>'Year','type_txt2'=>'Catalog','order'=>'Order'],
+                                            'images'=>['access'=>'PUBLIC'],
                                             'table_prefix'=>'auc_'
                                             ]);

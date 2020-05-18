@@ -4,6 +4,7 @@ namespace App\Auction;
 use Psr\Container\ContainerInterface;
 
 use Seriti\Tools\Template;
+use Seriti\Tools\Secure;
 
 use App\Auction\Helpers;
 
@@ -26,8 +27,9 @@ class ImagePopupController
         $module = $this->container->config->get('module','auction');
         $table_prefix = $module['table_prefix'];
         
-        $lot_id = $_GET['id'];
-        $html = Helpers::getLotImageGallery($db,$table_prefix,$s3,$lot_id);
+        $param = ['access'=>$module['images']['access']];
+        $lot_id = Secure::clean('INTEGER',$_GET['id']);
+        $html = Helpers::getLotImageGallery($db,$table_prefix,$s3,$lot_id,$param);
 
         $template['html'] = $html;
         //$template['title'] = $title;

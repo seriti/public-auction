@@ -5,7 +5,7 @@ use Seriti\Tools\Upload;
 
 class LotImage extends Upload 
 {
-  //configure
+    //configure
     public function setup($param = []) 
     {
         $id_prefix = 'LOT'; 
@@ -14,7 +14,9 @@ class LotImage extends Upload
                   'pop_up'=>true,
                   'col_label'=>'file_name_orig',
                   'update_calling_page'=>true,
+                  'upload_access'=>IMAGE_ACCESS,
                   'prefix'=>$id_prefix];
+
         parent::setup($param);
 
         //resize parameters

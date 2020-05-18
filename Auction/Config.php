@@ -47,6 +47,8 @@ class Config
         define('AUCTION_FEE',0.10);
         define('AUCTION_SELLER_FEE',0.20);
 
+        //NB: If S3 access = PUBLIC/PRIVATE
+        define('IMAGE_ACCESS',$module['images']['access']);
 
         define('AUCTION_ORDER_NAME',$module['labels']['order']);
         define('CATEGORY_NAME',$module['labels']['category']);
