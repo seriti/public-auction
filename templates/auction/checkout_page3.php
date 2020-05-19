@@ -81,7 +81,7 @@ $textarea_param['class'] = 'form-control edit_input';
   </div>
 
   <div class="row">
-    <div class="col-sm-6"><input type="submit" name="Submit" value="Confirm <?php echo AUCTION_ORDER_NAME;?>" class="btn btn-primary"></div>
+    <div class="col-sm-6"><input type="submit" name="Submit" value="Confirm <?php echo MODULE_AUCTION['labels']['order'];?>" class="btn btn-primary"></div>
   </div>  
 
 </div>

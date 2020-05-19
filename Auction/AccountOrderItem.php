@@ -7,7 +7,7 @@ use App\Auction\Helpers;
 
 class AccountOrderItem extends Table 
 {
-    protected $table_prefix = TABLE_PREFIX_AUCTION;
+    protected $table_prefix = MODULE_AUCTION['table_prefix'];
 
     //configure
     public function setup($param = []) 
@@ -25,7 +25,7 @@ class AccountOrderItem extends Table
                        
         //NB: specify master table relationship
         $this->setupMaster(array('table'=>$this->table_prefix.'order','key'=>'order_id','child_col'=>'order_id', 
-                                 'show_sql'=>'SELECT CONCAT("'.AUCTION_ORDER_NAME.' ID[",order_id,"] created-",date_create) FROM '.$this->table_prefix.'order WHERE order_id = "{KEY_VAL}" '));  
+                                 'show_sql'=>'SELECT CONCAT("'.MODULE_AUCTION['labels']['order'].' ID[",order_id,"] created-",date_create) FROM '.$this->table_prefix.'order WHERE order_id = "{KEY_VAL}" '));  
 
         $access = [];
         if($active_order) {

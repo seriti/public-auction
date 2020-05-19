@@ -22,7 +22,7 @@ class OrderController
         $table->setup();
         $html = $table->processTable();
             
-        $template['title'] = MODULE_LOGO.AUCTION_NAME.': Lot '.AUCTION_ORDER_NAME.'s';
+        $template['title'] = MODULE_LOGO.AUCTION_NAME.': Lot '.MODULE_AUCTION['labels']['order'].'s';
         $template['html'] = $html;
         //$template['javascript'] = $dashboard->getJavascript();
         

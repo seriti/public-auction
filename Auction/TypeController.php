@@ -24,7 +24,7 @@ class TypeController
         $html = $table->processTable();
         
         $template['html'] = $html;
-        $template['title'] = MODULE_LOGO.'All auctions: Lot '.TYPE_NAME;
+        $template['title'] = MODULE_LOGO.'All auctions: Lot '.MODULE_AUCTION['labels']['type'];
         
         return $this->container->view->render($response,'admin.php',$template);
     }

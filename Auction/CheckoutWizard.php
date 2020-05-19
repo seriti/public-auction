@@ -23,6 +23,7 @@ class CheckoutWizard extends Wizard
     protected $user;
     protected $temp_token;
     protected $user_id;
+    protected $table_prefix = MODULE_AUCTION['table_prefix'];
     
     //configure
     public function setup($param = []) 
@@ -72,17 +73,17 @@ class CheckoutWizard extends Wizard
             $ship_location_id = $this->form['ship_location_id'];
             $pay_option_id = $this->form['pay_option_id'];
 
-            $cart = Helpers::calcCartTotals($this->db,TABLE_PREFIX_AUCTION,$this->temp_token,$ship_option_id,$ship_location_id,$error_tmp);
+            $cart = Helpers::calcCartTotals($this->db,$this->table_prefix,$this->temp_token,$ship_option_id,$ship_location_id,$error_tmp);
             if($cart == 0) {
                $error = 'Could not get cart details. ';
                if($this->debug) $error .= $error_tmp; 
                $this->addError($error); 
             } else {
-                $sql = 'SELECT name FROM '.TABLE_PREFIX_AUCTION.'ship_location WHERE location_id = "'.$this->db->escapeSql($ship_location_id).'" ';
+                $sql = 'SELECT name FROM '.$this->table_prefix.'ship_location WHERE location_id = "'.$this->db->escapeSql($ship_location_id).'" ';
                 $this->data['ship_location'] = $this->db->readSqlValue($sql);
-                $sql = 'SELECT name FROM '.TABLE_PREFIX_AUCTION.'ship_option WHERE option_id = "'.$this->db->escapeSql($ship_option_id).'" ';
+                $sql = 'SELECT name FROM '.$this->table_prefix.'ship_option WHERE option_id = "'.$this->db->escapeSql($ship_option_id).'" ';
                 $this->data['ship_option'] = $this->db->readSqlValue($sql);
-                $sql = 'SELECT name,type_id,config FROM '.TABLE_PREFIX_AUCTION.'pay_option WHERE option_id = "'.$this->db->escapeSql($pay_option_id).'" ';
+                $sql = 'SELECT name,type_id,config FROM '.$this->table_prefix.'pay_option WHERE option_id = "'.$this->db->escapeSql($pay_option_id).'" ';
                 $this->data['pay'] = $this->db->readSqlRecord($sql);
                 $this->data['pay_option'] = $this->data['pay']['name'];
                 
@@ -159,7 +160,7 @@ class CheckoutWizard extends Wizard
 
 
             if(!$this->errors_found) {
-                $table_extend = TABLE_PREFIX_AUCTION.'user_extend';  
+                $table_extend = $this->table_prefix.'user_extend';  
 
                 $data = [];
                 $data['user_id'] = $this->user_id;
@@ -185,7 +186,7 @@ class CheckoutWizard extends Wizard
 
             //update cart/order with all details AND erase temp_token 
             if(!$this->errors_found) {
-                $table_order = TABLE_PREFIX_AUCTION.'order';
+                $table_order = $this->table_prefix.'order';
                 $data = [];
                 //NB: assigning user_id, removing temp_token, status = ACTIVE: turns "cart" into valid order
                 $data['user_id'] = $this->user_id;
@@ -197,7 +198,7 @@ class CheckoutWizard extends Wizard
                 $where = ['temp_token' => $this->temp_token];
                 $this->db->updateRecord($table_order,$data,$where,$error_tmp);
                 if($error_tmp !== '') {
-                    $error = 'We could not update '.AUCTION_ORDER_NAME.' details.';
+                    $error = 'We could not update '.MODULE_AUCTION['labels']['order'].' details.';
                     if($this->debug) $error .= $error_tmp;
                     $this->addError($error);
                 }
@@ -205,14 +206,14 @@ class CheckoutWizard extends Wizard
 
             //finally email order details 
             if(!$this->errors_found) {
-                $subject = 'Initial '.AUCTION_ORDER_NAME.' details';
+                $subject = 'Initial '.MODULE_AUCTION['labels']['order'].' details';
                 $message = 'You will be contacted after completion of auction. Please contact us if you wish to cancel your order.';
                 $param = [];
-                Helpers::sendOrderMessage($this->db,TABLE_PREFIX_AUCTION,$this->container,$this->data['order_id'],$subject,$message,$param,$error_tmp);
+                Helpers::sendOrderMessage($this->db,$this->table_prefix,$this->container,$this->data['order_id'],$subject,$message,$param,$error_tmp);
                 if($error_tmp == '') {
-                    $this->addMessage(AUCTION_ORDER_NAME.' details sent to email address['.$this->data['user_email'].'] '); 
+                    $this->addMessage(MODULE_AUCTION['labels']['order'].' details sent to email address['.$this->data['user_email'].'] '); 
                 } else {
-                    $this->addMessage('We could not send '.AUCTION_ORDER_NAME.' details to['.$this->data['user_email'].']. Please check '.AUCTION_ORDER_NAME.' details on your account page.'); 
+                    $this->addMessage('We could not send '.MODULE_AUCTION['labels']['order'].' details to['.$this->data['user_email'].']. Please check '.MODULE_AUCTION['labels']['order'].' details on your account page.'); 
                 }
             }    
         }  
@@ -229,7 +230,7 @@ class CheckoutWizard extends Wizard
             $this->saveData('data');
 
             //get extended user info if any
-            $sql = 'SELECT * FROM '.TABLE_PREFIX_AUCTION.'user_extend WHERE user_id = "'.$this->user_id.'" ';
+            $sql = 'SELECT * FROM '.$this->table_prefix.'user_extend WHERE user_id = "'.$this->user_id.'" ';
             $user_extend = $this->db->readSqlRecord($sql);
             
             if($user_extend != 0) {

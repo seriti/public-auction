@@ -28,7 +28,7 @@ use Psr\Container\ContainerInterface;
 class LotList extends Listing
 {
     protected $auction_id;
-    protected $table_prefix;
+    protected $table_prefix = MODULE_AUCTION['table_prefix'];
     //for storing linked auction details
     protected $auction;
 
@@ -43,10 +43,8 @@ class LotList extends Listing
             $this->addSql('WHERE','T.auction_id = "'.$this->db->escapeSql($this->auction_id).'" AND T.status = "OK"');
         }
 
-        //Class accessed outside /App/Auction so cannot use TABLE_PREFIX constant
-        $module = $this->container->config->get('module','auction');
-        $this->table_prefix = $module['table_prefix'];
-        $labels = $module['labels'];
+        $labels = MODULE_AUCTION['labels'];
+        $image_access = MODULE_AUCTION['images']['access'];
         
         $currency = 'R';
 
@@ -105,7 +103,7 @@ class LotList extends Listing
         $this->addSearch(array('category_id','name','type_id','type_txt1','type_txt2','condition_id','description','index_terms'),array('rows'=>3));
 
         $this->setupListImages(array('table'=>$this->table_prefix.'file','location'=>'LOT','max_no'=>100,'manage'=>false,
-                                     'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Product','access'=>$module['images']['access'],
+                                     'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Lot','access'=>$image_access,
                                      'link_url'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
 
         $this->setupAuction();

@@ -9,16 +9,16 @@ use Seriti\Tools\Tree;
 
 class Category extends Tree
 {
-     
+    protected $row_name = MODULE_AUCTION['labels']['category'];
 
     //configure
     public function setup($param = []) 
     {
-        $param=['row_name'=>'Auction '.CATEGORY_NAME,'col_label'=>'title'];
+        $param=['row_name'=>'Auction '.$this->row_name,'col_label'=>'title'];
 
         parent::setup($param); 
 
-        $this->addMessage('NB:Order of '.CATEGORY_NAME.' is used in auction catalogues and online listings.');       
+        $this->addMessage('NB:Order of '.$this->row_name.' is used in auction catalogues and online listings.');       
 
     }
 }

@@ -1,23 +1,33 @@
 <?php 
 namespace App\Auction;
 
+use Exception;
+
 use Seriti\Tools\Record;
 use Seriti\Tools\TABLE_USER;
 
 class AccountProfile extends Record 
 {
-    protected $table_prefix = TABLE_PREFIX_AUCTION;
+    protected $table_prefix = MODULE_AUCTION['table_prefix'];
     protected $user_id = 0;
 
     //configure
     public function setup($param = []) 
     {
+        $error = '';
+
         if(isset($param['table_prefix'])) $this->table_prefix = $param['table_prefix'];
         if(isset($param['user_id'])) $this->user_id = $param['user_id'];
 
         $sql = 'SELECT extend_id FROM '.$this->table_prefix.'user_extend '.
                'WHERE user_id = "'.$this->db->escapeSql($this->user_id).'" ';
-        $extend_id = $this->db->readSqlValue($sql);       
+        $extend_id = $this->db->readSqlValue($sql,0);
+        if($extend_id === 0) {
+            $data = [];
+            $data['user_id'] = $this->user_id;
+            $extend_id = $this->db->insertRecord($this->table_prefix.'user_extend',$data,$error);
+            if($error !== '') throw new Exception('ACCOUNT_PROFILE_ERROR: Could not extend user profile.');
+        }  
 
         $param = ['record_name'=>'Profile','col_label'=>'name','record_id'=>$extend_id];
         parent::setup($param); 

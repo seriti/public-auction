@@ -5,7 +5,7 @@ use Seriti\Tools\Table;
 
 class AccountInvoiceItem extends Table 
 {
-    protected $table_prefix = TABLE_PREFIX_AUCTION;
+    protected $table_prefix = MODULE_AUCTION['table_prefix'];
     protected $user_id = 0;    
 
     //configure

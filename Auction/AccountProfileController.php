@@ -17,12 +17,12 @@ class AccountProfileController
     {
         $user = $this->container->user;
         
-        $table_name = TABLE_PREFIX_AUCTION.'user_extend'; 
+        $table_name = MODULE_AUCTION['table_prefix'].'user_extend'; 
         $record = new AccountProfile($this->container->mysql,$this->container,$table_name);
 
         $param = [];
         $param['user_id'] = $user->getId();
-        $param['table_prefix'] = TABLE_PREFIX_AUCTION;
+        $param['table_prefix'] = MODULE_AUCTION['table_prefix'];
         $record->setup($param);
         $html = $record->processRecord();
         

@@ -399,12 +399,14 @@ class HelpersReport {
             $cat_data_initial = [];
             $row = 0;
 
+            $labels = MODULE_AUCTION['labels'];
+
             if($options['layout'] === 'STANDARD') {
                 $col_width = array(10,20,30,20,60,20,20);
                 $col_type  = array('','','','','','CASH0','CASH0'); 
                
                 $cat_data_initial[0][$row] = 'Lot';
-                $cat_data_initial[1][$row] = CATEGORY_NAME;
+                $cat_data_initial[1][$row] = $labels['category'];
                 $cat_data_initial[2][$row] = 'Name';
                 $cat_data_initial[3][$row] = 'Cond.';
                 $cat_data_initial[4][$row] = 'Description';
@@ -417,7 +419,7 @@ class HelpersReport {
                 $col_type  = array('','','','','','CASH0',''); 
                
                 $cat_data_initial[0][$row] = 'Lot';
-                $cat_data_initial[1][$row] = CATEGORY_NAME;
+                $cat_data_initial[1][$row] = $labels['category'];
                 $cat_data_initial[2][$row] = 'Name';
                 $cat_data_initial[3][$row] = 'Cond.';
                 $cat_data_initial[4][$row] = 'Description';
@@ -430,7 +432,7 @@ class HelpersReport {
                 $col_type  = array('','','','','','CASH0','CASH0','','','','',''); 
                
                 $cat_data_initial[0][$row] = 'Lot';
-                $cat_data_initial[1][$row] = CATEGORY_NAME;
+                $cat_data_initial[1][$row] = $labels['category'];
                 $cat_data_initial[2][$row] = 'Name';
                 $cat_data_initial[3][$row] = 'Cond.';
                 $cat_data_initial[4][$row] = 'Description';

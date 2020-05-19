@@ -17,7 +17,7 @@ class CategoryController
 
     public function __invoke($request, $response, $args)
     {
-        $template['title'] = MODULE_LOGO.'ALL auctions: lot '.CATEGORY_NAME;
+        $template['title'] = MODULE_LOGO.'ALL auctions: lot '.MODULE_AUCTION['labels']['category'];
         
         if($this->container->user->getAccessLevel() !== 'GOD') {
             $template['html'] = '<h1>Insufficient access rights!</h1>';
@@ -27,7 +27,7 @@ class CategoryController
 
             $tree = new Category($this->container->mysql,$this->container,$table);
 
-            $param = ['row_name'=>CATEGORY_NAME,'col_label'=>'title'];
+            $param = ['row_name'=>MODULE_AUCTION['labels']['category'],'col_label'=>'title'];
             $tree->setup($param);
             $html = $tree->processTree();
             

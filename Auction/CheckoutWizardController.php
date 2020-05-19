@@ -23,13 +23,10 @@ class CheckoutWizardController
     {
         $db = $this->container->mysql; 
         $cache = $this->container->cache;
-        //defined in configPublic.php
-        //$module = $this->container->config->get('module','auction');
-        //define('TABLE_PREFIX_AUCTION',$module['table_prefix']);
-
+        
         $temp_token = $this->container->user->getTempToken();
 
-        $cart = Helpers::getCart($db,TABLE_PREFIX_AUCTION,$temp_token);
+        $cart = Helpers::getCart($db,MODULE_AUCTION['table_prefix'],$temp_token);
 
         //use temp token to identify user for duration of wizard
         $user_specific = false;
@@ -44,7 +41,7 @@ class CheckoutWizardController
         $html = $wizard->process();
 
         $template['html'] = $html;
-        $template['title'] = 'Auction <b>'.$cart['auction'].'</b> '.AUCTION_ORDER_NAME.' Checkout';
+        $template['title'] = 'Auction <b>'.$cart['auction'].'</b> '.MODULE_AUCTION['labels']['order'].' Checkout';
         //$template['javascript'] = $wizard->getJavascript();
 
         return $this->container->view->render($response,'public.php',$template);

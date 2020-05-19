@@ -35,6 +35,9 @@ class Config
 
         $user_specific = true;
         $cache->setCache('Auction',$user_specific);
+
+        //NB: Also defined in Website/ConfigPublic
+        define('MODULE_AUCTION',$module);
         
         define('TABLE_PREFIX',$module['table_prefix']);
         if(!defined('CURRENCY_ID')) define('CURRENCY_ID','ZAR');
@@ -47,17 +50,8 @@ class Config
         define('AUCTION_FEE',0.10);
         define('AUCTION_SELLER_FEE',0.20);
 
-        //NB: If S3 access = PUBLIC/PRIVATE
+        //NB: Only for S3 access = PUBLIC/PRIVATE
         define('IMAGE_ACCESS',$module['images']['access']);
-
-        define('AUCTION_ORDER_NAME',$module['labels']['order']);
-        define('CATEGORY_NAME',$module['labels']['category']);
-        //label to be used to describe type select list
-        define('TYPE_NAME',$module['labels']['type']);
-        //additional lot text fields for more flexible sorting
-        define('TYPE_TXT1',$module['labels']['type_txt1']);
-        define('TYPE_TXT2',$module['labels']['type_txt2']);
-
                 
         define('MODULE_ID','AUCTION');
         define('MODULE_LOGO','<span class="glyphicon glyphicon-shopping-cart"></span> ');

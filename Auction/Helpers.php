@@ -107,9 +107,9 @@ class Helpers {
                     $user = Self::getUserData($db,'USER_ID',$order['user_id']);
                     $error .= 'User :'.$user['name'].' ID['.$order['user_id'].'] ';
                     if($user['bid_no'] != '') $error .= 'with Bid code['.$user['bid_no'].'] ';
-                    $error .= 'Submitted a higher online bid['.$order['price'].'] in '.AUCTION_ORDER_NAME.' ID['.$order_id.']<br/>';
+                    $error .= 'Submitted a higher online bid['.$order['price'].'] in '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']<br/>';
                 }
-                $error .= 'You can change '.AUCTION_ORDER_NAME.' status to HIDE if you wish to ignore this '.AUCTION_ORDER_NAME.'.';
+                $error .= 'You can change '.MODULE_AUCTION['labels']['order'].' status to HIDE if you wish to ignore this '.MODULE_AUCTION['labels']['order'].'.';
             }
 
         } 
@@ -145,7 +145,7 @@ class Helpers {
                'SET I.status = "OUT_BID" '.
                'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" ';
         $db->executeSql($sql,$error_tmp); 
-        if($error_tmp != '') $error .= 'Could not set other users '.AUCTION_ORDER_NAME.' item status = OUT_BID for Lot['.$lot_id.'] user['.$user_id.'] '; 
+        if($error_tmp != '') $error .= 'Could not set other users '.MODULE_AUCTION['labels']['order'].' item status = OUT_BID for Lot['.$lot_id.'] user['.$user_id.'] '; 
     }
 
     public static function checkOrderUpdateOk($db,$table_prefix,$order_id,&$error)
@@ -162,14 +162,14 @@ class Helpers {
                'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
         $data = $db->readSqlRecord($sql);       
         if($data == 0) {
-            $error .= 'Could not find '.AUCTION_ORDER_NAME.' details.';
+            $error .= 'Could not find '.MODULE_AUCTION['labels']['order'].' details.';
         } else {
             $date_cut = Date::mysqlGetDate($data['date_start_live']);
             $time_now = time();
-            if($time_now >= $date_cut[0]) $error .= 'You cannot modify an '.AUCTION_ORDER_NAME.' after auction start date. ';
+            if($time_now >= $date_cut[0]) $error .= 'You cannot modify an '.MODULE_AUCTION['labels']['order'].' after auction start date. ';
 
-            if($data['status'] === 'CLOSED') $error .= 'You cannot modify a CLOSED '.AUCTION_ORDER_NAME.'. ';
-            if($data['auction_status'] === 'CLOSED') $error .= 'You cannot modify an '.AUCTION_ORDER_NAME.' for a CLOSED auction. ';
+            if($data['status'] === 'CLOSED') $error .= 'You cannot modify a CLOSED '.MODULE_AUCTION['labels']['order'].'. ';
+            if($data['auction_status'] === 'CLOSED') $error .= 'You cannot modify an '.MODULE_AUCTION['labels']['order'].' for a CLOSED auction. ';
         }
 
         if($error === '') return true; else return false;
@@ -196,7 +196,7 @@ class Helpers {
             }
             
             if($error_tmp != '') {
-                $error .= 'Could not close '.AUCTION_ORDER_NAME.'s for auction. ';
+                $error .= 'Could not close '.MODULE_AUCTION['labels']['order'].'s for auction. ';
                 if(DEBUG) $error .= $error_tmp;
             }    
         }
@@ -215,12 +215,12 @@ class Helpers {
         $totals = $db->readSqlRecord($sql);
         if($totals == 0) {
             //maybe just delete order if not closed
-            $error .= 'No '.AUCTION_ORDER_NAME.' items exist.';
+            $error .= 'No '.MODULE_AUCTION['labels']['order'].' items exist.';
         } else {
             $sql = 'UPDATE '.$table_order.' SET total_bid = "'.$totals['total_bid'].'", no_items = "'.$totals['no_items'].'" '.
                    'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
             $db->executeSql($sql,$error_tmp);
-            if($error_tmp !== '') $error = 'could not update '.AUCTION_ORDER_NAME.' totals';
+            if($error_tmp !== '') $error = 'could not update '.MODULE_AUCTION['labels']['order'].' totals';
         }
 
         if($error === '') return $totals; else return false;
@@ -252,7 +252,7 @@ class Helpers {
                'WHERE O.order_id = "'.$db->escapeSql($order_id).'" ';
         $order = $db->readSqlRecord($sql);
         if($order === 0) {
-            $error .= 'Invalid auction '.AUCTION_ORDER_NAME.' ID['.$order_id.']. ';
+            $error .= 'Invalid auction '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']. ';
         } else {
             $output['order'] = $order;
         }
@@ -262,7 +262,7 @@ class Helpers {
                'WHERE I.order_id = "'.$db->escapeSql($order_id).'" ';
         $items = $db->readSqlArray($sql);
         if($items === 0) {
-            $error .= 'Invalid or no auction lots for '.AUCTION_ORDER_NAME.' ID['.$order_id.']. ';
+            $error .= 'Invalid or no auction lots for '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']. ';
         } else {
             $output['items'] = $items;
         }
@@ -296,16 +296,16 @@ class Helpers {
        
         $data = self::getOrderDetails($db,$table_prefix,$order_id,$error_tmp);
         if($data === false or $error_tmp !== '') {
-            $error .= 'Could not get '.AUCTION_ORDER_NAME.' details: '.$error_tmp;
+            $error .= 'Could not get '.MODULE_AUCTION['labels']['order'].' details: '.$error_tmp;
         } else {
-            if($data['order']['user_id'] == 0 or $data['order']['user_email'] === '') $error .= 'No user data linked to '.AUCTION_ORDER_NAME;
+            if($data['order']['user_id'] == 0 or $data['order']['user_email'] === '') $error .= 'No user data linked to '.MODULE_AUCTION['labels']['order'];
         }    
 
         if($error === '') {
             $mail_from = ''; //will use default MAIL_FROM
             $mail_to = $data['order']['user_email'];
 
-            $mail_subject = SITE_NAME.' '.AUCTION_ORDER_NAME.' ID['.$order_id.'] ';
+            $mail_subject = SITE_NAME.' '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.'] ';
 
             if($subject !== '') $mail_subject .= ': '.$subject;
             
@@ -317,7 +317,7 @@ class Helpers {
             //do not want bootstrap class default
             $html_param = ['class'=>''];
 
-            $mail_body .= '<h3>'.AUCTION_ORDER_NAME.' lots:</h3>'.Html::arrayDumpHtml($data['items'],$html_param);
+            $mail_body .= '<h3>'.MODULE_AUCTION['labels']['order'].' lots:</h3>'.Html::arrayDumpHtml($data['items'],$html_param);
 
             /* Payments lonked to invoices NOT orders
             if($data['payments'] !== 0) {
@@ -329,7 +329,7 @@ class Helpers {
             
             $mail->sendEmail($mail_from,$mail_to,$mail_subject,$mail_body,$error_tmp,$mail_param);
             if($error_tmp != '') { 
-                $error .= 'Error sending '.AUCTION_ORDER_NAME.' details to email['. $mail_to.']:'.$error_tmp; 
+                $error .= 'Error sending '.MODULE_AUCTION['labels']['order'].' details to email['. $mail_to.']:'.$error_tmp; 
             }
         }
 
@@ -341,7 +341,7 @@ class Helpers {
     {
         $html = '';
 
-        if(!isset($param['access'])) $param['access'] = 'PUBLIC';
+        if(!isset($param['access'])) $param['access'] = MODULE_AUCTION['images']['access'];
 
         $sql = 'SELECT name,description '.
                'FROM '.$table_prefix.'lot '.
@@ -362,9 +362,8 @@ class Helpers {
         $images = $db->readSqlArray($sql);
         if($images != 0) {
             //setup amazon links
-            $s3_param['access'] = $param['access'];
             foreach($images as $id => $image) {
-                $url = $s3->getS3Url($image['file_name'],$s3_param);
+                $url = $s3->getS3Url($image['file_name'],['access'=>$param['access']]);
                 $images[$id]['src'] = $url;
             }
 
@@ -388,9 +387,12 @@ class Helpers {
     }
 
     
-    public static function getLotSummary($db,$table_prefix,$s3,$lot_id)
+    public static function getLotSummary($db,$table_prefix,$s3,$lot_id,$param = [])
     {
         $html = '';
+
+        if(!isset($param['access'])) $param['access'] = MODULE_AUCTION['images']['access'];
+        
         $no_image_src = BASE_URL.'images/no_image.png';
 
         $sql = 'SELECT lot_id,name,description,price_reserve,status '.
@@ -412,7 +414,7 @@ class Helpers {
                'ORDER BY location_rank, file_date DESC LIMIT 1';
         $image = $db->readSqlRecord($sql);
         if($image != 0) {
-            $url = $s3->getS3Url($image['file_name']);
+            $url = $s3->getS3Url($image['file_name'],['access'=>$param['access']]);
             $title = $image['name'];
         } else {
             $url = $no_image_src;
@@ -661,7 +663,7 @@ class Helpers {
             $order_id = $db->insertRecord($table,$data,$error); 
         } else {
             if($order['auction_id'] !== $auction_id) {
-                $error = 'Your auction '.AUCTION_ORDER_NAME.' cart is currently in use for another auction. Complete that '.AUCTION_ORDER_NAME.' first, or delete current '.AUCTION_ORDER_NAME.' cart contents.';
+                $error = 'Your auction '.MODULE_AUCTION['labels']['order'].' cart is currently in use for another auction. Complete that '.MODULE_AUCTION['labels']['order'].' first, or delete current '.MODULE_AUCTION['labels']['order'].' cart contents.';
             } else {
                 $order_id = $order['order_id'];
             }
@@ -747,10 +749,10 @@ class Helpers {
                 }
 
                 if($error_tmp !== '') {
-                    $error .= 'Could not update '.AUCTION_ORDER_NAME.' item: '.$error_tmp;
-                    $message .= 'Could not save '.AUCTION_ORDER_NAME.' item. ';
+                    $error .= 'Could not update '.MODULE_AUCTION['labels']['order'].' item: '.$error_tmp;
+                    $message .= 'Could not save '.MODULE_AUCTION['labels']['order'].' item. ';
                 }  else {
-                    $message .= $lot['name'].': Successfuly added to your '.AUCTION_ORDER_NAME.'. ';
+                    $message .= $lot['name'].': Successfuly added to your '.MODULE_AUCTION['labels']['order'].'. ';
                 }  
             }
         }    

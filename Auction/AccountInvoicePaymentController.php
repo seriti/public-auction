@@ -23,7 +23,6 @@ class AccountInvoicePaymentController
         $user = $this->container->user;
 
         //NB: TABLE_PREFIX constant not applicable as not called within admin module
-        //$table_prefix = TABLE_PREFIX_AUCTION;
         $module = $this->container->config->get('module','auction');
         $table_prefix = $module['table_prefix'];
        

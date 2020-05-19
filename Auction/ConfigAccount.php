@@ -53,7 +53,7 @@ class ConfigAccount
             return $response->withRedirect('/'.$redirect_route);
         }
 
-        $order_name = AUCTION_ORDER_NAME.'s';
+        $order_name = MODULE_AUCTION['labels']['order'].'s';
 
         $routes = ['dashboard'=>'Dashboard','profile'=>'Profile','order'=>$order_name,'invoice'=>'Invoices'];
         $submenu_html = $menu->buildNav($routes,URL_CLEAN_LAST);

@@ -6,6 +6,8 @@ use Seriti\Tools\Task as SeritiTask;
 
 class Task extends SeritiTask
 {
+    protected $labels = MODULE_AUCTION['labels'];
+
     //configure
     public function setup($param = []) 
     {
@@ -23,8 +25,8 @@ class Task extends SeritiTask
         $this->addTask('LOT','LOT_SELLER','Manage lot sellers'); 
         $this->addTask('LOT','LOT_CONDITION','Manage lot conditions options');    
         $this->addTask('LOT','LOT_INDEX','Manage lot index terms'); 
-        $this->addTask('LOT','LOT_CATEGORY','Manage lot '.CATEGORY_NAME); 
-        $this->addTask('LOT','LOT_TYPE','Manage lot '.TYPE_NAME); 
+        $this->addTask('LOT','LOT_CATEGORY','Manage lot '.$this->labels['category']); 
+        $this->addTask('LOT','LOT_TYPE','Manage lot '.$this->labels['type']); 
 
         if($login_user->getAccessLevel() === 'GOD') {
             $this->addBlock('SHIP',1,2,'Setup shipping');

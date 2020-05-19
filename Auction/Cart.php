@@ -10,7 +10,7 @@ use App\Auction\Helpers;
 
 class Cart extends Table 
 {
-    protected $table_prefix = 'auc_';
+    protected $table_prefix = MODULE_AUCTION['table_prefix'];
     protected $order_id;
     protected $auction_id;
     
@@ -21,7 +21,7 @@ class Cart extends Table
         $table_param = ['row_name'=>'Cart item','col_label'=>'lot_id','table_edit_all'=>true,'verify_csrf'=>false];
         parent::setup($table_param);
        
-        if(isset($param['table_prefix'])) $this->table_prefix = $param['table_prefix'];
+        //if(isset($param['table_prefix'])) $this->table_prefix = $param['table_prefix'];
         $this->order_id = $param['order_id'];
         $this->auction_id = $param['auction_id'];
 

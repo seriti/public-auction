@@ -10,7 +10,8 @@ use Seriti\Tools\Audit;
 
 class Lot extends Table 
 {
-    
+    protected $labels = MODULE_AUCTION['labels'];
+
     //configure
     public function setup($param = []) 
     {
@@ -23,10 +24,10 @@ class Lot extends Table
 
         $this->addTableCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'seller_id','type'=>'INTEGER','title'=>'Seller','join'=>'name FROM '.TABLE_PREFIX.'seller WHERE seller_id'));
-        $this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>CATEGORY_NAME,'join'=>'title FROM '.TABLE_PREFIX.'category WHERE id'));
-        $this->addTableCol(array('id'=>'type_id','type'=>'INTEGER','title'=>TYPE_NAME,'join'=>'name FROM '.TABLE_PREFIX.'type WHERE type_id'));
-        $this->addTableCol(array('id'=>'type_txt1','type'=>'STRING','title'=>TYPE_TXT1,'required'=>false));
-        $this->addTableCol(array('id'=>'type_txt2','type'=>'STRING','title'=>TYPE_TXT2,'required'=>false));
+        $this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$this->labels['type'],'join'=>'title FROM '.TABLE_PREFIX.'category WHERE id'));
+        $this->addTableCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$this->labels['type_txt1'],'join'=>'name FROM '.TABLE_PREFIX.'type WHERE type_id'));
+        $this->addTableCol(array('id'=>'type_txt1','type'=>'STRING','title'=>$this->labels['type_txt1'],'required'=>false));
+        $this->addTableCol(array('id'=>'type_txt2','type'=>'STRING','title'=>$this->labels['type_txt2'],'required'=>false));
         $this->addTableCol(array('id'=>'name','type'=>'STRING','title'=>'Lot Name','hint'=>'Lots are ordered by category and then name'));
         $this->addTableCol(array('id'=>'condition_id','type'=>'INTEGER','title'=>'Condition','join'=>'name FROM '.TABLE_PREFIX.'condition WHERE condition_id'));
         $this->addTableCol(array('id'=>'description','type'=>'TEXT','title'=>'Lot Description','list'=>false));
@@ -44,8 +45,8 @@ class Lot extends Table
         $this->addSql('JOIN','JOIN '.TABLE_PREFIX.'condition AS CN ON(T.condition_id = CN.condition_id)');
 
         //$this->addSortOrder('CT.rank,T.name','Category, then Name');
-        //$this->addSortOrder('CT.rank,T.name',CATEGORY_NAME.', then Name');
-        $this->addSortOrder('CT.rank,T.type_txt1,T.type_txt2,CN.sort',CATEGORY_NAME.', then '.TYPE_TXT1.', then '.TYPE_TXT2.', then Condition');
+        //$this->addSortOrder('CT.rank,T.name',$this->labels['category'].', then Name');
+        $this->addSortOrder('CT.rank,T.type_txt1,T.type_txt2,CN.sort',$this->labels['category'].', then '.$this->labels['type_txt1'].', then '.$this->labels['type_txt2'].', then Condition');
         $this->addSortOrder('T.lot_id DESC','Order of creation, most recent first.','DEFAULT');
 
 
