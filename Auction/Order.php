@@ -14,9 +14,9 @@ class Order extends Table
         $param = ['row_name'=>MODULE_AUCTION['labels']['order'],'col_label'=>'order_id'];
         parent::setup($param);
          
-        $this->addForeignKey(array('table'=>TABLE_PREFIX.'order_item','col_id'=>'order_id','message'=>'Order lots'));
-        $this->addForeignKey(array('table'=>TABLE_PREFIX.'order_message','col_id'=>'order_id','message'=>'Order message'));
-        $this->addForeignKey(array('table'=>TABLE_PREFIX.'payment','col_id'=>'order_id','message'=>'Order Payment'));
+        //$this->addForeignKey(array('table'=>TABLE_PREFIX.'order_item','col_id'=>'order_id','message'=>MODULE_AUCTION['labels']['order'].' lots'));
+        $this->addForeignKey(array('table'=>TABLE_PREFIX.'order_message','col_id'=>'order_id','message'=>MODULE_AUCTION['labels']['order'].' messages'));
+        $this->addForeignKey(array('table'=>TABLE_PREFIX.'invoice','col_id'=>'order_id','message'=>MODULE_AUCTION['labels']['order'].' Invoice'));
 
         $this->addTableCol(array('id'=>'order_id','type'=>'INTEGER','title'=>MODULE_AUCTION['labels']['order'].' ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'User','join'=>'CONCAT(name,": ",email) FROM '.TABLE_USER.' WHERE user_id'));

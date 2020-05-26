@@ -22,7 +22,7 @@ class Dashboard extends DashboardTool
         $this->addBlock('AUCTION',2,1,'Auction processes');
         $this->addItem('AUCTION','Capture multiple auction results',['link'=>'lot_auction']);
         $this->addItem('AUCTION','Invoice a user/order',['link'=>'invoice_wizard']);
-        //$this->addItem('AUCTION','Process a Payment',['link'=>'payment_wizard']);
+        $this->addItem('AUCTION','Assign Lot numbers',['link'=>'lot_no']);
 
         $this->addBlock('USER',1,2,'System Users');
         $this->addItem('USER','User settings',['link'=>'user_extend']);

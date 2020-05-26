@@ -40,7 +40,9 @@ class SetupData extends SetupModuledata
                               `name` varchar(250) NOT NULL,
                               `summary` text NOT NULL,
                               `description` text NOT NULL,
+                              `postal_only` tinyint(1) NOT NULL,
                               `date_start_postal` DATETIME NOT NULL,
+                              `date_end_postal` DATETIME NOT NULL,
                               `date_start_live` DATETIME NOT NULL,
                               `status` varchar(64) NOT NULL,
                                PRIMARY KEY (`auction_id`)
@@ -49,6 +51,7 @@ class SetupData extends SetupModuledata
         $this->addCreateSql('lot',
                             'CREATE TABLE `TABLE_NAME` (
                               `lot_id` int(11) NOT NULL AUTO_INCREMENT,
+                              `lot_no` int(11) NOT NULL,
                               `auction_id` int(11) NOT NULL,
                               `seller_id` int(11) NOT NULL,
                               `category_id` int(11) NOT NULL,

@@ -50,8 +50,8 @@ class Config
         define('AUCTION_FEE',0.10);
         define('AUCTION_SELLER_FEE',0.20);
 
-        //NB: Only for S3 access = PUBLIC/PRIVATE
-        define('IMAGE_ACCESS',$module['images']['access']);
+        //defines access and resize parameters
+        define('IMAGE_CONFIG',$module['images']);
                 
         define('MODULE_ID','AUCTION');
         define('MODULE_LOGO','<span class="glyphicon glyphicon-shopping-cart"></span> ');

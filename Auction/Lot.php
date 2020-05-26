@@ -23,6 +23,7 @@ class Lot extends Table
         $this->addForeignKey(array('table'=>TABLE_PREFIX.'order_item','col_id'=>'lot_id','message'=>'Auction Order item'));
 
         $this->addTableCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
+        $this->addTableCol(array('id'=>'lot_no','type'=>'INTEGER','title'=>'Catalog No.','edit'=>false));
         $this->addTableCol(array('id'=>'seller_id','type'=>'INTEGER','title'=>'Seller','join'=>'name FROM '.TABLE_PREFIX.'seller WHERE seller_id'));
         $this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$this->labels['type'],'join'=>'title FROM '.TABLE_PREFIX.'category WHERE id'));
         $this->addTableCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$this->labels['type_txt1'],'join'=>'name FROM '.TABLE_PREFIX.'type WHERE type_id'));
@@ -66,11 +67,11 @@ class Lot extends Table
         $this->addSelect('type_id','SELECT type_id,name FROM '.TABLE_PREFIX.'type WHERE status <> "HIDE" ORDER BY sort');
 
 
-        $this->addSearch(array('type_id','type_txt1','type_txt2','name','description','category_id','index_terms','postal_only','price_reserve','seller_id','status'),array('rows'=>3));
+        $this->addSearch(array('lot_id','lot_no','type_id','type_txt1','type_txt2','name','description','category_id','index_terms','postal_only','price_reserve','seller_id','status'),array('rows'=>3));
 
         $this->setupImages(array('table'=>TABLE_PREFIX.'file','location'=>'LOT','max_no'=>10,
                                   'icon'=>'<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>&nbsp;manage',
-                                  'list'=>true,'list_no'=>1,'storage'=>STORAGE,'access'=>IMAGE_ACCESS,
+                                  'list'=>true,'list_no'=>1,'storage'=>STORAGE,'access'=>IMAGE_CONFIG['access'],
                                   'link_url'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
 
     }

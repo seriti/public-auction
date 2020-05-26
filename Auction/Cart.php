@@ -18,7 +18,7 @@ class Cart extends Table
     public function setup($param = []) 
     {
         //NB: csrf verification turned off as public user can update cart without being logged in or a user at all 
-        $table_param = ['row_name'=>'Cart item','col_label'=>'lot_id','table_edit_all'=>true,'verify_csrf'=>false];
+        $table_param = ['row_name'=>'Cart bid','col_label'=>'price','table_edit_all'=>true,'verify_csrf'=>false];
         parent::setup($table_param);
        
         //if(isset($param['table_prefix'])) $this->table_prefix = $param['table_prefix'];
@@ -63,7 +63,7 @@ class Cart extends Table
 
     }
 
-    //NB: this will update cart item with latest lot totals
+    //NB: this will update cart item with latest lot totals applying any tax rules
     protected function afterUpdate($id,$context,$data) 
     {
         $error = '';
@@ -83,7 +83,6 @@ class Cart extends Table
                 if($this->debug) $error .= ': lot_id['.$item['lot_id'].'] SQL:'.$sql;
                 $this->addError($error);
             } else {
-                $data['price'] = $lot['price_reserve'];
                 //tax is a text fields which need to be converted to a numerical format
                 $data['tax'] = '';
                 $data['weight'] = $lot['weight'];

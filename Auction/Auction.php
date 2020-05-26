@@ -21,7 +21,9 @@ class Auction extends Table
         $this->addTableCol(array('id'=>'name','type'=>'STRING','title'=>'Name'));
         $this->addTableCol(array('id'=>'summary','type'=>'TEXT','title'=>'Summary'));
         $this->addTableCol(array('id'=>'description','type'=>'TEXT','title'=>'Description'));
+        $this->addTableCol(array('id'=>'postal_only','type'=>'BOOLEAN','title'=>'Postal only'));
         $this->addTableCol(array('id'=>'date_start_postal','type'=>'DATETIME','title'=>'Date start postal'));
+        $this->addTableCol(array('id'=>'date_end_postal','type'=>'DATETIME','title'=>'Date end postal'));
         $this->addTableCol(array('id'=>'date_start_live','type'=>'DATETIME','title'=>'Date start_live'));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','new'=>'NEW'));
         
@@ -29,7 +31,7 @@ class Auction extends Table
         $this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit'));
         $this->addAction(array('type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R'));
         
-        $sql_status = '(SELECT "NEW") UNION (SELECT "ACTIVE") UNION (SELECT "CLOSED") UNION (SELECT "HIDE")';
+        $sql_status = '(SELECT "NEW") UNION (SELECT "ACTIVE") UNION (SELECT "CATALOG") UNION (SELECT "CLOSED") UNION (SELECT "HIDE")';
         $this->addSelect('status',$sql_status);
         
         $this->addSearch(array('name','summary','description','date_start_postal','date_start_live','status'),array('rows'=>2));

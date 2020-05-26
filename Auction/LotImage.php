@@ -14,19 +14,19 @@ class LotImage extends Upload
                   'pop_up'=>true,
                   'col_label'=>'file_name_orig',
                   'update_calling_page'=>true,
-                  'upload_access'=>IMAGE_ACCESS,
+                  'upload_access'=>IMAGE_CONFIG['access'],
                   'prefix'=>$id_prefix];
 
         parent::setup($param);
 
         //resize parameters
         $resize = ['original'=>true,'thumb_nail'=>true,'crop'=>false,
-                   'width'=>600,'height'=>400, 
-                   'width_thumb'=>120,'height_thumb'=>80];
+                   'width'=>IMAGE_CONFIG['width'],'height'=>IMAGE_CONFIG['height'], 
+                   'width_thumb'=>IMAGE_CONFIG['width_tn'],'height_thumb'=>IMAGE_CONFIG['height_tn']];
 
         //thumbnail display parameters           
         $thumbnail = ['list_view'=>true,'edit_view'=>true,
-                      'list_width'=>120,'list_height'=>0,'edit_width'=>0,'edit_height'=>0];
+                      'list_width'=>IMAGE_CONFIG['width_tn'],'list_height'=>0,'edit_width'=>0,'edit_height'=>0];
 
         parent::setupImages(['resize'=>$resize,'thumbnail'=>$thumbnail]);
 

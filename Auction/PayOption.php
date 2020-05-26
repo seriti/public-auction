@@ -28,7 +28,7 @@ class PayOption extends Table
         $this->addSelect('type_id',['list'=>$pay_type,'list_assoc'=>true]);
 
         $status = ['OK','HIDE'];
-        $this->addSelect('status',['list'=>$status,'list_assoc'=>fals]);
+        $this->addSelect('status',['list'=>$status,'list_assoc'=>false]);
    }
 }
 ?>

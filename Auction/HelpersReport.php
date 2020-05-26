@@ -65,6 +65,9 @@ class HelpersReport {
         $table_condition = TABLE_PREFIX.'condition';
         $table_category = TABLE_PREFIX.'category';
 
+        $category_header = false;
+        $lot_no_display = true;
+
         if(!isset($options['output'])) $options['output'] = 'BROWSER';
         if(!isset($options['format'])) $options['format'] = 'PDF';
         $options['format'] = strtoupper($options['format']);
@@ -91,7 +94,7 @@ class HelpersReport {
         if($seller === 0) $error .= 'Invalid Seller['.$seller_id.'] selected.';
 
         if($error === '') {
-            $sql = 'SELECT L.lot_id,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
+            $sql = 'SELECT L.lot_id,L.lot_no,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
                           'L.bid_open,L.bid_book_top,L.bid_final,L.status, '.  
                           'CT.level AS cat_level,CT.title AS cat_name,CN.name AS `condition` '.
                    'FROM '.$table_lot.' AS L '.
@@ -145,11 +148,11 @@ class HelpersReport {
 
             $pdf->SetY(40);
             $pdf->changeFont('H1');
-            $pdf->Cell(50,$row_h,'Auction :',0,0,'R',0);
-            $pdf->Cell(50,$row_h,$auction['name'],0,0,'L',0);
+            $pdf->Cell(100,$row_h,'Auction :',0,0,'R',0);
+            $pdf->Cell(100,$row_h,$auction['name'],0,0,'L',0);
             $pdf->Ln($row_h);
-            $pdf->Cell(50,$row_h,'Seller :',0,0,'R',0);
-            $pdf->Cell(50,$row_h,$seller['name'],0,0,'L',0);
+            $pdf->Cell(100,$row_h,'Seller :',0,0,'R',0);
+            $pdf->Cell(100,$row_h,$seller['name'],0,0,'L',0);
             $pdf->Ln($row_h);
             $pdf->Ln($row_h);
 
@@ -175,14 +178,16 @@ class HelpersReport {
                 if($lot['cat_name'] !== $category and $lot['cat_level'] === '1') {
                     if($category !== '') {
                         //top level category header
-                        $pdf->Ln($row_h);
-                        $pdf->changeFont('H1');
-                        $pdf->Cell(0,$row_h,$category.':',0,0,'L',0);
-                        $pdf->Ln($row_h);
-                        //all loyts in category
+                        if($category_header) {
+                            $pdf->Ln($row_h);
+                            $pdf->changeFont('H1');
+                            $pdf->Cell(0,$row_h,$category.':',0,0,'L',0);
+                            $pdf->Ln($row_h);
+                        }
+                        //all lots in category
                         $pdf->changeFont('TEXT');
                         $pdf->arrayDrawTable($cat_data,$row_h,$col_width,$col_type,'L',$pdf_options);
-                        $pdf->ln($row_h); 
+                        if($category_header) $pdf->ln($row_h);
                     }
                     
 
@@ -193,7 +198,8 @@ class HelpersReport {
 
                 $row++;
                 if($lot['postal_only']) $postal = '(***Postal only***)'; else $postal = '';
-                $cat_data[0][$row] = $lot_id;
+                if($lot_no_display) $lot_str = $lot['lot_no']; else $lot_str = $lot_id;
+                $cat_data[0][$row] = $lot_str;
                 $cat_data[1][$row] = $lot['cat_name'];
                 $cat_data[2][$row] = utf8_decode($lot['name'].': '.$lot['description']).$postal;
                 $cat_data[3][$row] = CURRENCY_SYMBOL.$lot['price_reserve'];
@@ -218,10 +224,12 @@ class HelpersReport {
             }
 
             //final category block
-            $pdf->Ln($row_h);
-            $pdf->changeFont('H1');
-            $pdf->Cell(0,$row_h,$category.':',0,0,'L',0);
-            $pdf->Ln($row_h);
+            if($category_header) {
+                $pdf->Ln($row_h);
+                $pdf->changeFont('H1');
+                $pdf->Cell(0,$row_h,$category.':',0,0,'L',0);
+                $pdf->Ln($row_h);    
+            }
             //all lots in category
             $pdf->changeFont('TEXT');
             $pdf->arrayDrawTable($cat_data,$row_h,$col_width,$col_type,'L',$pdf_options);
@@ -278,6 +286,9 @@ class HelpersReport {
         $table_condition = TABLE_PREFIX.'condition';
         $table_category = TABLE_PREFIX.'category';
 
+        $category_header = false;
+        $lot_no_display = true;
+        
         if(!isset($options['output'])) $options['output'] = 'BROWSER';
         if(!isset($options['format'])) $options['format'] = 'PDF';
         $options['format'] = strtoupper($options['format']);
@@ -291,13 +302,13 @@ class HelpersReport {
         if($auction_id === 'ALL') {
             $error .= 'Cannot generate auction document for ALL auctions.';
         } else {
-            $sql = 'SELECT auction_id,name,summary,description,date_start_postal,date_start_live,status '.
+            $sql = 'SELECT auction_id,name,summary,description,postal_only,date_start_postal,date_end_postal,date_start_live,status '.
                    'FROM '.TABLE_PREFIX.'auction WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
             $auction = $db->readSqlRecord($sql,$db); 
             if($auction === 0) {
                 $error .= 'Invalid Auction['.$auction_id.'] selected.';
             } else {
-                $sql = 'SELECT L.lot_id,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
+                $sql = 'SELECT L.lot_id,L.lot_no,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
                               'L.bid_open,L.bid_book_top,L.bid_final,L.status, '.  
                               'CT.level AS cat_level,CT.title AS cat_name,CN.name AS `condition` '.
                        'FROM '.$table_lot.' AS L '.
@@ -338,6 +349,7 @@ class HelpersReport {
         //lot block setup
         $pdf_options = [];
         $pdf_options['header_align'] = 'L'; 
+
         $lot_page = []; 
         $index_terms = [];
 
@@ -359,27 +371,33 @@ class HelpersReport {
 
             $row_h = 5;
 
-            $pdf->SetY(40);
+            $pdf->SetY(20);
             $pdf->changeFont('H1');
-            $pdf->Cell(50,$row_h,'Auction :',0,0,'R',0);
-            $pdf->Cell(50,$row_h,$auction['name'],0,0,'L',0);
+            $pdf->Cell(100,$row_h,'Auction :',0,0,'R',0);
+            $pdf->Cell(100,$row_h,$auction['name'],0,0,'L',0);
+            $pdf->Ln($row_h);
+            $pdf->Cell(100,$row_h,'Price currency :',0,0,'R',0);
+            $pdf->Cell(100,$row_h,CURRENCY_ID,0,0,'L',0);
             $pdf->Ln($row_h);
             $pdf->Ln($row_h);
 
+            /*
             $pdf->Cell(50,$row_h,'Summary :',0,0,'R',0);
             $pdf->MultiCell(120,$row_h,$auction['summary'],0,'L',0);
-            //$pdf->Cell(50,$row_h,$auction['summary'],0,0,'L',0);
             $pdf->Ln($row_h);
             $pdf->Cell(50,$row_h,'Description :',0,0,'R',0);
             $pdf->MultiCell(120,$row_h,$auction['description'],0,'L',0);      
-            //$pdf->Cell(50,$row_h,$auction['description'],0,0,'L',0);
             $pdf->Ln($row_h);
-            $pdf->Cell(50,$row_h,'Start date POSTAL :',0,0,'R',0);
-            $pdf->Cell(50,$row_h,Date::formatDate($auction['date_start_postal']),0,0,'L',0);
+            */
+            
+            $pdf->Cell(100,$row_h,'End date POSTAL :',0,0,'R',0);
+            $pdf->Cell(100,$row_h,Date::formatDate($auction['date_end_postal']),0,0,'L',0);
             $pdf->Ln($row_h);
-            $pdf->Cell(50,$row_h,'Start date LIVE :',0,0,'R',0);
-            $pdf->Cell(50,$row_h,Date::formatDate($auction['date_start_live']),0,0,'L',0);
-            $pdf->Ln($row_h);
+            if(!$auction['postal_only']) {
+                $pdf->Cell(100,$row_h,'Start date LIVE :',0,0,'R',0);
+                $pdf->Cell(100,$row_h,Date::formatDate($auction['date_start_live']),0,0,'L',0);
+                $pdf->Ln($row_h);
+            }
             $pdf->Ln($row_h);
            
             //need to add some images here??
@@ -402,7 +420,7 @@ class HelpersReport {
             $labels = MODULE_AUCTION['labels'];
 
             if($options['layout'] === 'STANDARD') {
-                $col_width = array(10,20,30,20,60,20,20);
+                $col_width = array(10,20,30,10,100,10,10);
                 $col_type  = array('','','','','','CASH0','CASH0'); 
                
                 $cat_data_initial[0][$row] = 'Lot';
@@ -410,34 +428,34 @@ class HelpersReport {
                 $cat_data_initial[2][$row] = 'Name';
                 $cat_data_initial[3][$row] = 'Cond.';
                 $cat_data_initial[4][$row] = 'Description';
-                $cat_data_initial[5][$row] = 'Reserve';
-                $cat_data_initial[6][$row] = 'Estimate';
+                $cat_data_initial[5][$row] = 'Res.';
+                $cat_data_initial[6][$row] = 'Est.';
             }
 
             if($options['layout'] === 'REALISED') {
-                $col_width = array(10,20,30,20,60,20,20);
+                $col_width = array(10,20,30,10,100,10,10);
                 $col_type  = array('','','','','','CASH0',''); 
                
                 $cat_data_initial[0][$row] = 'Lot';
                 $cat_data_initial[1][$row] = $labels['category'];
                 $cat_data_initial[2][$row] = 'Name';
-                $cat_data_initial[3][$row] = 'Cond.';
+                $cat_data_initial[3][$row] = 'Con.';
                 $cat_data_initial[4][$row] = 'Description';
                 $cat_data_initial[5][$row] = 'Reserve';
                 $cat_data_initial[6][$row] = 'Realised';
             }
 
             if($options['layout'] === 'MASTER') {
-                $col_width = array(10,20,30,20,60,20,20,20,20,20,20,20);
+                $col_width = array(10,20,30,10,100,10,10,20,20,20,20,10);
                 $col_type  = array('','','','','','CASH0','CASH0','','','','',''); 
                
                 $cat_data_initial[0][$row] = 'Lot';
                 $cat_data_initial[1][$row] = $labels['category'];
                 $cat_data_initial[2][$row] = 'Name';
-                $cat_data_initial[3][$row] = 'Cond.';
+                $cat_data_initial[3][$row] = 'Con.';
                 $cat_data_initial[4][$row] = 'Description';
-                $cat_data_initial[5][$row] = 'Reserve';
-                $cat_data_initial[6][$row] = 'Estimate';
+                $cat_data_initial[5][$row] = 'Res.';
+                $cat_data_initial[6][$row] = 'Est.';
                 $cat_data_initial[7][$row] = 'Seller';
                 $cat_data_initial[8][$row] = 'Open@';
                 $cat_data_initial[9][$row] = 'Top book bid';
@@ -461,14 +479,21 @@ class HelpersReport {
                 if($lot['cat_name'] !== $category and $lot['cat_level'] === '1') {
                     if($category !== '') {
                         //top level category header
-                        $pdf->Ln($row_h);
-                        $pdf->changeFont('H1');
-                        $pdf->Cell(0,$row_h,$category.':',0,0,'L',0);
-                        $pdf->Ln($row_h);
-                        //all loyts in category
+                        if($category_header) {
+                            $pdf->Ln($row_h);
+                            $pdf->changeFont('H1');
+                            $pdf->Cell(0,$row_h,$category.':',0,0,'L',0);
+                            $pdf->Ln($row_h);
+                        }
+                        //all lots in category
                         $pdf->changeFont('TEXT');
                         $pdf->arrayDrawTable($cat_data,$row_h,$col_width,$col_type,'L',$pdf_options);
-                        $pdf->ln($row_h); 
+                        if($category_header) {
+                            $pdf->ln($row_h); 
+                        } else {
+                            //NB want first block to have headers so only define this here
+                            $pdf_options['header_show'] = false;
+                        }     
                     }
                     
 
@@ -478,21 +503,23 @@ class HelpersReport {
                 } 
 
                 $row++;
-                if($lot['postal_only']) $postal = '(***Postal only***)'; else $postal = '';
-                $cat_data[0][$row] = $lot_id;
+                //only show postal only text if auction has both
+                if(!$auction['postal_only'] and $lot['postal_only']) $postal = '(***Postal only***)'; else $postal = '';
+                if($lot_no_display) $lot_str = $lot['lot_no']; else $lot_str = $lot_id;
+                $cat_data[0][$row] = $lot_str;
                 $cat_data[1][$row] = $lot['cat_name'];
                 $cat_data[2][$row] = $lot['name'];
                 $cat_data[3][$row] = $lot['condition'];
                 $cat_data[4][$row] = utf8_decode($lot['description']).$postal;
-                $cat_data[5][$row] = CURRENCY_SYMBOL.$lot['price_reserve'];
+                $cat_data[5][$row] = $lot['price_reserve'];
  
                 if($options['layout'] === 'STANDARD') {
-                    $cat_data[6][$row] = CURRENCY_SYMBOL.$lot['price_estimate']; 
+                    $cat_data[6][$row] = $lot['price_estimate']; 
                 }
 
                 if($options['layout'] === 'REALISED') {
                     if($lot['status'] === 'SOLD' or $lot['bid_final'] > 0) {
-                        $text = CURRENCY_SYMBOL.$lot['bid_final']; 
+                        $text = $lot['bid_final']; 
                     } else {
                         $text = 'available';
                     }
@@ -501,7 +528,7 @@ class HelpersReport {
                 }
 
                 if($options['layout'] === 'MASTER') {
-                    $cat_data[6][$row] = CURRENCY_SYMBOL.$lot['price_estimate']; 
+                    $cat_data[6][$row] = $lot['price_estimate']; 
                     $cat_data[7][$row] = '';
                     $cat_data[8][$row] = '';
                     $cat_data[9][$row] = '';
@@ -514,10 +541,12 @@ class HelpersReport {
             }
 
             //final category block
-            $pdf->Ln($row_h);
-            $pdf->changeFont('H1');
-            $pdf->Cell(0,$row_h,$category.':',0,0,'L',0);
-            $pdf->Ln($row_h);
+            if($category_header) {
+                $pdf->Ln($row_h);
+                $pdf->changeFont('H1');
+                $pdf->Cell(0,$row_h,$category.':',0,0,'L',0);
+                $pdf->Ln($row_h);
+            }    
             //all lots in category
             $pdf->changeFont('TEXT');
             $pdf->arrayDrawTable($cat_data,$row_h,$col_width,$col_type,'L',$pdf_options);

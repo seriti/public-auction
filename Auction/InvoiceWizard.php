@@ -90,7 +90,7 @@ class InvoiceWizard extends Wizard
                            'WHERE I.order_id = "'.$this->db->escapeSql($order_id).'" ';
                     $lots = $this->db->readSqlArray($sql);
                 } else {
-                    $sql = 'SELECT lot_id,name,description,bid_final,weight,volume,status '.
+                    $sql = 'SELECT lot_id,lot_no,name,description,bid_final,weight,volume,status '.
                            'FROM '.TABLE_PREFIX.'lot '.
                            'WHERE auction_id = "'.AUCTION_ID.'" AND bid_no = "'.$user['bid_no'].'" ';
                     $lots = $this->db->readSqlArray($sql);
@@ -124,7 +124,7 @@ class InvoiceWizard extends Wizard
                 foreach($lots as $lot_id => $lot) {
                     $item_no++;
                     $items[0][$item_no] = '1';
-                    $items[1][$item_no] = 'Lot['.$lot_id.'] '.$lot['name'].': '.$lot['description'];
+                    $items[1][$item_no] = 'Lot No['.$lot['lot_no'].'] ID['.$lot_id.'] '.$lot['name'].': '.$lot['description'];
                     $items[2][$item_no] = $lot['bid_final'];
                     $items[3][$item_no] = $lot['bid_final'];
                     $items[4][$item_no] = $lot_id;

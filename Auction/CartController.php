@@ -53,7 +53,9 @@ class CartController
             //display cart order totals
             
             if(strpos('list',$table->getMode()) !== false) {
-                $html .= '<p><strong>Bid total: </strong>'.$cart['total'].'</p>';
+                $totals = Helpers::getCartItemTotals($db,$table_prefix,$cart['order_id']);
+                $html .= '<p><strong>Bid total: </strong>'.CURRENCY_SYMBOL.number_format($totals['total'],2).' for '.$totals['no_items'].' lots</p>';
+
                 /*
                 $template_auction = new Template(BASE_TEMPLATE.'auction/');
                 $template_auction->data = Helpers::getCartItemTotals($db,$table_prefix,$cart['order_id']);

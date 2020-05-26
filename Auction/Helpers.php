@@ -24,6 +24,62 @@ use Psr\Container\ContainerInterface;
 //see also HelpersPayment and HelperReport
 class Helpers {
     
+    public static function setupAuctionLotNos($db,$auction_id)
+    {
+        $error = '';
+        $output = [];
+        $output['error'] = '';
+        $output['message'] = '';
+
+        $table_auction = TABLE_PREFIX.'auction';
+        $table_lot = TABLE_PREFIX.'lot';
+        $table_condition = TABLE_PREFIX.'condition';
+        $table_category = TABLE_PREFIX.'category';
+
+        $sql = 'SELECT auction_id,name,summary,status '.
+               'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+        $auction = $db->readSqlRecord($sql);
+        if($auction == 0) {
+            $output['error'] .= 'Invalid Auction ID['.$auction_id.']';
+        } else {
+            if($auction['status'] === 'CLOSED' or $auction['status'] === 'CATALOG') {
+                $output['error'] .= 'Auction['.$auction['name'].'] status is '.$auction['status'].' you cannot assign numbers.';
+            } else {
+                $sql = 'SELECT L.lot_id,L.name,L.status '.
+                       'FROM '.$table_lot.' AS L '.
+                             'JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
+                             'JOIN '.$table_category.' AS CT ON(L.category_id = CT.id) '.
+                       'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" '.
+                       'ORDER BY CT.rank,L.type_txt1,L.type_txt2,CN.sort ';
+                $lots = $db->readSqlArray($sql);
+                if($lots == 0) $output['error'] .= 'No lots found for auction!';
+            }
+        }
+
+        if($output['error'] === '') {
+            $lot_no = 0;
+            foreach($lots as $lot_id=>$lot) {
+                $lot_no++;
+
+                $sql = 'UPDATE '.$table_lot.' SET lot_no = '.$lot_no.' WHERE lot_id = '.$lot_id.' ';
+                $db->executeSql($sql,$error); 
+                if($error != '') $output['error'] .= 'Could not assign Lot no['.$lot_no.'] to Lot ID['.$lot_id.'] ';
+            }
+
+            if($output['error'] === '') {
+                $output['message'] .= 'Assigned Ltot No`s From 1 to '.$lot_no.' successfully.'; 
+
+                //want this to be audited, hence updaterecord()
+                $update = ['status'=>'CATALOG'];
+                $where = ['auction_id'=>$auction_id];
+                $db->updateRecord($table_auction,$update,$where,$error);
+                if($error != '') $output['error'] .= 'Could not CLOSE auction after assigning Lot numbers';
+            } 
+        }
+
+        return $output;
+    }
+
     public static function copyLot($db,$lot_id,$auction_id_copy,&$error)
     {
         $error = '';
@@ -257,7 +313,7 @@ class Helpers {
             $output['order'] = $order;
         }
 
-        $sql = 'SELECT I.item_id,I.lot_id,L.name,I.price,I.status,L.weight,L.volume '.
+        $sql = 'SELECT I.item_id,I.lot_id,L.lot_no,L.name,I.price,I.status,L.weight,L.volume '.
                'FROM '.$table_item.' AS I LEFT JOIN '.$table_lot.' AS L ON(I.lot_id = L.lot_id) '.
                'WHERE I.order_id = "'.$db->escapeSql($order_id).'" ';
         $items = $db->readSqlArray($sql);
@@ -391,11 +447,14 @@ class Helpers {
     {
         $html = '';
 
+        $lot_id_display = false;
+        $lot_no_display = true;
+
         if(!isset($param['access'])) $param['access'] = MODULE_AUCTION['images']['access'];
         
         $no_image_src = BASE_URL.'images/no_image.png';
 
-        $sql = 'SELECT lot_id,name,description,price_reserve,status '.
+        $sql = 'SELECT lot_id,lot_no,name,description,price_reserve,status '.
                'FROM '.$table_prefix.'lot '.
                'WHERE lot_id = "'.$db->escapeSql($lot_id).'" AND status <> "HIDE"';
         $lot = $db->readSqlRecord($sql);
@@ -403,7 +462,11 @@ class Helpers {
             $html = '<p>lot no longer available.</p>';
             return $html;
         } else {
-            $html .= '&nbsp;<strong>'.$lot['name'].' (ID:'.$lot['lot_id'].')</strong><br/>'.
+            $lot_str = '';
+            if($lot_id_display) $lot_str .= 'Lot ID['.$lot['lot_id'].'] ';
+            if($lot_no_display) $lot_str .= 'Lot No['.$lot['lot_no'].'] ';
+
+            $html .= '&nbsp;<strong>'.$lot['name'].': '.$lot_str.'</strong><br/>'.
                      '&nbsp;Reserve price: '.CURRENCY_SYMBOL.number_format($lot['price_reserve'],2);
         }
 

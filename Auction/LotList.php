@@ -44,11 +44,15 @@ class LotList extends Listing
         }
 
         $labels = MODULE_AUCTION['labels'];
-        $image_access = MODULE_AUCTION['images']['access'];
+        $images = MODULE_AUCTION['images'];
+
+        $lot_id_display = false;
+        $lot_no_display = true;
+
         
         $currency = 'R';
 
-        $image_popup = ['show'=>true,'width'=>600,'height'=>500];
+        $image_popup = ['show'=>true,'width'=>$images['width'],'height'=>$images['height']];
 
         //javascript to process add to bid form button
         //cart_icon.innerHTML = "WTF";
@@ -64,7 +68,8 @@ class LotList extends Listing
                   'action_button_text'=>'Add to '.$labels['order']]; 
         parent::setup($param);
 
-        $this->addListCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
+        $this->addListCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>$lot_id_display));
+        $this->addListCol(array('id'=>'lot_no','type'=>'INTEGER','title'=>'Lot No.','list'=>$lot_no_display));
         $this->addListCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$labels['category'],'class'=>'list_item_title','list'=>true,'tree'=>'CT','join'=>'title FROM '.$this->table_prefix.'category WHERE id'));
         $this->addListCol(array('id'=>'name','type'=>'STRING','title'=>'Name','class'=>'list_item_title'));
 
@@ -103,8 +108,8 @@ class LotList extends Listing
         $this->addSearch(array('category_id','name','type_id','type_txt1','type_txt2','condition_id','description','index_terms'),array('rows'=>3));
 
         $this->setupListImages(array('table'=>$this->table_prefix.'file','location'=>'LOT','max_no'=>100,'manage'=>false,
-                                     'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Lot','access'=>$image_access,
-                                     'link_url'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
+                                     'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Lot','access'=>$images['access'],
+                                     'link_url'=>'lot_image','link_data'=>'SIMPLE','width'=>$images['width'],'height'=>$images['height']));
 
         $this->setupAuction();
        
