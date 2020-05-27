@@ -23,8 +23,10 @@ $app->group('/admin', function () {
         $this->any('/type', \App\Auction\TypeController::class);
         $this->any('/lot', \App\Auction\LotController::class);
         $this->any('/lot_auction', \App\Auction\LotAuctionController::class);
+        $this->any('/lot_bid', \App\Auction\BidController::class);
         $this->any('/lot_image', \App\Auction\LotImageController::class);
         $this->any('/lot_info', \App\Auction\LotInfoController::class);
+        $this->any('/lot_no', \App\Auction\LotNoController::class);
         $this->any('/dashboard', \App\Auction\DashboardController::class);
         $this->any('/order', \App\Auction\OrderController::class);
         $this->any('/order_item', \App\Auction\OrderItemController::class);
@@ -42,6 +44,7 @@ $app->group('/admin', function () {
         $this->any('/ship_cost', \App\Auction\ShipCostController::class);
         $this->any('/user_extend', \App\Auction\UserExtendController::class);
     })->add(\App\Auction\Config::class);
+
 
 })->add(\App\User\ConfigAdmin::class);
 //*** END admin access ***
@@ -76,6 +79,8 @@ $app->group('/public', function () {
         $this->any('/profile', \App\Auction\AccountProfileController::class);
     })->add(\App\Auction\ConfigAccount::class);
     
+    $this->any('/download', \App\Website\PageDownloadController::class);
+    $this->any('/help', \App\Website\PublicHelpController::class);
     $this->any('/register', \App\Website\RegisterWizardController::class);
     $this->any('/logout', \App\Website\LogoutController::class);
 

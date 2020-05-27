@@ -20,6 +20,7 @@ class Dashboard extends DashboardTool
         $this->addItem('ADD','Add a new Payment',['link'=>"payment?mode=add"]);
         
         $this->addBlock('AUCTION',2,1,'Auction processes');
+        $this->addItem('AUCTION','View all bids',['link'=>'lot_bid']);
         $this->addItem('AUCTION','Capture multiple auction results',['link'=>'lot_auction']);
         $this->addItem('AUCTION','Invoice a user/order',['link'=>'invoice_wizard']);
         $this->addItem('AUCTION','Assign Lot numbers',['link'=>'lot_no']);

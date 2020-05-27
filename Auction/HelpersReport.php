@@ -288,6 +288,7 @@ class HelpersReport {
 
         $category_header = false;
         $lot_no_display = true;
+        $pdf_override = true;;
         
         if(!isset($options['output'])) $options['output'] = 'BROWSER';
         if(!isset($options['format'])) $options['format'] = 'PDF';
@@ -365,6 +366,13 @@ class HelpersReport {
             $pdf->AliasNbPages();
                 
             $pdf->setupLayout(['db'=>$db]);
+
+            //NB:override PDF settings to economise on space (no logo, small margins,size-6 text)
+            if($pdf_override) {
+                $pdf->bg_image = array('images/logo.jpeg',5,140,50,20,'YES'); //NB: YES flag turns off logo image display
+                $pdf->page_margin = array(10,10,10,10);//top,left,right,bottom!!
+                $pdf->text = array(33,33,33,'',6);
+            }
             
             //NB footer must be set before this
             $pdf->AddPage();

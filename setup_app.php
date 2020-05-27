@@ -11,6 +11,6 @@ $container['config']->set('module','auction',['name'=>'Auction manager',
                                             'route_list'=>['dashboard'=>'Dashboard','lot'=>'Lots','order'=>'Orders','invoice'=>'Invoices',
                                                            'task'=>'Tasks','report'=>'Reports'],
                                             'labels'=>['category'=>'Category','type'=>'Type','type_txt1'=>'Year','type_txt2'=>'Catalog','order'=>'Order'],
-                                            'images'=>['access'=>'PUBLIC'],
+                                            'images'=>['access'=>'PUBLIC','width'=>900,'height'=>600,'width_tn'=>120,'height_tn'=>80],
                                             'table_prefix'=>'auc_'
                                             ]);

@@ -44,17 +44,26 @@ class Helpers {
         } else {
             if($auction['status'] === 'CLOSED' or $auction['status'] === 'CATALOG') {
                 $output['error'] .= 'Auction['.$auction['name'].'] status is '.$auction['status'].' you cannot assign numbers.';
-            } else {
-                $sql = 'SELECT L.lot_id,L.name,L.status '.
-                       'FROM '.$table_lot.' AS L '.
-                             'JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
-                             'JOIN '.$table_category.' AS CT ON(L.category_id = CT.id) '.
-                       'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" '.
-                       'ORDER BY CT.rank,L.type_txt1,L.type_txt2,CN.sort ';
-                $lots = $db->readSqlArray($sql);
-                if($lots == 0) $output['error'] .= 'No lots found for auction!';
-            }
+            } 
         }
+
+        $sql = 'SELECT SUM(lot_no) FROM '.$table_lot.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+        $sum_lot_no = $db->readSqlValue($sql,0);
+        if($sum_lot_no > 0) {
+            $output['error'] .= 'Auction['.$auction['name'].'] has already assigned Lot No`s. You cannot assign numbers again.';
+        }
+
+        if($output['error'] === '') {
+            $sql = 'SELECT L.lot_id,L.name,L.status '.
+                   'FROM '.$table_lot.' AS L '.
+                         'JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
+                         'JOIN '.$table_category.' AS CT ON(L.category_id = CT.id) '.
+                   'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" '.
+                   'ORDER BY CT.rank,L.type_txt1,L.type_txt2,CN.sort ';
+            $lots = $db->readSqlArray($sql);
+            if($lots == 0) $output['error'] .= 'No lots found for auction!';
+        }    
+
 
         if($output['error'] === '') {
             $lot_no = 0;

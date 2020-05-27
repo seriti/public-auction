@@ -15,7 +15,7 @@ class UserExtend extends Table
 
         $this->addTableCol(array('id'=>'extend_id','type'=>'INTEGER','title'=>'Extend ID','key'=>true,'key_auto'=>true,'list'=>false));
         $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'User ID - name: email','edit_title'=>'User','join'=>'CONCAT(user_id," - ",name,": ",email) FROM '.TABLE_USER.' WHERE user_id'));
-        $this->addTableCol(array('id'=>'bid_no','type'=>'STRING','title'=>'Bid number','required'=>false));
+        $this->addTableCol(array('id'=>'bid_no','type'=>'STRING','title'=>'Buyer No.','required'=>false));
         $this->addTableCol(array('id'=>'seller_id','type'=>'INTEGER','title'=>'Linked seller','new'=>0));
         $this->addTableCol(array('id'=>'cell','type'=>'STRING','title'=>'Cellphone','required'=>false));
         $this->addTableCol(array('id'=>'tel','type'=>'STRING','title'=>'Telephone','required'=>false));
