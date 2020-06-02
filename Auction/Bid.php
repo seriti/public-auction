@@ -42,6 +42,7 @@ class Bid extends Table
         
         $this->addSearch(array('lot_id','status','price'),array('rows'=>2));
         $this->addSearchXtra('L.lot_no','Lot no');
+        $this->addSearchXtra('O.user_id','User ID');
         $this->addSearchXtra('U.name','User name');
         $this->addSearchXtra('U.email','User email');
     } 

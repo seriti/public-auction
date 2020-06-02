@@ -28,9 +28,11 @@ class Report extends ReportTool
         $this->addReport('SELLER_IOU','Auction Seller IOU',$param); 
 
         $param = ['input'=>['select_auction','format']];
-        $this->addReport('AUCTION_PDF','Create Auction lots listing PDF',$param); 
+        $this->addReport('AUCTION_PDF','Create Auction Lots listing PDF',$param); 
         $this->addReport('AUCTION_REALISED_PDF','Create REALISED Auction lots listing PDF',$param); 
-        $this->addReport('AUCTION_MASTER_PDF','Create MASTER Auction lots listing PDF',$param); 
+        $this->addReport('AUCTION_MASTER_PDF','Create MASTER Auction lots listing PDF',$param);
+        
+        $this->addReport('AUCTION_SELLER','Create Auction Sellers Lots listing',$param);  
         
         //$param = ['input'=>['select_user','select_month_period']];
         //$this->addReport('ORDERS_NEW','Monthly performance over period',$param);
@@ -143,6 +145,11 @@ class Report extends ReportTool
             */
 
                 
+        }
+
+        if($id === 'AUCTION_SELLER') {
+            $html .= HelpersReport::auctionSellerReport($this->db,$form['auction_id'],$options,$error);
+            if($error !== '') $this->addError($error);
         }
 
         

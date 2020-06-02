@@ -112,6 +112,7 @@ class SetupData extends SetupModuledata
                               `ship_address` text NOT NULL,
                               `ship_location_id` INT NOT NULL,
                               `ship_option_id` INT NOT NULL,
+                              `pay_option_id` INT NOT NULL,
                               PRIMARY KEY (`order_id`),
                               KEY `idx_auction_order1` (`temp_token`),
                               KEY `idx_auction_order2` (`auction_id`),

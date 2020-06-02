@@ -39,14 +39,16 @@ class Cart extends Table
         
         $this->addTableCol(array('id'=>'lot_id','type'=>'STRING','title'=>'Lot name','edit'=>false));
         $this->addTableCol(array('id'=>'price','type'=>'DECIMAL','title'=>'Bid Price'));
-        $this->addTableCol(array('id'=>'subtotal','type'=>'DECIMAL','title'=>'Subtotal','edit'=>false));
-        $this->addTableCol(array('id'=>'tax','type'=>'DECIMAL','title'=>'Tax','edit'=>false));
-        $this->addTableCol(array('id'=>'total','type'=>'DECIMAL','title'=>'Total','edit'=>false));
+        //$this->addTableCol(array('id'=>'subtotal','type'=>'DECIMAL','title'=>'Subtotal','edit'=>false));
+        //$this->addTableCol(array('id'=>'tax','type'=>'DECIMAL','title'=>'Tax','edit'=>false));
+        //$this->addTableCol(array('id'=>'total','type'=>'DECIMAL','title'=>'Total','edit'=>false));
 
         $this->addSql('WHERE','T.order_id = "'.$this->db->escapeSql($param['order_id']).'" ');
         
         $this->addAction(['type'=>'check_box','text'=>'','checked'=>true]);
         $this->addAction(['type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R']);
+
+        $this->addMessage('Bid price defaults to reserve price, Please modify and then click [Update cart] button below to save changes.');
     }
 
     protected function beforeUpdate($id,$context,&$data,&$error) 
@@ -100,6 +102,14 @@ class Cart extends Table
         }         
     } 
     
+    protected function modifyEditValue($col_id,$value,$edit_type,$param) 
+    {
+        if($col_id === 'price') {
+            $value = 'WTF';//round($value);
+        }
+
+    }
+
     protected function modifyRowValue($col_id,$data,&$value)
     {
         if($col_id === 'lot_id') {

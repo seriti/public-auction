@@ -229,9 +229,11 @@ class Helpers {
         if($data == 0) {
             $error .= 'Could not find '.MODULE_AUCTION['labels']['order'].' details.';
         } else {
+            /*
             $date_cut = Date::mysqlGetDate($data['date_start_live']);
             $time_now = time();
             if($time_now >= $date_cut[0]) $error .= 'You cannot modify an '.MODULE_AUCTION['labels']['order'].' after auction start date. ';
+            */
 
             if($data['status'] === 'CLOSED') $error .= 'You cannot modify a CLOSED '.MODULE_AUCTION['labels']['order'].'. ';
             if($data['auction_status'] === 'CLOSED') $error .= 'You cannot modify an '.MODULE_AUCTION['labels']['order'].' for a CLOSED auction. ';
@@ -332,6 +334,17 @@ class Helpers {
             $output['items'] = $items;
         }
 
+        //same as above but for presentation purposes.
+        $sql = 'SELECT I.item_id,L.lot_no,L.name,I.price AS bid '.
+               'FROM '.$table_item.' AS I LEFT JOIN '.$table_lot.' AS L ON(I.lot_id = L.lot_id) '.
+               'WHERE I.order_id = "'.$db->escapeSql($order_id).'" ';
+        $items = $db->readSqlArray($sql);
+        if($items === 0) {
+            $error .= 'Invalid or no auction lots-2 for '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']. ';
+        } else {
+            $output['items_show'] = $items;
+        }
+
         /*
         $sql = 'SELECT  date_create,amount,status '.
                'FROM '.$table_payment.' WHERE order_id = "'.$db->escapeSql($order_id).'" ';
@@ -374,7 +387,7 @@ class Helpers {
 
             if($subject !== '') $mail_subject .= ': '.$subject;
             
-            $mail_body = '<h1>Hi there '.$data['order']['user_name'].'</h1>';
+            $mail_body = '<h1>Attention: '.$data['order']['user_name'].'</h1>';
             $mail_body .= '<h2>Auction: '.$data['order']['auction'].'</h2>';
 
             if($message !== '') $mail_body .= '<h2>'.$message.'</h2>';
@@ -382,7 +395,7 @@ class Helpers {
             //do not want bootstrap class default
             $html_param = ['class'=>''];
 
-            $mail_body .= '<h3>'.MODULE_AUCTION['labels']['order'].' lots:</h3>'.Html::arrayDumpHtml($data['items'],$html_param);
+            $mail_body .= '<h3>'.MODULE_AUCTION['labels']['order'].' lots:</h3>'.Html::arrayDumpHtml($data['items_show'],$html_param);
 
             /* Payments lonked to invoices NOT orders
             if($data['payments'] !== 0) {
@@ -451,6 +464,19 @@ class Helpers {
         return $html; 
     }
 
+    public static function getLot($db,$table_prefix,$type,$lot_id,$auction_id)
+    {
+        $sql = 'SELECT * FROM '.$table_prefix.'lot WHERE ';        
+        if($type === 'LOT_NO') {
+            $sql .= 'auction_id = "'.$db->escapeSql($auction_id).'" AND lot_no = "'.$db->escapeSql($lot_id).'" ';    
+        } else {
+            $sql .= 'lot_id = "'.$db->escapeSql($lot_id).'" ';    
+        } 
+        
+        $lot = $db->readSqlRecord($sql);
+
+        return $lot;
+    }    
     
     public static function getLotSummary($db,$table_prefix,$s3,$lot_id,$param = [])
     {
@@ -548,7 +574,7 @@ class Helpers {
         $cart = $db->readSqlRecord($sql);
 
         if($cart !==0 ) {
-            $sql = 'SELECT I.item_id,I.lot_id,L.name,I.price,I.status,L.weight,L.volume '.
+            $sql = 'SELECT I.item_id,I.lot_id,L.lot_no,L.name,I.price,L.price_reserve,I.status,L.weight,L.volume '.
                    'FROM '.$table_item.' AS I LEFT JOIN '.$table_lot.' AS L ON(I.lot_id = L.lot_id) '.
                    'WHERE I.order_id = "'.$cart['order_id'].'" ';
             $cart['items'] = $db->readSqlArray($sql);
@@ -590,7 +616,7 @@ class Helpers {
     }
 
     //NB: recalculates all item and cart totals based on latest lot data, ONLY call BEFORE order finalised.
-    public static function calcCartTotals($db,$table_prefix,$temp_token,$ship_option_id,$ship_location_id,&$error)  
+    public static function calcCartTotals($db,$table_prefix,$temp_token,$ship_option_id,$ship_location_id,$pay_option_id,&$error)  
     {
         $error = '';
         $error_tmp = '';
@@ -608,6 +634,7 @@ class Helpers {
             $cart_update = [];
             $cart_update['ship_location_id'] = $ship_location_id;
             $cart_update['ship_option_id'] = $ship_option_id;
+            $cart_update['pay_option_id'] = $pay_option_id;
             $cart_update['total_bid'] = $cart['total'];
             $cart_update['no_items'] = $cart['item_count'];
             

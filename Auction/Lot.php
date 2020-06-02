@@ -154,7 +154,7 @@ class Lot extends Table
             
             $param['class'] = 'form-control input-medium input-inline';       
             $sql = 'SELECT auction_id,name FROM '.TABLE_PREFIX.'auction WHERE status <> "HIDE" ';
-            $html .= '<span id="auction_select" style="display:none"> Email address&raquo;'.
+            $html .= '<span id="auction_select" style="display:none"> To Auction&raquo;'.
                      Form::sqlList($sql,$this->db,'auction_id_copy',$auction_id_copy,$param).
                      '</span>';
                     

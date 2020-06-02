@@ -31,6 +31,9 @@ class ShipCost extends Table
         $sql_status = '(SELECT "OK") UNION (SELECT "HIDE")';
         $this->addSelect('status',$sql_status);
 
+        $this->addSelect('location_id','SELECT location_id, name FROM '.TABLE_PREFIX.'ship_location ORDER BY sort');
+        $this->addSelect('option_id','SELECT option_id, name FROM '.TABLE_PREFIX.'ship_option ORDER BY sort');
+
         //$this->addSearch(array('name','status'),array('rows'=>1));
     }
 }

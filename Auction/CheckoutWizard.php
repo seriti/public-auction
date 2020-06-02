@@ -44,7 +44,7 @@ class CheckoutWizard extends Wizard
         $this->addVariable(array('id'=>'ship_location_id','type'=>'INTEGER','title'=>'Shipping location','required'=>true));
         $this->addVariable(array('id'=>'pay_option_id','type'=>'INTEGER','title'=>'Payment option','required'=>true));
         
-        $this->addVariable(array('id'=>'user_email','type'=>'EMAIL','title'=>'Your email address','required'=>false));
+        $this->addVariable(array('id'=>'user_email','type'=>'EMAIL','title'=>'Your email address','required'=>true));
         $this->addVariable(array('id'=>'user_name','type'=>'STRING','title'=>'Your name','required'=>false));
         $this->addVariable(array('id'=>'user_cell','type'=>'STRING','title'=>'Your name','required'=>false));
         $this->addVariable(array('id'=>'user_ship_address','type'=>'TEXT','title'=>'Shipping address','required'=>true));
@@ -73,7 +73,7 @@ class CheckoutWizard extends Wizard
             $ship_location_id = $this->form['ship_location_id'];
             $pay_option_id = $this->form['pay_option_id'];
 
-            $cart = Helpers::calcCartTotals($this->db,$this->table_prefix,$this->temp_token,$ship_option_id,$ship_location_id,$error_tmp);
+            $cart = Helpers::calcCartTotals($this->db,$this->table_prefix,$this->temp_token,$ship_option_id,$ship_location_id,$pay_option_id,$error_tmp);
             if($cart == 0) {
                $error = 'Could not get cart details. ';
                if($this->debug) $error .= $error_tmp; 
@@ -106,7 +106,7 @@ class CheckoutWizard extends Wizard
             if($this->user_id == 0) {
                 $exist = $this->user->getUser('EMAIL_EXIST',$this->form['user_email']);
                 if($exist !== 0 ) {
-                    $this->addError('Your email address is already in use! Please <a href="/login">login</a> with that email, or use a different email address.');
+                    $this->addError('Your email address is already in use! Please <a href="/login">login</a> with that email, or use a different email address.',false);
                 }    
             }
 
@@ -207,7 +207,10 @@ class CheckoutWizard extends Wizard
             //finally email order details 
             if(!$this->errors_found) {
                 $subject = 'Initial '.MODULE_AUCTION['labels']['order'].' details';
-                $message = 'You will be contacted after completion of auction. Please contact us if you wish to cancel your order.';
+                $message = 'You will be contacted after completion of auction.<br/>'.
+                           'You can view your bid forms on <a href="'.BASE_URL.'public/account/dashboard">account dashboard</a> and delete bids if you wish.<br/> '.
+                           'Please contact us If you want to raise or add any bids, and we will do so on your behalf.<br/>'.
+                           'Alternatively you can simply generate another bid form. Multiple bid forms are not a problem.';
                 $param = [];
                 Helpers::sendOrderMessage($this->db,$this->table_prefix,$this->container,$this->data['order_id'],$subject,$message,$param,$error_tmp);
                 if($error_tmp == '') {

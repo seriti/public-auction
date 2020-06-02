@@ -29,6 +29,7 @@ class Order extends Table
         $this->addTableCol(array('id'=>'ship_address','type'=>'TEXT','title'=>'Shipping address','required'=>false));
         $this->addTableCol(array('id'=>'ship_location_id','type'=>'INTEGER','title'=>'Shipping location','join'=>'name FROM '.TABLE_PREFIX.'ship_location WHERE location_id'));
         $this->addTableCol(array('id'=>'ship_option_id','type'=>'INTEGER','title'=>'Shipping option','join'=>'name FROM '.TABLE_PREFIX.'ship_option WHERE option_id'));
+        $this->addTableCol(array('id'=>'pay_option_id','type'=>'INTEGER','title'=>'Payment option','join'=>'name FROM '.TABLE_PREFIX.'pay_option WHERE option_id'));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','new'=>'ACTIVE'));
         
         //order table also store cart contents before converted to an order in checkout wizard
@@ -46,9 +47,10 @@ class Order extends Table
         $this->addSelect('status',$sql_status);
         $this->addSelect('auction_id','SELECT auction_id,name FROM '.TABLE_PREFIX.'auction ORDER BY date_start_live DESC');
 
-        $this->addSelect('user_id','SELECT user_id,name FROM '.TABLE_USER.' WHERE status <> "HIDE"');
+        $this->addSelect('user_id','SELECT user_id,name FROM '.TABLE_USER.' WHERE status <> "HIDE" ORDER BY name');
         $this->addSelect('ship_location_id','SELECT location_id,name FROM '.TABLE_PREFIX.'ship_location WHERE status <> "HIDE" ORDER By sort');
         $this->addSelect('ship_option_id','SELECT option_id,name FROM '.TABLE_PREFIX.'ship_option WHERE status <> "HIDE" ORDER By sort');
+        $this->addSelect('pay_option_id','SELECT option_id,name FROM '.TABLE_PREFIX.'pay_option WHERE status <> "HIDE" ORDER By sort');
 
         $this->addSearch(array('user_id','date_create','date_update','status'),array('rows'=>1));
 

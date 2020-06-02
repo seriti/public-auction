@@ -743,6 +743,71 @@ class HelpersReport {
                     
 
         return $html;
+    }
+
+    public static function auctionSellerReport($db,$auction_id,$options = [],&$error)  
+    {
+        $error = '';
+        $error_tmp = '';
+        $html = '';
+                
+        if(!isset($options['format'])) $options['format'] = 'HTML';
+
+        if($options['format'] == 'PDF') $error .= 'PDF format not currently available for this report.';
+        
+        $doc_name_base = 'sellers_';
+        
+        if($auction_id !== 'ALL') {
+            $sql = 'SELECT auction_id,name,summary,description,date_start_postal,date_start_live,status '.
+                   'FROM '.TABLE_PREFIX.'auction WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $auction = $db->readSqlRecord($sql,$db); 
+            if($auction === 0) {
+                $error .= 'Invalid Auction['.$auction_id.'] selected.';
+            } else {
+                $auction_name = $auction['name'];
+            }
+
+            $doc_name_base .= 'auction'.$auction_id.'_'; 
+        } else {
+            $doc_name_base .= 'all_auctions_';
+            $auction_name = 'ALL auctions';
+        }
+
+        if($error !== '') return false;
+
+        $sql = 'SELECT L.seller_id, S.name, 
+                       GROUP_CONCAT(L.lot_id ORDER BY L.lot_no SEPARATOR ", ") AS Lot_ids, 
+                       GROUP_CONCAT(L.lot_no ORDER BY L.lot_no SEPARATOR ", ") AS Lot_nos,
+                       COUNT(*) AS Total_lots '.
+               'FROM '.TABLE_PREFIX.'lot AS L LEFT JOIN '.TABLE_PREFIX.'seller AS S ON(L.seller_id = S.seller_id) ';
+
+        $where = '';       
+        if($auction_id !== 'ALL') $where .= 'L.auction_id = "'.$db->escapeSql($auction_id).'" AND ';
+        if($where !== '')  $sql .= 'WHERE '.substr($where,0,-4).' ';
+
+        $sql .= 'GROUP BY L.seller_id ORDER BY S.sort, S.name ';
+
+        $sellers = $db->readSqlArray($sql);
+        if($sellers == 0) {
+            $error .= 'No sellers found matching your criteria';
+        } else {
+            if($options['format'] === 'HTML') {
+                $html = '<h2>'.$auction_name. ' seller lots sorted by lot number:</h2>';
+                $html .= Html::arrayDumpHtml($sellers,['show_key'=>true]);
+            }
+
+            if($options['format'] === 'CSV') {
+                $csv_data = '';
+
+                $doc_name = $doc_name_base.'.csv';
+
+                $csv_data = Csv::sqlArrayDumpCsv('Lot',$sellers);
+                Doc::outputDoc($csv_data,$doc_name,'DOWNLOAD');
+                exit();
+            }    
+        }            
+
+        return $html;
     }    
 
 }
