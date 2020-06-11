@@ -43,6 +43,14 @@ class LotList extends Listing
             $this->addSql('WHERE','T.auction_id = "'.$this->db->escapeSql($this->auction_id).'" AND T.status = "OK"');
         }
 
+        $this->setupAuction();
+
+
+        if($this->auction['status'] === 'CLOSED') {
+            $this->addMessage('The auction has been CLOSED');
+            $this->addMessage('You can still view lots but bidding is disabled');
+        }    
+
         $labels = MODULE_AUCTION['labels'];
         $images = MODULE_AUCTION['images'];
 
@@ -95,8 +103,10 @@ class LotList extends Listing
         $this->addSortOrder('CT.rank,T.type_txt1,T.type_txt2,CN.sort',$labels['category'].', then '.$labels['type_txt1'].', then '.$labels['type_txt2'].', then Condition','DEFAULT');
                 
         //add empty text action just to specify where Add to Order button appears
-        $this->addListAction('submit',['type'=>'text','text'=>'','pos'=>'R']);
-
+        if($this->auction['status'] !== 'CLOSED') {
+            $this->addListAction('submit',['type'=>'text','text'=>'','pos'=>'R']);    
+        }
+        
         $sql_cat = 'SELECT id,CONCAT(IF(level > 1,REPEAT("--",level - 1),""),title) FROM '.$this->table_prefix.'category  ORDER BY rank';
         $this->addSelect('category_id',$sql_cat);
 
@@ -111,7 +121,7 @@ class LotList extends Listing
                                      'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Lot','access'=>$images['access'],
                                      'link_url'=>'lot_image','link_data'=>'SIMPLE','width'=>$images['width'],'height'=>$images['height']));
 
-        $this->setupAuction();
+        
        
     }
 
@@ -132,10 +142,6 @@ class LotList extends Listing
                'FROM '.$this->table_prefix.'auction '.
                'WHERE auction_id = "'.$this->db->escapeSql($this->auction_id).'" ';
         $this->auction = $this->db->readSqlRecord($sql);
-
-        //if($this->auction['status'] <> 'ACTIVE') $this->addMessage('The auction is currently not ACTIVE');
-        if($this->auction['status'] === 'CLOSED') $this->addMessage('The auction has been CLOSED');
-
     }
 
     public function getAuction() 

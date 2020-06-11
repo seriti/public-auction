@@ -24,6 +24,102 @@ use Psr\Container\ContainerInterface;
 //see also HelpersPayment and HelperReport
 class Helpers {
     
+    //assign best online bid data and remove shopping cart items linked to auction 
+    public static function setupAuctionLotResults($db,$auction_id)
+    {
+        $error = '';
+        $output = [];
+        $output['error'] = '';
+        $output['message'] = '';
+
+        $table_auction = TABLE_PREFIX.'auction';
+        $table_lot = TABLE_PREFIX.'lot';
+        $table_order = TABLE_PREFIX.'order';
+        $table_order_item = TABLE_PREFIX.'order_item';
+                
+        $sql = 'SELECT auction_id,name,summary,status '.
+               'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+        $auction = $db->readSqlRecord($sql);
+        if($auction == 0) {
+            $output['error'] .= 'Invalid Auction ID['.$auction_id.']';
+        } else {
+            if($auction['status'] !== 'CLOSED') {
+                $output['error'] .= 'Auction['.$auction['name'].'] status['.$auction['status'].'] is not CLOSED. You can only assign lot bidding results to a CLOSED auction.';
+            } 
+        }
+        
+        //make sure lots exist 
+        if($output['error'] === '') {
+            $sql = 'SELECT L.lot_id,L.lot_no,L.name,L.status,L.bid_book_top,L.bid_final,L.buyer_id,L.bid_no '.
+                   'FROM '.$table_lot.' AS L '.
+                   'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" '.
+                   'ORDER BY L.lot_no';
+            $lots = $db->readSqlArray($sql);
+            if($lots == 0) $output['error'] .= 'No lots found to process for auction!';
+        }    
+
+        //check for any existing final bids and warn
+        if($output['error'] === '') {
+            $sql = 'SELECT SUM(bid_final) FROM '.$table_lot.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+            $sum_bid_final = $db->readSqlValue($sql,0);
+            if($sum_bid_final > 0) {
+                $output['message'] .= 'Final bids already assigned to some Lots. These lots will not be updated.<br/>';
+            }
+        }
+
+        //remove all un-processed cart items linked to auction
+        if($output['error'] === '') {
+            $sql = 'DELETE O,I FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
+                   'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.user_id = 0 AND O.temp_token <> "" ';
+            $db->executeSql($sql,$error); 
+            if($error !== '') $output['error'] .= 'Could not remove all auction shopping cart items. '.$error;
+        }    
+
+        //finally assign best bids where not done already
+        if($output['error'] === '') {
+
+            $update_i = 0;
+            foreach($lots as $lot_id=>$lot) {
+                
+                if($lot['buyer_id'] != 0) {
+                    $output['message'] .= 'Lot no['.$lot['lot_no'].'] & ID['.$lot_id.'] already assigned final bids.<br/>';
+                } else {
+                    $sql = 'SELECT O.user_id,O.date_create,I.price '.
+                           'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
+                           'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" AND O.user_id > 0 '.
+                           'ORDER BY I.price DESC, O.date_create '.
+                           'LIMIT 1';
+                    $best_bid = $db->readSqlRecord($sql); 
+
+                    //capture best bid if any
+                    if($best_bid != 0) {
+
+                        $sql = 'UPDATE '.$table_lot.' SET buyer_id = "'.$best_bid['user_id'].'", '.
+                                                         'bid_no = "'.$best_bid['user_id'].'", '.
+                                                         'bid_book_top = "'.$best_bid['price'].'", '.
+                                                         'bid_final = "'.$best_bid['price'].'" '.
+                               'WHERE lot_id = '.$lot_id.' ';
+                        $db->executeSql($sql,$error); 
+                        if($error !== '') {
+                            $output['error'] .= 'Could not assign Best Bid for Lot no['.$lot['lot_no'].'] & ID['.$lot_id.']<br/>';
+                        } else {
+                            $update_i++;
+                        }    
+                    }      
+
+                    
+                }
+                
+            }
+        }
+
+        if($output['error'] === '') {
+            $output['message'] = 'Successfully assigned final bids to <strong>'.$update_i.'</strong> lots<br/>'.$output['message'];
+        }    
+
+        return $output;
+    }
+
     public static function setupAuctionLotNos($db,$auction_id)
     {
         $error = '';
@@ -138,19 +234,19 @@ class Helpers {
         $table_order_item = $table_prefix.'order_item';
         $table_invoice_item = $table_prefix.'invoice_item';
 
-        $sql = 'SELECT auction_id,price_reserve,bid_final,buyer_id,bid_no,status '.
+        $sql = 'SELECT lot_id,lot_no,auction_id,price_reserve,bid_final,buyer_id,bid_no,status '.
                'FROM '.$table_lot.' WHERE lot_id = "'.$db->escapeSql($lot_id).'" ';
         $lot = $db->readSqlRecord($sql);
-        if($lot_id == 0) {
+        if($lot == 0) {
             $error .= 'Unrecognised Lot['.$lot_id.']';
         } else {
-            if($lot['auction_id'] !== $auction_id) $error .= 'Lot['.$lot_id.'] auction['.$lot['auction_id'].'] not same as active auction['.$auction_id.'] ';
+            if($lot['auction_id'] !== $auction_id) $error .= 'Lot No['.$lot['lot_no'].'] & ID['.$lot_id.'] auction['.$lot['auction_id'].'] not same as active auction['.$auction_id.'] ';
             if($lot['status'] === 'SOLD') {
                 $sql = 'SELECT invoice_id,price '.
                        'FROM '.$table_invoice_item.' WHERE lot_id = "'.$db->escapeSql($lot_id).'" ';
                 $invoice_item = $db->readSqlRecord($sql);
 
-                $error .= 'Lot['.$lot_id.'] has a already been SOLD, see Invoice ID['.$invoice_item['invoice_id'].'] at price['.$invoice_item['price'].'] ';
+                $error .= 'Lot No['.$lot['lot_no'].'] & ID['.$lot_id.'] has a already been SOLD, see Invoice ID['.$invoice_item['invoice_id'].'] at price['.$invoice_item['price'].'] ';
             }    
         }    
         
@@ -573,7 +669,7 @@ class Helpers {
                'WHERE C.temp_token = "'.$db->escapeSql($temp_token).'" AND C.user_id = 0 ';
         $cart = $db->readSqlRecord($sql);
 
-        if($cart !==0 ) {
+        if($cart !== 0 ) {
             $sql = 'SELECT I.item_id,I.lot_id,L.lot_no,L.name,I.price,L.price_reserve,I.status,L.weight,L.volume '.
                    'FROM '.$table_item.' AS I LEFT JOIN '.$table_lot.' AS L ON(I.lot_id = L.lot_id) '.
                    'WHERE I.order_id = "'.$cart['order_id'].'" ';

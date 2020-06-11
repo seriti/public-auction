@@ -33,6 +33,8 @@ class Report extends ReportTool
         $this->addReport('AUCTION_MASTER_PDF','Create MASTER Auction lots listing PDF',$param);
         
         $this->addReport('AUCTION_SELLER','Create Auction Sellers Lots listing',$param);  
+
+        $this->addReport('AUCTION_BUYER_INVOICE','Create Auction Buyers Invoice Lots listing',$param);  
         
         //$param = ['input'=>['select_user','select_month_period']];
         //$this->addReport('ORDERS_NEW','Monthly performance over period',$param);
@@ -149,6 +151,12 @@ class Report extends ReportTool
 
         if($id === 'AUCTION_SELLER') {
             $html .= HelpersReport::auctionSellerReport($this->db,$form['auction_id'],$options,$error);
+            if($error !== '') $this->addError($error);
+        }
+
+        if($id === 'AUCTION_BUYER_INVOICE') {
+            $pdf_name = '';
+            $html .= HelpersReport::buyerInvoiceLotsReport($this->db,$form['auction_id'],$options,$pdf_name,$error);
             if($error !== '') $this->addError($error);
         }
 

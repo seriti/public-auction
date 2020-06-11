@@ -70,7 +70,7 @@ class HelpersPayment {
 
 
     //creates invoice from invoice_wizard.php
-    public static function createInvoicePdf($db,$system,$user = [],$data = [],&$doc_name,&$error_str) {
+    public static function createInvoicePdf($db,$system,$auction_id,$user = [],$data = [],&$doc_name,&$error_str) {
         
         $error_str = '';
         $pdf_dir = BASE_UPLOAD.UPLOAD_DOCS;
@@ -80,6 +80,15 @@ class HelpersPayment {
         $invoice_no = $data['no'];
         $pdf_name = $invoice_no.'.pdf';
         $doc_name = $pdf_name;
+
+        $table_auction = TABLE_PREFIX.'auction';
+
+        $sql = 'SELECT auction_id,name,summary,status '.
+               'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+        $auction = $db->readSqlRecord($sql);
+        if($auction == 0) $error_str .= 'Invalid invoice auction ID['.$auction_id.']';
+
+        if($error_str !== '') return false;
         
         //get setup options
         $footer = $system->getDefault('AUCTION_INVOICE_FOOTER','');
@@ -98,7 +107,10 @@ class HelpersPayment {
                                  
         $pdf->SetY(40);
         $pdf->changeFont('H1');
-        $pdf->Cell(30,$row_h,'INVOICE :',0,0,'R',0);
+        $pdf->Cell(30,$row_h,'Auction :',0,0,'R',0);
+        $pdf->Cell(30,$row_h,$auction['name'],0,0,'L',0);
+        $pdf->Ln($row_h);
+        $pdf->Cell(30,$row_h,'Invoice :',0,0,'R',0);
         $pdf->Cell(30,$row_h,$data['no'],0,0,'L',0);
         $pdf->Ln($row_h);
         $pdf->Cell(30,$row_h,'To :',0,0,'R',0);
@@ -214,7 +226,7 @@ class HelpersPayment {
         if($error_str == '') { 
             $location_id = 'INV'.$invoice_id;
             $file_id = Calc::getFileId($db);
-            $file_name = $file_id.'.pdf';
+            $file_name = 'INV'.$file_id.'.pdf';
             $pdf_path_old = $pdf_dir.$doc_name;
             $pdf_path_new = $pdf_dir.$file_name;
             //rename doc to new guaranteed non-clashing name

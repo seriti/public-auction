@@ -33,7 +33,7 @@ class InvoiceWizardController
         $html = $wizard->process();
 
         $template['html'] = $html;
-        $template['title'] = MODULE_LOGO.AUCTION_NAME.': Order Invoice wizard ';
+        $template['title'] = MODULE_LOGO.AUCTION_NAME.': '.MODULE_AUCTION['labels']['order'].' Invoice wizard ';
         //$template['javascript'] = $dashboard->getJavascript();
 
         return $this->container->view->render($response,'admin.php',$template);

@@ -24,14 +24,14 @@ class LotAuction extends Table
         $this->addTableCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'lot_no','type'=>'INTEGER','title'=>'Catalog No.','edit'=>false,'list'=>true));
         $this->addTableCol(array('id'=>'name','type'=>'STRING','title'=>'Lot Name','edit'=>false));
-        $this->addTableCol(array('id'=>'description','type'=>'TEXT','title'=>'Lot Description','edit'=>false));
-        $this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>'Category','join'=>'title FROM '.TABLE_PREFIX.'category WHERE id','edit'=>false));
+        //$this->addTableCol(array('id'=>'description','type'=>'TEXT','title'=>'Lot Description','edit'=>false));
+        //$this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>'Category','join'=>'title FROM '.TABLE_PREFIX.'category WHERE id','edit'=>false));
         //$this->addTableCol(array('id'=>'postal_only','type'=>'BOOLEAN','title'=>'Postal only','edit'=>false));
         $this->addTableCol(array('id'=>'price_reserve','type'=>'DECIMAL','title'=>'Reserve Price','edit'=>false));
         $this->addTableCol(array('id'=>'bid_open','type'=>'DECIMAL','title'=>'Opening bid'));
         $this->addTableCol(array('id'=>'bid_book_top','type'=>'DECIMAL','title'=>'Bid book top'));
         $this->addTableCol(array('id'=>'bid_final','type'=>'DECIMAL','title'=>'Bid FINAL'));
-        $this->addTableCol(array('id'=>'bid_no','type'=>'STRING','title'=>'Buyer Number'));
+        $this->addTableCol(array('id'=>'bid_no','type'=>'STRING','title'=>'Buyer ID/Number'));
         $this->addTableCol(array('id'=>'buyer_id','type'=>'INTEGER','title'=>'Buyer ID','edit'=>false,'list'=>false));
         
         $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'" and T.Status <> "HIDE" ');
@@ -61,6 +61,7 @@ class LotAuction extends Table
         $error_tmp = '';
 
         //need to check all entered price data and buyer id
+        /*
         if(strtoupper(substr($data['bid_no'],0,2)) === 'ID') {
             $user_id = substr($data['bid_no'],2);
             $buyer = Helpers::getUserData($this->db,'USER_ID',$user_id);
@@ -68,6 +69,17 @@ class LotAuction extends Table
         } else {
             $buyer = Helpers::getUserData($this->db,'BID_NO',$data['bid_no']);
             if($buyer == 0) $error .= 'Invalid Bid number['.$data['bid_no'].'] entered. ';
+        }
+        */
+
+        if(strtoupper(substr($data['bid_no'],0,1)) === 'N') {
+            $bid_no = substr($data['bid_no'],1);
+            $buyer = Helpers::getUserData($this->db,'BID_NO',$bid_no);
+            if($buyer == 0) $error .= 'Invalid buyer Number['.$bid_no.'] entered. ';
+        } else {
+            $user_id = $data['bid_no'];
+            $buyer = Helpers::getUserData($this->db,'USER_ID',$user_id);
+            if($buyer == 0) $error .= 'Invalid buyer User ID['.$user_id.'] entered. ';
         }
         //assign correct user_id
         $data['buyer_id'] = $buyer['user_id'];    

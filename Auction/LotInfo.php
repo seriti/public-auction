@@ -31,7 +31,7 @@ class LotInfo
                'FROM '.TABLE_PREFIX.'order AS O JOIN '.TABLE_PREFIX.'order_item AS I ON(O.auction_id = "'.AUCTION_ID.'" AND O.order_id = I.order_id) '.
                'JOIN '.TABLE_USER.' AS U ON(O.user_id = U.user_id) '.
                'WHERE I.lot_id = "'.$this->db->escapeSql($this->lot_id).'" '.
-               'ORDER BY I.price DESC ';
+               'ORDER BY I.price DESC, O.date_create ';
         $orders = $this->db->readSqlArray($sql);
         if($orders == 0) {
             $html .= '<h2>NO online orders exist for this lot.</h2>';

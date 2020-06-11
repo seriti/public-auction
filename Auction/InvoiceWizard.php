@@ -18,7 +18,7 @@ use App\Auction\Helpers;
 class InvoiceWizard extends Wizard 
 {
     
-    protected $source = ['USER_CODE'=>'Buyer Bid no','USER_EMAIL'=>'Buyer email address','USER_ID'=>'Buyer user ID','ORDER'=>'Order ID'];
+    protected $source = ['USER_ID'=>'Buyer user ID','USER_CODE'=>'Buyer Bid no','USER_EMAIL'=>'Buyer email address','ORDER'=>'Order ID'];
 
     //configure
     public function setup($param = []) 
@@ -92,9 +92,10 @@ class InvoiceWizard extends Wizard
                 } else {
                     $sql = 'SELECT lot_id,lot_no,name,description,bid_final,weight,volume,status '.
                            'FROM '.TABLE_PREFIX.'lot '.
-                           'WHERE auction_id = "'.AUCTION_ID.'" AND bid_no = "'.$user['bid_no'].'" ';
+                           'WHERE auction_id = "'.AUCTION_ID.'" AND buyer_id = "'.$user['user_id'].'" '.
+                           'ORDER BY lot_no';
                     $lots = $this->db->readSqlArray($sql);
-                    if($lots == 0) $this->addError('No lots allocated to bid number['.$user['bid_no'].'] for auction.');    
+                    if($lots == 0) $this->addError('No lots allocated to User ID['.$user['user_id'].'] for auction.');    
                 }
                 
             }           
@@ -124,7 +125,7 @@ class InvoiceWizard extends Wizard
                 foreach($lots as $lot_id => $lot) {
                     $item_no++;
                     $items[0][$item_no] = '1';
-                    $items[1][$item_no] = 'Lot No['.$lot['lot_no'].'] ID['.$lot_id.'] '.$lot['name'].': '.$lot['description'];
+                    $items[1][$item_no] = 'Lot No['.$lot['lot_no'].'] : '.$lot['name']; //.': '.$lot['description']
                     $items[2][$item_no] = $lot['bid_final'];
                     $items[3][$item_no] = $lot['bid_final'];
                     $items[4][$item_no] = $lot_id;
@@ -251,7 +252,7 @@ class InvoiceWizard extends Wizard
             $invoice['total'] = $invoice['subtotal']+$invoice['vat'];
               
             
-            HelpersPayment::createInvoicePdf($this->db,$system,$user,$invoice,$doc_name,$error);
+            HelpersPayment::createInvoicePdf($this->db,$system,AUCTION_ID,$user,$invoice,$doc_name,$error);
             if($error != '') {
                 $this->addError('Could not create invoice pdf: '.$error); 
             } else {    
@@ -309,7 +310,7 @@ class InvoiceWizard extends Wizard
                         $info['extension'] = strtolower($info['extension']);
                         
                         $file_id = Calc::getFileId($this->db);
-                        $file_name = $file_id.'.'.$info['extension'];
+                        $file_name = 'INV'.$file_id.'.'.$info['extension'];
                         //NB Plupload placed docs in temporary folder
                         $path_old = $temp_dir.$doc['name'];
                         $path_new = $upload_dir.$file_name;
@@ -346,8 +347,8 @@ class InvoiceWizard extends Wizard
                         $path = $upload_dir.$doc['file_name'];
                         $s3_files[] = ['name'=>$file['file_name'],'path'=>$path];
                     } 
-                    
-                    $this->db->insertRecord(TABLE_PREFIX.'files',$file,$error);
+                    //NB: TABLE NAME IN CLIENT MODULE invoice wizard IS "files" FUUUUCK!!!!
+                    $this->db->insertRecord(TABLE_PREFIX.'file',$file,$error);
                     if($error != '') $this->addError('ERROR creating supporting document file record: '.$error);
                         
                 }
@@ -411,7 +412,7 @@ class InvoiceWizard extends Wizard
         //for upload of any supporting documents
         if($no == 3) {
             $param = array();
-            $param['upload_url'] = '/admin/upload?mode=upload';
+            $param['upload_url'] = '/admin/data/upload?mode=upload';
             $param['list_id'] = 'file-list';
             $param['reset_id'] = 'reset-upload';
             $param['start_id'] = 'start-upload';

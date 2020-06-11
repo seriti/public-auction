@@ -44,7 +44,7 @@ class Config
         if(!defined('CURRENCY_SYMBOL')) define('CURRENCY_SYMBOL','R');
         if(!defined('INVOICE_PREFIX')) define('INVOICE_PREFIX','INV');
         if(!defined('VAT_RATE')) define('VAT_RATE',0.15);
-        if(!defined('VAT_CALC')) define('VAT_CALC',true);
+        if(!defined('VAT_CALC')) define('VAT_CALC',false);
 
         //can define these in setup page but hard coded for now
         define('AUCTION_FEE',0.10);

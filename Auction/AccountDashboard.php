@@ -32,7 +32,7 @@ class AccountDashboard extends DashboardTool
         if($cart === 0) {
             $cart_html = 'Your cart is empty';
         } else {    
-            $cart_html = '<p>Order cart created on '.Date::formatDate($cart['date_create']).' <a href="/public/cart">'.$cart['item_count'].' items</a></p>'; 
+            $cart_html = '<p>'.$order_name.' cart created on '.Date::formatDate($cart['date_create']).' <a href="/public/cart">'.$cart['item_count'].' items</a></p>'; 
         }  
 
         $sql = 'SELECT O.order_id,O.auction_id,O.date_create,O.no_items,O.total_bid,A.name AS auction '.
@@ -61,10 +61,10 @@ class AccountDashboard extends DashboardTool
         $this->addItem('USER','<strong>Shipping Address:</strong><br/>'.nl2br($user_extend['ship_address']));
         $this->addItem('USER','<strong>Billing Address:</strong><br/>'.nl2br($user_extend['bill_address']));
         
-        $this->addBlock('CART',2,1,'Cart contents');
+        $this->addBlock('CART',2,1,'UNconfirmed '.$order_name.' Cart contents');
         $this->addItem('CART',$cart_html);  
 
-        $this->addBlock('ORDERS',2,2,'ACTIVE '.$order_name_plural);
+        $this->addBlock('ORDERS',2,2,'Active confirmed '.$order_name_plural);
         $this->addItem('ORDERS',$order_html);  
         
     }

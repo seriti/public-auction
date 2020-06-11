@@ -24,6 +24,7 @@ class Dashboard extends DashboardTool
         $this->addItem('AUCTION','Capture multiple auction results',['link'=>'lot_auction']);
         $this->addItem('AUCTION','Invoice a user/order',['link'=>'invoice_wizard']);
         $this->addItem('AUCTION','Assign Lot numbers',['link'=>'lot_no']);
+        $this->addItem('AUCTION','Assign Online bid results to lots & clear any unprocessed carts',['link'=>'lot_result']);
 
         $this->addBlock('USER',1,2,'System Users');
         $this->addItem('USER','User settings',['link'=>'user_extend']);

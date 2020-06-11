@@ -25,20 +25,20 @@ class Lot extends Table
         $this->addTableCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'lot_no','type'=>'INTEGER','title'=>'Catalog No.','edit'=>false));
         $this->addTableCol(array('id'=>'seller_id','type'=>'INTEGER','title'=>'Seller','join'=>'name FROM '.TABLE_PREFIX.'seller WHERE seller_id'));
-        $this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$this->labels['type'],'join'=>'title FROM '.TABLE_PREFIX.'category WHERE id'));
-        $this->addTableCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$this->labels['type_txt1'],'join'=>'name FROM '.TABLE_PREFIX.'type WHERE type_id'));
+        $this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$this->labels['category'],'join'=>'title FROM '.TABLE_PREFIX.'category WHERE id'));
+        $this->addTableCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$this->labels['type'],'join'=>'name FROM '.TABLE_PREFIX.'type WHERE type_id'));
         $this->addTableCol(array('id'=>'type_txt1','type'=>'STRING','title'=>$this->labels['type_txt1'],'required'=>false));
         $this->addTableCol(array('id'=>'type_txt2','type'=>'STRING','title'=>$this->labels['type_txt2'],'required'=>false));
         $this->addTableCol(array('id'=>'name','type'=>'STRING','title'=>'Lot Name','hint'=>'Lots are ordered by category and then name'));
         $this->addTableCol(array('id'=>'condition_id','type'=>'INTEGER','title'=>'Condition','join'=>'name FROM '.TABLE_PREFIX.'condition WHERE condition_id'));
         $this->addTableCol(array('id'=>'description','type'=>'TEXT','title'=>'Lot Description','list'=>false));
         $this->addTableCol(array('id'=>'index_terms','type'=>'TEXT','title'=>'Index on terms','hint'=>'Use comma to separate multiple index terms for catalogue index','required'=>false));
-        $this->addTableCol(array('id'=>'postal_only','type'=>'BOOLEAN','title'=>'Postal only'));
+        $this->addTableCol(array('id'=>'postal_only','type'=>'BOOLEAN','title'=>'Postal only','list'=>false));
         $this->addTableCol(array('id'=>'price_reserve','type'=>'DECIMAL','title'=>'Reserve Price'));
         $this->addTableCol(array('id'=>'price_estimate','type'=>'DECIMAL','title'=>'Estimate Price'));
         $this->addTableCol(array('id'=>'bid_final','type'=>'DECIMAL','title'=>'Final bid','edit'=>false));
-        $this->addTableCol(array('id'=>'weight','type'=>'DECIMAL','title'=>'Weight Kg','new'=>0));
-        $this->addTableCol(array('id'=>'volume','type'=>'DECIMAL','title'=>'Volume Litres','new'=>0));
+        $this->addTableCol(array('id'=>'weight','type'=>'DECIMAL','title'=>'Weight Kg','new'=>0,'list'=>false));
+        $this->addTableCol(array('id'=>'volume','type'=>'DECIMAL','title'=>'Volume Litres','new'=>0,'list'=>false));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status'));
         
         $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'"');
