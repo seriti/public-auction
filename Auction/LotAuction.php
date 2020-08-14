@@ -47,7 +47,7 @@ class LotAuction extends Table
         $sql_cat = 'SELECT id,CONCAT(IF(level > 1,REPEAT("--",level - 1),""),title) FROM '.TABLE_PREFIX.'category  ORDER BY rank';
         $this->addSelect('category_id',$sql_cat);
         
-        $this->addSearch(array('lot_id','lot_no','name','description','category_id','postal_only'),array('rows'=>2));
+        $this->addSearch(array('lot_id','lot_no','name','bid_final','buyer_id'),array('rows'=>2));
 
         $this->setupImages(array('table'=>TABLE_PREFIX.'file','location'=>'LOT','max_no'=>10,'manage'=>false,
                                   'icon'=>'<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>&nbsp;manage',
@@ -116,14 +116,14 @@ class LotAuction extends Table
 
     }
 
-    protected function afterUpdate($id,$edit_type,$form) 
+    protected function afterUpdate($id,$edit_type,$data) 
     {
         //NB: THIS ALSO HAPPENS AT INVOICE CREATION TIME AND WILL OVERWRITE ANYTHING SET HERE. INTENDED AS A LIVE UPDATE TO ONLINE USERS 
         $error = '';
-        $bid_no = $form['bid_no'];
+        $user_id = $data['buyer_id'];
         $lot_id = $id;
 
-        $buyer = Helpers::getUserData($this->db,'BID_NO',$bid_no);
+        $buyer = Helpers::getUserData($this->db,'USER_ID',$user_id);
 
         $sql = 'UPDATE '.TABLE_PREFIX.'order AS O JOIN '.TABLE_PREFIX.'order_item AS I ON(O.auction_id = "'.AUCTION_ID.'" AND O.user_id = "'.$buyer['user_id'].'" AND O.order_id = I.order_id) '.
                'SET I.status = "SUCCESS" '.

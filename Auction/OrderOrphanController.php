@@ -2,9 +2,10 @@
 namespace App\Auction;
 
 use Psr\Container\ContainerInterface;
-use App\Auction\LotAuction;
 
-class LotAuctionController
+use App\Auction\OrderOrphan;
+
+class OrderOrphanController
 {
     protected $container;
     
@@ -15,15 +16,16 @@ class LotAuctionController
 
     public function __invoke($request, $response, $args)
     {
-        $table_name = TABLE_PREFIX.'lot'; 
-        $table = new LotAuction($this->container->mysql,$this->container,$table_name);
+        $table_name = TABLE_PREFIX.'order'; 
+        $table = new OrderOrphan($this->container->mysql,$this->container,$table_name);
 
         $table->setup();
         $html = $table->processTable();
-        
-        $template['title'] = MODULE_LOGO.AUCTION_NAME.': Capture multiple lot results';
+            
+        $template['title'] = MODULE_LOGO.AUCTION_NAME.': UNlinked user '.MODULE_AUCTION['labels']['order'].'s';
         $template['html'] = $html;
-                
+        //$template['javascript'] = $dashboard->getJavascript();
+        
         return $this->container->view->render($response,'admin.php',$template);
     }
 }

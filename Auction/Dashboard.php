@@ -28,6 +28,7 @@ class Dashboard extends DashboardTool
 
         $this->addBlock('USER',1,2,'System Users');
         $this->addItem('USER','User settings',['link'=>'user_extend']);
+        $this->addItem('USER','Link users to UNlinked '.MODULE_AUCTION['labels']['order'].'s',['link'=>'order_orphan']);
 
         if($login_user->getAccessLevel() === 'GOD') {
             $this->addBlock('CONFIG',1,3,'Module Configuration');

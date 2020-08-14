@@ -198,6 +198,7 @@ class Helpers {
         $lot = $db->readSqlRecord($sql);
     
         unset($lot['lot_id']);
+        unset($lot['lot_no']);
         $lot['auction_id'] = $auction_id_copy;
     
         $lot_id_copy = $db->insertRecord($table_lot,$lot,$error_tmp);

@@ -34,6 +34,7 @@ class HelpersReport {
         $html = '';
 
         $pdf_override = true;
+        $buyer_separate_page = true;
         
         $doc_dir = BASE_UPLOAD.UPLOAD_DOCS;
                 
@@ -115,6 +116,7 @@ class HelpersReport {
                 if($lot['buyer_id'] !== $buyer_id) {
                     if($buyer_id !== '') {
                         //all buyer invoice lots
+                        if($buyer_separate_page) $pdf->AddPage();
                         $pdf->changeFont('H1');
                         $pdf->Cell(20,$row_h,'Buyer :',0,0,'R',0);
                         $pdf->Cell(20,$row_h,$buyer_name,0,0,'L',0);
@@ -142,7 +144,8 @@ class HelpersReport {
                 $buyer_data[5][$row] = $str; 
             }
 
-            $pdf->changeFont('H2');
+            if($buyer_separate_page) $pdf->AddPage();
+            $pdf->changeFont('H1');
             $pdf->Cell(20,$row_h,'Buyer :',0,0,'R',0);
             $pdf->Cell(20,$row_h,$buyer_name,0,0,'L',0);
             $pdf->Ln($row_h);
@@ -361,9 +364,9 @@ class HelpersReport {
                 
                 if($lot['status'] === 'SOLD' or $lot['bid_final'] > 0) {
                     $sold = $lot['bid_final']; 
-                    $sold_str = CURRENCY_SYMBOL.number_format($sold,0);
+                    $sold_str = CURRENCY_SYMBOL.$sold;
                     $fee = round(($lot['bid_final'] * $comm_rate),0);
-                    $fee_str =  CURRENCY_SYMBOL.number_format($fee,0);
+                    $fee_str =  CURRENCY_SYMBOL.$fee;
                 } else {
                     $sold = 0;
                     $sold_str = '-';

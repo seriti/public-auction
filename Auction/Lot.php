@@ -29,7 +29,7 @@ class Lot extends Table
         $this->addTableCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$this->labels['type'],'join'=>'name FROM '.TABLE_PREFIX.'type WHERE type_id'));
         $this->addTableCol(array('id'=>'type_txt1','type'=>'STRING','title'=>$this->labels['type_txt1'],'required'=>false));
         $this->addTableCol(array('id'=>'type_txt2','type'=>'STRING','title'=>$this->labels['type_txt2'],'required'=>false));
-        $this->addTableCol(array('id'=>'name','type'=>'STRING','title'=>'Lot Name','hint'=>'Lots are ordered by category and then name'));
+        $this->addTableCol(array('id'=>'name','type'=>'STRING','title'=>'Lot Name','hint'=>'Lots are ordered by category and then name','secure'=>false));
         $this->addTableCol(array('id'=>'condition_id','type'=>'INTEGER','title'=>'Condition','join'=>'name FROM '.TABLE_PREFIX.'condition WHERE condition_id'));
         $this->addTableCol(array('id'=>'description','type'=>'TEXT','title'=>'Lot Description','list'=>false));
         $this->addTableCol(array('id'=>'index_terms','type'=>'TEXT','title'=>'Index on terms','hint'=>'Use comma to separate multiple index terms for catalogue index','required'=>false));
@@ -39,6 +39,7 @@ class Lot extends Table
         $this->addTableCol(array('id'=>'bid_final','type'=>'DECIMAL','title'=>'Final bid','edit'=>false));
         $this->addTableCol(array('id'=>'weight','type'=>'DECIMAL','title'=>'Weight Kg','new'=>0,'list'=>false));
         $this->addTableCol(array('id'=>'volume','type'=>'DECIMAL','title'=>'Volume Litres','new'=>0,'list'=>false));
+        $this->addTableCol(array('id'=>'buyer_id','type'=>'INTEGER','title'=>'Buyer ID','edit'=>false,'list'=>true));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status'));
         
         $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'"');
@@ -67,7 +68,7 @@ class Lot extends Table
         $this->addSelect('type_id','SELECT type_id,name FROM '.TABLE_PREFIX.'type WHERE status <> "HIDE" ORDER BY sort');
 
 
-        $this->addSearch(array('lot_id','lot_no','type_id','type_txt1','type_txt2','name','description','category_id','index_terms','postal_only','price_reserve','seller_id','status'),array('rows'=>3));
+        $this->addSearch(array('lot_id','lot_no','type_id','type_txt1','type_txt2','name','description','category_id','index_terms','postal_only','price_reserve','seller_id','status','buyer_id'),array('rows'=>3));
 
         $this->setupImages(array('table'=>TABLE_PREFIX.'file','location'=>'LOT','max_no'=>10,
                                   'icon'=>'<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>&nbsp;manage',

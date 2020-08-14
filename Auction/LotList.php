@@ -19,6 +19,7 @@ use Seriti\Tools\Secure;
 //use Seriti\Tools\BASE_PATH;
 //use Seriti\Tools\BASE_TEMPLATE;
 use Seriti\Tools\BASE_URL;
+use Seriti\Tools\CURRENCY_SYMBOL;
 
 use Seriti\Tools\STORAGE;
 //use Seriti\Tools\BASE_UPLOAD_WWW;
@@ -39,8 +40,8 @@ class LotList extends Listing
            $this->addError('NO auction specified'); 
         } else {
             $this->auction_id = Secure::clean('integer',$param['auction_id']);
-            //only list auction lots with status = OK 
-            $this->addSql('WHERE','T.auction_id = "'.$this->db->escapeSql($this->auction_id).'" AND T.status = "OK"');
+            //only list auction lots with status NOT = HIDE 
+            $this->addSql('WHERE','T.auction_id = "'.$this->db->escapeSql($this->auction_id).'" AND T.status <> "HIDE"');
         }
 
         $this->setupAuction();
@@ -83,13 +84,15 @@ class LotList extends Listing
 
         $this->addListCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$labels['type'],'join'=>'name FROM '.$this->table_prefix.'type WHERE type_id'));
         $this->addListCol(array('id'=>'type_txt1','type'=>'STRING','title'=>$labels['type_txt1']));
-        $this->addListCol(array('id'=>'type_txt2','type'=>'STRING','title'=>$labels['type_txt2']));
+        //$this->addListCol(array('id'=>'type_txt2','type'=>'STRING','title'=>$labels['type_txt2']));
         $this->addListCol(array('id'=>'condition_id','type'=>'INTEGER','title'=>'Condition','join'=>'name FROM '.$this->table_prefix.'condition WHERE condition_id'));
 
         $this->addListCol(array('id'=>'description','type'=>'TEXT','title'=>'Description','class'=>'list_item_text'));
         $this->addListCol(array('id'=>'price_reserve','type'=>'DECIMAL','title'=>'Reserve Price','prefix'=>$currency));
         $this->addListCol(array('id'=>'price_estimate','type'=>'DECIMAL','title'=>'Estimate Price','prefix'=>$currency));
         $this->addListCol(array('id'=>'index_terms','type'=>'STRING','title'=>'Index terms','list'=>false));
+        $this->addListCol(array('id'=>'status','type'=>'STRING','title'=>'Status','list'=>false));
+        $this->addListCol(array('id'=>'bid_final','type'=>'DECIMAL','title'=>'Bid final','list'=>false));
 
         //NB: must have to be able to search on products below category_id in tree
         $this->addSql('JOIN','JOIN '.$this->table_prefix.'category AS CT ON(T.category_id = CT.'.$this->tree_cols['node'].')');
@@ -104,8 +107,10 @@ class LotList extends Listing
                 
         //add empty text action just to specify where Add to Order button appears
         if($this->auction['status'] !== 'CLOSED') {
-            $this->addListAction('submit',['type'=>'text','text'=>'','pos'=>'R']);    
+            //$this->addListAction('submit',['type'=>'text','text'=>'','pos'=>'R']);        
         }
+        $this->addListAction('submit',['type'=>'text','text'=>'','pos'=>'R']);  
+        
         
         $sql_cat = 'SELECT id,CONCAT(IF(level > 1,REPEAT("--",level - 1),""),title) FROM '.$this->table_prefix.'category  ORDER BY rank';
         $this->addSelect('category_id',$sql_cat);
@@ -114,8 +119,8 @@ class LotList extends Listing
         $this->addSelect('index_terms','SELECT term_code,name FROM '.$this->table_prefix.'index_term WHERE status <> "HIDE" ORDER BY name');
         $this->addSelect('condition_id','SELECT condition_id,name FROM '.$this->table_prefix.'condition WHERE status <> "HIDE" ORDER BY sort');
         
-        //left out index_terms for now
-        $this->addSearch(array('category_id','name','type_id','type_txt1','type_txt2','condition_id','description','index_terms'),array('rows'=>3));
+        //left out index_terms for now  removed('type_txt2')
+        $this->addSearch(array('category_id','name','type_id','type_txt1','condition_id','description','index_terms'),array('rows'=>3));
 
         $this->setupListImages(array('table'=>$this->table_prefix.'file','location'=>'LOT','max_no'=>100,'manage'=>false,
                                      'list'=>true,'list_no'=>1,'storage'=>STORAGE,'title'=>'Lot','access'=>$images['access'],
@@ -123,6 +128,25 @@ class LotList extends Listing
 
         
        
+    }
+
+    //NB: if this returns any html then default actions NOT displayed
+    protected function customListAction($data,$row_no,$pos) 
+    {
+        $html = '';
+
+        //regardless of auction status
+        if($data['status'] === 'SOLD') {
+            $html .= '<strong>SOLD @'.CURRENCY_SYMBOL.$data['bid_final'].'</strong><br/>';
+        }        
+
+        if($this->auction['status'] === 'CLOSED') {
+            if($data['status'] !== 'SOLD') $html .= 'Lot not sold.';
+            //just in case any error in logic above    
+            if($html === '') $html .= 'Auction closed.';
+        }
+            
+        return $html;   
     }
 
     protected function modifyRowFormatted($row_no,&$actions_left,&$actions_right,&$images,&$files,&$items)
