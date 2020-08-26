@@ -60,60 +60,31 @@ class LotAuction extends Table
     {
         $error_tmp = '';
 
-        //need to check all entered price data and buyer id
-        /*
-        if(strtoupper(substr($data['bid_no'],0,2)) === 'ID') {
-            $user_id = substr($data['bid_no'],2);
-            $buyer = Helpers::getUserData($this->db,'USER_ID',$user_id);
-            if($buyer == 0) $error .= 'Invalid User ID['.$user_id.'] entered. ';
+        //allows user to reset all values if incorrectly captured
+        if($data['bid_no'] === '0') {
+            if($data['bid_final'] > 0 or $data['bid_book_top'] > 0 or $data['bid_open'] > 0) {
+                $error .= 'NO Buyer ID/Number entered. Enter valid value or Set ALL Bid values to zero if you want to remove bid.';
+            } else {
+                $data['buyer_id'] = '0';
+            }
         } else {
-            $buyer = Helpers::getUserData($this->db,'BID_NO',$data['bid_no']);
-            if($buyer == 0) $error .= 'Invalid Bid number['.$data['bid_no'].'] entered. ';
-        }
-        */
-
-        if(strtoupper(substr($data['bid_no'],0,1)) === 'N') {
-            $bid_no = substr($data['bid_no'],1);
-            $buyer = Helpers::getUserData($this->db,'BID_NO',$bid_no);
-            if($buyer == 0) $error .= 'Invalid buyer Number['.$bid_no.'] entered. ';
-        } else {
-            $user_id = $data['bid_no'];
-            $buyer = Helpers::getUserData($this->db,'USER_ID',$user_id);
-            if($buyer == 0) $error .= 'Invalid buyer User ID['.$user_id.'] entered. ';
-        }
-        //assign correct user_id
-        $data['buyer_id'] = $buyer['user_id'];    
-
-
-        Helpers::checkLotPriceValid($this->db,TABLE_PREFIX,$id,AUCTION_ID,$data['bid_final'],$error_tmp);
-        if($error_tmp !== '') $error .= $error_tmp;
-
-        /*
-        if($data['bid_final'] < $data['price_reserve']) {
-            $error .= 'Final bid['.$data['bid_final'].'] less than reserve price['.$data['price_reserve'].']';
-        }
-
-        //check that no valid order exists with a higher bid 
-        if($error === '') {
-            $sql = 'SELECT O.order_id,O.user_id,I.price '.
-                   'FROM '.TABLE_PREFIX.'order AS O JOIN '.TABLE_PREFIX.'order_item AS I ON(O.order_id = I.order_id) '.
-                   'WHERE O.auction_id = "'.AUCTION_ID.'" AND O.status <> "HIDE" AND '.
-                         'I.lot_id = "'.$this->db->escapeSql($id).'" AND I.price > "'.$this->db->escapeSql($data['bid_final']).'" ';
-            $shafted = $this->db->readSqlArray($sql);            
-            if($shafted != 0) {
-                foreach($shafted as $order_id => $order) {
-                    $user = Helpers::getUserData($this->db,'USER_ID',$order['user_id']);
-                    $error .= 'User :'.$user['name'].' ID['.$order['user_id'].'] ';
-                    if($user['bid_no'] != '') $error .= 'with Bid code['.$user['bid_no'].'] ';
-                    $error .= 'Submitted a higher online bid['.$order['price'].'] in order ID['.$order_id.']<br/>';
-                }
-                $error .= 'You can change Order status to HIDE if you wish to ignore this order.';
+            //determine buyer_id
+            if(strtoupper(substr($data['bid_no'],0,1)) === 'N') {
+                $bid_no = substr($data['bid_no'],1);
+                $buyer = Helpers::getUserData($this->db,'BID_NO',$bid_no);
+                if($buyer == 0) $error .= 'Invalid buyer Number['.$bid_no.'] entered. ';
+            } else {
+                $user_id = $data['bid_no'];
+                $buyer = Helpers::getUserData($this->db,'USER_ID',$user_id);
+                if($buyer == 0) $error .= 'Invalid buyer User ID['.$user_id.'] entered. ';
             }
 
-        }  
-        */  
-          
+            //assign correct user_id
+            $data['buyer_id'] = $buyer['user_id']; 
 
+            Helpers::checkLotPriceValid($this->db,TABLE_PREFIX,$id,AUCTION_ID,$data['bid_final'],$error_tmp);
+            if($error_tmp !== '') $error .= $error_tmp;   
+        }    
     }
 
     protected function afterUpdate($id,$edit_type,$data) 
@@ -123,17 +94,26 @@ class LotAuction extends Table
         $user_id = $data['buyer_id'];
         $lot_id = $id;
 
-        $buyer = Helpers::getUserData($this->db,'USER_ID',$user_id);
+        //NB: user_id = 0 assumes reset of a mistaken result capture
+        if($user_id == 0) {
+            $sql = 'UPDATE '.TABLE_PREFIX.'order AS O JOIN '.TABLE_PREFIX.'order_item AS I ON(O.auction_id = "'.AUCTION_ID.'" AND O.order_id = I.order_id) '.
+                   'SET I.status = "BID" '.
+                   'WHERE I.lot_id = "'.$this->db->escapeSql($lot_id).'" ';
+            $this->db->executeSql($sql,$error);
+        } else {
+            $buyer = Helpers::getUserData($this->db,'USER_ID',$user_id);
 
-        $sql = 'UPDATE '.TABLE_PREFIX.'order AS O JOIN '.TABLE_PREFIX.'order_item AS I ON(O.auction_id = "'.AUCTION_ID.'" AND O.user_id = "'.$buyer['user_id'].'" AND O.order_id = I.order_id) '.
-               'SET I.status = "SUCCESS" '.
-               'WHERE I.lot_id = "'.$this->db->escapeSql($lot_id).'" ';
-        $this->db->executeSql($sql,$error);
+            $sql = 'UPDATE '.TABLE_PREFIX.'order AS O JOIN '.TABLE_PREFIX.'order_item AS I ON(O.auction_id = "'.AUCTION_ID.'" AND O.user_id = "'.$buyer['user_id'].'" AND O.order_id = I.order_id) '.
+                   'SET I.status = "SUCCESS" '.
+                   'WHERE I.lot_id = "'.$this->db->escapeSql($lot_id).'" ';
+            $this->db->executeSql($sql,$error);
 
-        $sql = 'UPDATE '.TABLE_PREFIX.'order AS O JOIN '.TABLE_PREFIX.'order_item AS I ON(O.auction_id = "'.AUCTION_ID.'" AND O.user_id <> "'.$buyer['user_id'].'" AND O.order_id = I.order_id) '.
-               'SET I.status = "OUT_BID" '.
-               'WHERE I.lot_id = "'.$this->db->escapeSql($lot_id).'" ';
-        $this->db->executeSql($sql,$error);
+            $sql = 'UPDATE '.TABLE_PREFIX.'order AS O JOIN '.TABLE_PREFIX.'order_item AS I ON(O.auction_id = "'.AUCTION_ID.'" AND O.user_id <> "'.$buyer['user_id'].'" AND O.order_id = I.order_id) '.
+                   'SET I.status = "OUT_BID" '.
+                   'WHERE I.lot_id = "'.$this->db->escapeSql($lot_id).'" ';
+            $this->db->executeSql($sql,$error);    
+        } 
+        
         
     }
 }

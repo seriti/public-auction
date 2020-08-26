@@ -196,9 +196,16 @@ class Helpers {
         $sql = 'SELECT * FROM '.$table_lot.' '.
                'WHERE lot_id = "'.$db->escapeSql($lot_id).'" ';
         $lot = $db->readSqlRecord($sql);
-    
+            
         unset($lot['lot_id']);
         unset($lot['lot_no']);
+        unset($lot['bid_open']);
+        unset($lot['bid_book_top']);
+        unset($lot['bid_final']);
+        unset($lot['buyer_id']);
+        unset($lot['bid_no']);
+
+        $lot['status'] = 'NEW';
         $lot['auction_id'] = $auction_id_copy;
     
         $lot_id_copy = $db->insertRecord($table_lot,$lot,$error_tmp);
