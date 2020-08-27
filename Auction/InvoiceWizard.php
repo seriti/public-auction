@@ -18,7 +18,7 @@ use App\Auction\Helpers;
 class InvoiceWizard extends Wizard 
 {
     
-    protected $source = ['USER_ID'=>'Buyer user ID','USER_CODE'=>'Buyer Bid no','USER_EMAIL'=>'Buyer email address','ORDER'=>'Order ID'];
+    protected $source = ['USER_ID'=>'User ID','USER_CODE'=>'User Buyer No.','USER_EMAIL'=>'User email address','ORDER'=>MODULE_AUCTION['labels']['order'].' ID'];
 
     //configure
     public function setup($param = []) 
@@ -29,6 +29,7 @@ class InvoiceWizard extends Wizard
 
         $this->addVariable(array('id'=>'source_type','type'=>'STRING','title'=>'Initial source'));
         $this->addVariable(array('id'=>'source_id','type'=>'STRING','title'=>'Initial source value'));
+        $this->addVariable(array('id'=>'xtra_item_no','type'=>'INTEGER','title'=>'Additional invoice items','new'=>INVOICE_XTRA_ITEMS));
         $this->addVariable(array('id'=>'invoice_for','type'=>'STRING','title'=>'Invoice For'));
         $this->addVariable(array('id'=>'invoice_comment','type'=>'TEXT','title'=>'Invoice Comment','required'=>false));
         $this->addVariable(array('id'=>'email','type'=>'EMAIL','title'=>'Primary Email address'));
@@ -52,6 +53,7 @@ class InvoiceWizard extends Wizard
         if($this->page_no == 1) {
             $source_type = $this->form['source_type'];
             $source_id = $this->form['source_id'];
+            $xtra_item_no = $this->form['xtra_item_no'];
             $order_id = 0;
 
             if($source_type === 'USER_CODE') {
@@ -73,11 +75,11 @@ class InvoiceWizard extends Wizard
                 $order_id = $source_id;
                 $order = Helpers::getOrderDetails($this->db,TABLE_PREFIX,$order_id,$error_tmp);
                 if($error_tmp !== '') {
-                    $this->addError('INVALID Order ID['.$order_id.'] :'.$error_tmp);
+                    $this->addError('INVALID '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.'] :'.$error_tmp);
                 } else {
                     $user_id = $order['order']['user_id'];
                     $user = Helpers::getUserData($this->db,'USER_ID',$user_id);
-                    if($user === 0 ) $this->addError('INVALID Order linked user ID['.$user_id.']');
+                    if($user === 0 ) $this->addError('INVALID '.MODULE_AUCTION['labels']['order'].' linked user ID['.$user_id.']');
                 }    
             }
 
@@ -85,7 +87,7 @@ class InvoiceWizard extends Wizard
 
                 //invoicing an order assumes that order created only with unsold lots after an auction
                 if($source_type === 'ORDER') {
-                    $sql = 'SELECT I.lot_id,L.name,L.description,I.price AS bid_final,L.weight,L.volume,L.status '.
+                    $sql = 'SELECT I.lot_id,L.lot_no,L.name,L.description,I.price AS bid_final,L.weight,L.volume,L.status '.
                            'FROM '.TABLE_PREFIX.'order_item AS I LEFT JOIN '.TABLE_PREFIX.'lot AS L ON(I.lot_id = L.lot_id) '.
                            'WHERE I.order_id = "'.$this->db->escapeSql($order_id).'" ';
                     $lots = $this->db->readSqlArray($sql);
@@ -149,8 +151,8 @@ class InvoiceWizard extends Wizard
 
             if(VAT_CALC) $item_vat = round(($item_total*VAT_RATE),2);
                     
-            //add 5 xtra empty rows to items
-            for($i = 1; $i <= 5; $i++) {
+            //add $xtra_item_no empty rows to items
+            for($i = 1; $i <= $xtra_item_no; $i++) {
               $item_no++;
               $items[0][$item_no] = '';
               $items[1][$item_no] = '';

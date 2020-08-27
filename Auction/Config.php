@@ -43,6 +43,7 @@ class Config
         if(!defined('CURRENCY_ID')) define('CURRENCY_ID','ZAR');
         if(!defined('CURRENCY_SYMBOL')) define('CURRENCY_SYMBOL','R');
         if(!defined('INVOICE_PREFIX')) define('INVOICE_PREFIX','INV');
+        if(!defined('INVOICE_XTRA_ITEMS')) define('INVOICE_XTRA_ITEMS',5);
         if(!defined('VAT_RATE')) define('VAT_RATE',0.15);
         if(!defined('VAT_CALC')) define('VAT_CALC',false);
 
