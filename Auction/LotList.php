@@ -136,12 +136,14 @@ class LotList extends Listing
         $html = '';
 
         //regardless of auction status
-        if($data['status'] === 'SOLD') {
+        $lot_sold = false;
+        if($data['status'] === 'SOLD' or $data['bid_final'] > 0 ) {
+            $lot_sold = true;
             $html .= '<strong>SOLD @'.CURRENCY_SYMBOL.$data['bid_final'].'</strong><br/>';
         }        
 
         if($this->auction['status'] === 'CLOSED') {
-            if($data['status'] !== 'SOLD') $html .= 'Lot not sold.';
+            if(!$lot_sold) $html .= 'Lot not sold.';
             //just in case any error in logic above    
             if($html === '') $html .= 'Auction closed.';
         }
@@ -158,6 +160,25 @@ class LotList extends Listing
 
        $items['name']['formatted'] .= '&nbsp;'.$gallery_link;
         
+    }
+
+    protected function addCustomNavigation($context)
+    {
+        $html = '';
+
+        $page_count = ceil($this->row_count/$this->max_rows);
+
+        $html.='<div class="well">All Pages: ';
+        for($p = 1; $p <= $page_count; $p++) {
+            if($p == $this->page_no) {
+                $html .= '<h3>'.$p.'&nbsp;&nbsp;</h3>';
+            } else {
+                $html .= '<a class="nav_next" href="?mode=list&page='.$p.'">'.$p.'</a>&nbsp;&nbsp;'; 
+            }
+            
+        }
+        
+        return $html;
     }
 
     protected function setupAuction() 

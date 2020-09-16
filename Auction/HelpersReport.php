@@ -467,7 +467,7 @@ class HelpersReport {
                 $error .= 'Invalid Auction['.$auction_id.'] selected.';
             } else {
                 $sql = 'SELECT L.lot_id,L.lot_no,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
-                              'L.bid_open,L.bid_book_top,L.bid_final,L.status, '.  
+                              'L.bid_open,L.bid_book_top,L.bid_final,L.status,L.seller_id, '.  
                               'CT.level AS cat_level,CT.title AS cat_name,CN.name AS `condition` '.
                        'FROM '.$table_lot.' AS L '.
                              'JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
@@ -695,7 +695,7 @@ class HelpersReport {
 
                 if($options['layout'] === 'MASTER') {
                     $cat_data[6][$row] = $lot['price_estimate']; 
-                    $cat_data[7][$row] = '';
+                    $cat_data[7][$row] = $lot['seller_id'];
                     $cat_data[8][$row] = '';
                     $cat_data[9][$row] = '';
                     $cat_data[10][$row] = '';
@@ -747,6 +747,165 @@ class HelpersReport {
             }    
 
            
+            //finally create pdf file
+            if($options['output'] === 'FILE') {
+                $file_path = $doc_dir.$doc_name;
+                $pdf->Output($file_path,'F');
+            }    
+
+            //send directly to browser
+            if($options['output'] === 'BROWSER') {
+                $pdf->Output($doc_name,'D'); 
+                exit();     
+            }    
+        }
+
+        if($options['format'] === 'CSV') {
+            $csv_data = '';
+
+            $doc_name = $doc_name_base.'.csv';
+
+            $csv_data = Csv::sqlArrayDumpCsv('Lot',$lots);
+            Doc::outputDoc($csv_data,$doc_name,'DOWNLOAD');
+            exit();
+        }    
+                
+        if($error_str == '') return true; else return false ;
+    }
+
+    public static function createAuctionSummary($db,$system,$auction_id,$options = [],&$doc_name,&$error)  
+    {
+        $error = '';
+        $error_tmp = '';
+        $doc_name = '';
+
+        $table_lot = TABLE_PREFIX.'lot';
+        $table_condition = TABLE_PREFIX.'condition';
+        $table_category = TABLE_PREFIX.'category';
+
+        $category_header = false;
+        $lot_no_display = true;
+        $pdf_override = true;
+        
+        if(!isset($options['output'])) $options['output'] = 'BROWSER';
+        if(!isset($options['format'])) $options['format'] = 'PDF';
+        $options['format'] = strtoupper($options['format']);
+
+        if(!isset($options['layout'])) $options['layout'] = 'COMPRESSED';
+
+        if($options['format'] !== 'PDF' and $options['format'] !== 'CSV') {
+            $error .= 'Only PDF and CSV format supported for this report';
+        }
+
+        if($auction_id === 'ALL') {
+            $error .= 'Cannot generate document for ALL auctions.';
+        } else {
+            $sql = 'SELECT auction_id,name,summary,description,postal_only,date_start_postal,date_end_postal,date_start_live,status '.
+                   'FROM '.TABLE_PREFIX.'auction WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $auction = $db->readSqlRecord($sql,$db); 
+            if($auction === 0) {
+                $error .= 'Invalid Auction['.$auction_id.'] selected.';
+            } else {
+                $sql = 'SELECT L.lot_id,L.lot_no,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
+                              'L.bid_open,L.bid_book_top,L.bid_final,L.status '.  
+                       'FROM '.$table_lot.' AS L '.
+                       'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" '.
+                       'ORDER BY L.lot_no ';
+                $lots = $db->readSqlArray($sql);
+                if($lots == 0) $error .= 'No lots found for auction!';
+            }    
+
+        }
+
+        if($error !== '') return false;   
+
+
+
+        $doc_dir = BASE_UPLOAD.UPLOAD_DOCS;
+        //for custom settings like signature
+        $upload_dir = BASE_UPLOAD.UPLOAD_DOCS;
+        
+
+        //get setup options
+        $footer = $system->getDefault('AUCTION_CATALOGUE_FOOTER','');
+        $signature = $system->getDefault('AUCTION_SIGN','');
+        $signature_text = $system->getDefault('AUCTION_SIGN_TXT','');
+        
+
+
+        if($options['layout'] === 'STANDARD') {
+            $doc_name_base = 'auction_'.$auction_id.'_'.str_replace(' ','_',$auction['name']).date('Y-m-d');
+        } else {
+            $doc_name_base = 'auction_'.$auction_id.'_'.str_replace(' ','_',$auction['name']).'_'.strtolower($options['layout']).'_'.date('Y-m-d');
+        }
+        
+       
+
+        //lot block setup
+        $pdf_options = [];
+        $pdf_options['header_align'] = 'L'; 
+
+        if($options['format'] === 'PDF') {
+
+            $doc_name = $doc_name_base.'.pdf';
+            $page_layout = 'Portrait';
+          
+            $pdf = new Pdf($page_layout,'mm','A4');
+            $pdf->AliasNbPages();
+                
+            $pdf->setupLayout(['db'=>$db]);
+
+            //NB:override PDF settings to economise on space (no logo, small margins,size-6 text)
+            if($pdf_override) {
+                $pdf->bg_image = array('images/logo.jpeg',5,140,50,20,'YES'); //NB: YES flag turns off logo image display
+                $pdf->page_margin = array(10,10,10,10);//top,left,right,bottom!!
+                $pdf->text = array(33,33,33,'',6);
+                $pdf->h1_title = array(33,33,33,'B',10,'',5,10,'L','YES',33,33,33,'B',12,20,180);
+
+                $pdf->SetMargins($pdf->page_margin[1],$pdf->page_margin[0],$pdf->page_margin[2]);
+            }
+
+            $pdf->page_title = $auction['name'].' Realised prices in '.CURRENCY_ID. ' (Lots without price available at reserve price)';
+            
+            //NB footer must be set before this
+            $pdf->AddPage();
+
+            $row_h = 5;
+            $data = [];
+            $row = 0;
+
+            $labels = MODULE_AUCTION['labels'];
+
+            if($options['layout'] === 'COMPRESSED') {
+                $col_width = array(10,15);
+                $col_type  = array('',''); 
+                //NB: 8 column layout
+                $pdf_options['page_split'] = 8; 
+               
+                $data[0][$row] = 'Lot No.';
+                $data[1][$row] = 'Price';
+            }
+
+                       
+            foreach($lots as $lot_id => $lot) {
+
+                $row++;
+                
+                if($lot_no_display) $lot_str = $lot['lot_no']; else $lot_str = $lot_id;
+                
+                
+                if($options['layout'] === 'COMPRESSED') {
+                    $data[0][$row] = $lot_str;
+                    if($lot['bid_final']== 0) $price_str = ''; else $price_str = number_format(round($lot['bid_final'],0));
+                    $data[1][$row] = $price_str; 
+                }
+            }
+
+            
+            $pdf->changeFont('TEXT');
+            $pdf->arrayDrawTable2($data,$row_h,$col_width,$col_type,'L',$pdf_options);
+            $pdf->ln($row_h); 
+
             //finally create pdf file
             if($options['output'] === 'FILE') {
                 $file_path = $doc_dir.$doc_name;

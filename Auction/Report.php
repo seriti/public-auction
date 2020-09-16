@@ -30,7 +30,9 @@ class Report extends ReportTool
         $param = ['input'=>['select_auction','format']];
         $this->addReport('AUCTION_PDF','Create Auction Lots listing PDF',$param); 
         $this->addReport('AUCTION_REALISED_PDF','Create REALISED Auction lots listing PDF',$param); 
+        $this->addReport('AUCTION_REALISED_SMALL','Create REALISED COMPRESSED Auction lots listing PDF',$param);
         $this->addReport('AUCTION_MASTER_PDF','Create MASTER Auction lots listing PDF',$param);
+
         
         $this->addReport('AUCTION_SELLER','Create Auction Sellers Lots listing',$param);  
 
@@ -147,6 +149,21 @@ class Report extends ReportTool
             */
 
                 
+        }
+
+        if($id === 'AUCTION_REALISED_SMALL') {   
+            $system = $this->container['system'];
+            $pdf_name = '';
+
+            $options['layout'] = 'COMPRESSED';
+            if($id === 'AUCTION_REALISED_SMALL') $options['layout'] = 'COMPRESSED';
+            
+            $index = HelpersReport::createAuctionSummary($this->db,$system,$form['auction_id'],$options,$pdf_name,$error);
+            if($error !== '') {
+                $this->addError($error);
+            } else {
+                $this->addMessage('Created PDF successfully: '.$pdf_name) ;              
+            }
         }
 
         if($id === 'AUCTION_SELLER') {
