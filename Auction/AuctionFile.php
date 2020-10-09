@@ -15,7 +15,8 @@ class AuctionFile extends Upload
                   'pop_up'=>true,
                   'col_label'=>'file_name_orig',
                   'update_calling_page'=>true,
-                  'prefix'=>$file_prefix];
+                  'prefix'=>$file_prefix,//will prefix file_name if used, but file_id.ext is unique 
+                  'upload_location'=>$id_prefix]; 
         parent::setup($param);
 
         $this->allow_ext = array('Documents'=>array('doc','xls','ppt','pdf','rtf','docx','xlsx','pptx','ods','odt','txt','csv','zip','gz','msg','eml')); 

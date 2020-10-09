@@ -15,7 +15,8 @@ class LotImage extends Upload
                   'col_label'=>'file_name_orig',
                   'update_calling_page'=>true,
                   'upload_access'=>IMAGE_CONFIG['access'],
-                  'prefix'=>$id_prefix];
+                  'prefix'=>$id_prefix,//will prefix file_name if used, but file_id.ext is unique 
+                  'upload_location'=>$id_prefix]; 
 
         parent::setup($param);
 

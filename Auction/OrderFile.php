@@ -13,7 +13,8 @@ class OrderFile extends Upload
         $param = ['row_name'=>'Order document',
                   'pop_up'=>true,
                   'update_calling_page'=>true,
-                  'prefix'=>$id_prefix];
+                  'prefix'=>$id_prefix,//will prefix file_name if used, but file_id.ext is unique 
+                  'upload_location'=>$id_prefix]; 
         parent::setup($param);
 
         $param=[];
