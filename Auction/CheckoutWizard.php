@@ -67,8 +67,6 @@ class CheckoutWizard extends Wizard
 
         //PROCESS shipping and payment options
         if($this->page_no == 1) {
-
-            
             $ship_option_id = $this->form['ship_option_id'];
             $ship_location_id = $this->form['ship_location_id'];
             $pay_option_id = $this->form['pay_option_id'];

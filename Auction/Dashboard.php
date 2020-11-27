@@ -14,6 +14,8 @@ class Dashboard extends DashboardTool
 
         $login_user = $this->getContainer('user'); 
 
+         $access = MODULE_AUCTION['access'];
+
         //(block_id,col,row,title)
         $this->addBlock('ADD',1,1,'Capture data');
         $this->addItem('ADD','Add a new Lot',['link'=>"lot?mode=add"]);
@@ -28,7 +30,12 @@ class Dashboard extends DashboardTool
 
         $this->addBlock('USER',1,2,'System Users');
         $this->addItem('USER','User settings',['link'=>'user_extend']);
-        $this->addItem('USER','Link users to UNlinked '.MODULE_AUCTION['labels']['order'].'s',['link'=>'order_orphan']);
+        if($access['login_before_bid']) {
+            $title = 'Confirm UN-checked out user '.MODULE_AUCTION['labels']['order'].'s';
+        } else {
+            $title = 'Link users to UN-checked out '.MODULE_AUCTION['labels']['order'].'s';
+        }
+        $this->addItem('USER',$title,['link'=>'order_orphan']);
 
         if($login_user->getAccessLevel() === 'GOD') {
             $this->addBlock('CONFIG',1,3,'Module Configuration');

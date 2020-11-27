@@ -68,8 +68,9 @@ class Ajax
         */
 
         $temp_token = $this->user->getTempToken();
+        $user_id = $this->user->getId();
 
-        $message = Helpers::addOrderItem($this->db,$this->table_prefix,$temp_token,$form,$error);
+        $message = Helpers::addOrderItem($this->db,$this->table_prefix,$temp_token,$user_id,$form,$error);
 
         if($error === '') {
             return $message;

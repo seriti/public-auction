@@ -54,6 +54,7 @@ class LotList extends Listing
 
         $labels = MODULE_AUCTION['labels'];
         $images = MODULE_AUCTION['images'];
+        $access = MODULE_AUCTION['access'];
 
         $lot_id_display = false;
         $lot_no_display = true;
@@ -100,16 +101,33 @@ class LotList extends Listing
 
         //$this->addSql('JOIN','JOIN '.$this->table_prefix.'type AS L ON(T.type_id = L.type_id)');
         
+        //NB: Lots will default to order on Lot No. unless alternative specified below
+        $this->addSortOrder('T.lot_no','Lot Number','DEFAULT');
+
         //sort by primary category, then name, tyen description
         //$this->addSortOrder('CT.rank,T.name,T.description ',$labels['category'].', then Name then Description','DEFAULT');
+        
         //if not using this sort order then JOIN to condition table above not necessary for CN.sort
-        $this->addSortOrder('CT.rank,T.type_txt1,T.type_txt2,CN.sort',$labels['category'].', then '.$labels['type_txt1'].', then '.$labels['type_txt2'].', then Condition','DEFAULT');
-                
-        //add empty text action just to specify where Add to Order button appears
-        if($this->auction['status'] !== 'CLOSED') {
-            //$this->addListAction('submit',['type'=>'text','text'=>'','pos'=>'R']);        
+        //$this->addSortOrder('CT.rank,T.type_txt1,T.type_txt2,CN.sort',$labels['category'].', then '.$labels['type_txt1'].', then '.$labels['type_txt2'].', then Condition','DEFAULT');
+
+        //NB: submit action allows adding to cart with or without being logged in
+        $show_submit = false;
+        if($this->auction['status'] !== 'CLOSED' or $access['bid_after_close']) {
+            $show_submit = true;   
         }
-        $this->addListAction('submit',['type'=>'text','text'=>'','pos'=>'R']);  
+
+        if($access['login_before_bid']) {
+            $user = $this->getContainer('user');
+            if($user->getId() == 0) {
+                $show_submit = false;
+                $this->addMessage('You need to <a href="/login">login</a> before you can add Lots to your bid form.');
+            }
+        }
+
+        if($show_submit) {
+            $this->addListAction('submit',['type'=>'text','text'=>'','pos'=>'R']);      
+        } 
+        
         
         
         $sql_cat = 'SELECT id,CONCAT(IF(level > 1,REPEAT("--",level - 1),""),title) FROM '.$this->table_prefix.'category  ORDER BY rank';

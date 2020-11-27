@@ -22,7 +22,7 @@ class OrderOrphanController
         $table->setup();
         $html = $table->processTable();
             
-        $template['title'] = MODULE_LOGO.AUCTION_NAME.': UNlinked user '.MODULE_AUCTION['labels']['order'].'s';
+        $template['title'] = MODULE_LOGO.AUCTION_NAME.': UN-checked out user '.MODULE_AUCTION['labels']['order'].'s';
         $template['html'] = $html;
         //$template['javascript'] = $dashboard->getJavascript();
         

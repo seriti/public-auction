@@ -70,7 +70,7 @@ class Helpers {
         //remove all un-processed cart items linked to auction
         if($output['error'] === '') {
             $sql = 'DELETE O,I FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
-                   'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.user_id = 0 AND O.temp_token <> "" ';
+                   'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.status = "NEW" AND O.temp_token <> "" ';
             $db->executeSql($sql,$error); 
             if($error !== '') $output['error'] .= 'Could not remove all auction shopping cart items. '.$error;
         }    
@@ -86,7 +86,7 @@ class Helpers {
                 } else {
                     $sql = 'SELECT O.user_id,O.date_create,I.price '.
                            'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
-                           'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" AND O.user_id > 0 '.
+                           'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" AND O.user_id > 0 AND O.status = "ACTIVE" '.
                            'ORDER BY I.price DESC, O.date_create '.
                            'LIMIT 1';
                     $best_bid = $db->readSqlRecord($sql); 
@@ -662,7 +662,7 @@ class Helpers {
         return $rec;
     }
 
-    //NB: Cart is a special case of an order
+    //NB: Cart is a special case of an order with status = NEW
     //$table_prefix must be passed in as not always called within auction module
     public static function getCart($db,$table_prefix,$temp_token)  
     {
@@ -674,7 +674,7 @@ class Helpers {
 
         $sql = 'SELECT C.order_id,C.auction_id,C.date_create,C.status,A.name AS auction '.
                'FROM '.$table_cart.' AS C JOIN '.$table_auction.' AS A ON(C.auction_id = A.auction_id) '.
-               'WHERE C.temp_token = "'.$db->escapeSql($temp_token).'" AND C.user_id = 0 ';
+               'WHERE C.temp_token = "'.$db->escapeSql($temp_token).'" AND C.status = "NEW" ';
         $cart = $db->readSqlRecord($sql);
 
         if($cart !== 0 ) {
@@ -847,14 +847,15 @@ class Helpers {
         }    
     }
 
-
-    public static function setupOrder($db,$table_prefix,$temp_token,$auction_id,&$error)  
+    //NB: user_id = 0 if user not logged in, but temp token must always be set
+    public static function setupOrder($db,$table_prefix,$temp_token,$user_id,$auction_id,&$error)  
     {
         $error = '';
         $table = $table_prefix.'order';
 
+
         $sql = 'SELECT order_id,auction_id,date_create FROM '.$table.' '.
-               'WHERE user_id = 0 AND temp_token = "'.$db->escapeSql($temp_token).'" ';
+               'WHERE temp_token = "'.$db->escapeSql($temp_token).'" AND status = "NEW" ';
         $order = $db->readSqlRecord($sql);
         if($order === 0) {
             $data = [];
@@ -862,6 +863,7 @@ class Helpers {
             $data['status'] = 'NEW';
             $data['temp_token'] = $temp_token;
             $data['auction_id'] = $auction_id;
+            $data['user_id'] = $user_id;
 
             $order_id = $db->insertRecord($table,$data,$error); 
         } else {
@@ -876,7 +878,7 @@ class Helpers {
         return $order_id;
     }
 
-    public static function addOrderItem($db,$table_prefix,$temp_token,$form,&$error) 
+    public static function addOrderItem($db,$table_prefix,$temp_token,$user_id,$form,&$error) 
     {
         $error_tmp = '';
         $error = '';
@@ -918,7 +920,7 @@ class Helpers {
 
         if($error === '') {
             //NB: also checks that existing order cart and lot have same auction_id
-            $order_id = self::setupOrder($db,$table_prefix,$temp_token,$lot['auction_id'],$error_tmp);
+            $order_id = self::setupOrder($db,$table_prefix,$temp_token,$user_id,$lot['auction_id'],$error_tmp);
             if($error_tmp !== '') {
                 $error .= 'Could not setup order:'.$error_tmp;
                 $message .= 'Could not add lot: '.$error_tmp;

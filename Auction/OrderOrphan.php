@@ -13,8 +13,10 @@ class OrderOrphan extends Table
     //configure
     public function setup($param = []) 
     {
-        $param = ['row_name'=>'UNlinked '.MODULE_AUCTION['labels']['order'],'col_label'=>'order_id'];
+        $param = ['row_name'=>'UN-checked out '.MODULE_AUCTION['labels']['order'],'col_label'=>'order_id'];
         parent::setup($param);
+
+        $access = MODULE_AUCTION['access'];
 
         $this->modifyAccess(['add'=>false,'delete'=>false]);
          
@@ -23,14 +25,14 @@ class OrderOrphan extends Table
         $this->addForeignKey(array('table'=>TABLE_PREFIX.'invoice','col_id'=>'order_id','message'=>MODULE_AUCTION['labels']['order'].' Invoice'));
 
         $this->addTableCol(array('id'=>'order_id','type'=>'INTEGER','title'=>MODULE_AUCTION['labels']['order'].' ID','key'=>true,'key_auto'=>true,'list'=>true));
-        $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'Linked User','list'=>false));
+        $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'Linked User','join'=>'name FROM '.TABLE_USER.' WHERE user_id'));
         $this->addTableCol(array('id'=>'date_create','type'=>'DATETIME','title'=>'Date created','edit'=>false));
         $this->addTableCol(array('id'=>'date_update','type'=>'DATETIME','title'=>'Date updated','edit'=>false));
         $this->addTableCol(array('id'=>'no_items','type'=>'INTEGER','title'=>'Number of lots','edit'=>false));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','new'=>'ACTIVE','edit'=>false));
         
         //order table also store cart contents before converted to an order in checkout wizard
-        $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'" AND T.user_id = 0 ');
+        $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'" AND T.temp_token <> "" AND T.status = "NEW" ');
 
         $this->addSortOrder('T.order_id DESC','Most recent first','DEFAULT');
 
@@ -39,13 +41,17 @@ class OrderOrphan extends Table
         $this->addAction(array('type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R'));
         $this->addAction(array('type'=>'popup','text'=>'Lots','url'=>'order_item','mode'=>'view','width'=>700,'height'=>600));
         
-        $sql_status = '(SELECT "ACTIVE") UNION (SELECT "CLOSED") UNION (SELECT "HIDE")';
-        $this->addSelect('status',$sql_status);
         $this->addSelect('user_id','SELECT user_id,name FROM '.TABLE_USER.' WHERE status <> "HIDE" ORDER BY name');
         
-        $this->addSearch(array('date_create','date_update','status'),array('rows'=>1));
+        $this->addSearch(array('date_create','date_update'),array('rows'=>1));
 
-        $this->addMessage('Select <b>edit</b> action link to assign a user to '.MODULE_AUCTION['labels']['order'].'. <b>NB: This will move record to '.MODULE_AUCTION['labels']['order'].'s tab.</b>');
+        if($access['login_before_bid']) {
+            $this->addMessage('Select <b>edit</b> action link to complete checkout for '.MODULE_AUCTION['labels']['order'].'. <b>NB: This will move record to '.MODULE_AUCTION['labels']['order'].'s tab.</b>');
+        } else {
+            $this->addMessage('Select <b>edit</b> action link to assign a user to '.MODULE_AUCTION['labels']['order'].' and complete checkout. <b>NB: This will move record to '.MODULE_AUCTION['labels']['order'].'s tab.</b>');
+        }
+
+        
     }
 
     protected function afterUpdate($id,$edit_type,$form) {

@@ -33,7 +33,7 @@ class Bid extends Table
         $this->addSql('JOIN','JOIN '.TABLE_PREFIX.'lot AS L ON(T.lot_id = L.lot_id)');
         $this->addSql('WHERE','O.auction_id = "'.AUCTION_ID.'" AND O.user_id <> 0 ');
         
-        $this->addSortOrder('L.lot_no, T.price DESC, O.date_create DESC','Catalog Lot No, then price, then create date','DEFAULT');
+        $this->addSortOrder('L.lot_no, T.price DESC, O.date_create','Catalog Lot No, then price, then create date','DEFAULT');
 
         if($access === 'GOD') {
             $this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit'));

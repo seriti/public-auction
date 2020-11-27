@@ -27,11 +27,13 @@ $app->group('/admin', function () {
         $this->any('/lot_image', \App\Auction\LotImageController::class);
         $this->any('/lot_info', \App\Auction\LotInfoController::class);
         $this->any('/lot_no', \App\Auction\LotNoController::class);
+        $this->any('/lot_result', \App\Auction\LotResultController::class);
         $this->any('/dashboard', \App\Auction\DashboardController::class);
         $this->any('/order', \App\Auction\OrderController::class);
         $this->any('/order_item', \App\Auction\OrderItemController::class);
         $this->any('/order_message', \App\Auction\OrderMessageController::class);
         $this->any('/order_file', \App\Auction\OrderFileController::class);
+        $this->any('/order_orphan', \App\Auction\OrderOrphanController::class);
         $this->any('/payment', \App\Auction\PaymentController::class);
         $this->any('/pay_option', \App\Auction\PayOptionController::class);
         $this->any('/report', \App\Auction\ReportController::class);

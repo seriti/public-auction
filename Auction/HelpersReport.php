@@ -516,7 +516,10 @@ class HelpersReport {
 
             $doc_name = $doc_name_base.'.pdf';
             $page_layout = 'Portrait';
-            if($options['layout'] === 'MASTER') $page_layout = 'Landscape';
+            if($options['layout'] === 'MASTER') {
+                $page_layout = 'Landscape';
+                $category_header = true;
+            }    
 
 
             $pdf = new Pdf($page_layout,'mm','A4');

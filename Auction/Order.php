@@ -52,7 +52,7 @@ class Order extends Table
         $this->addSelect('ship_option_id','SELECT option_id,name FROM '.TABLE_PREFIX.'ship_option WHERE status <> "HIDE" ORDER By sort');
         $this->addSelect('pay_option_id','SELECT option_id,name FROM '.TABLE_PREFIX.'pay_option WHERE status <> "HIDE" ORDER By sort');
 
-        $this->addSearch(array('user_id','date_create','date_update','status'),array('rows'=>1));
+        $this->addSearch(array('order_id','user_id','date_create','date_update','status'),array('rows'=>2));
 
         $this->setupFiles(array('table'=>TABLE_PREFIX.'file','location'=>'ORD','max_no'=>10,
                                 'icon'=>'<span class="glyphicon glyphicon-file" aria-hidden="true"></span>&nbsp;manage',

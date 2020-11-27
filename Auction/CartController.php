@@ -28,7 +28,7 @@ class CartController
         $order_name = $module['labels']['order'];
         $order_name_plural = $order_name.'s';
         
-        //NB: Cart contents same as order but user_id = 0 and temp_token identifies 
+        //NB: Cart contents same as order but temp_token identifies 
         $temp_token = $user->getTempToken();
         $cart = Helpers::getCart($db,$table_prefix,$temp_token);
 
