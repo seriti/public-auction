@@ -161,7 +161,9 @@ class InvoiceWizard extends Wizard
               $items[4][$item_no] = '0';
             }   
             
-            $this->data['user'] = $user;       
+            $this->data['user'] = $user;    
+            //NB: use this value in all subsequent steps so that even if user changes active auction, not a problem
+            $this->data['auction_id'] = AUCTION_ID;   
             $this->data['order_id'] = $order_id;
             //NB: lots data remains unchanged and is used to update lot status after invoice issued
             $this->data['lots'] = $lots;
@@ -242,7 +244,7 @@ class InvoiceWizard extends Wizard
             
             //specify all invoice paramaters
             $invoice = array();
-            $invoice['auction_id'] = AUCTION_ID;
+            $invoice['auction_id'] = $this->data['auction_id'];
             $invoice['order_id'] = $this->data['order_id'];
             $invoice['items'] = $items;
             $invoice['item_no'] = $item_no;
@@ -254,7 +256,7 @@ class InvoiceWizard extends Wizard
             $invoice['total'] = $invoice['subtotal']+$invoice['vat'];
               
             
-            HelpersPayment::createInvoicePdf($this->db,$system,AUCTION_ID,$user,$invoice,$doc_name,$error);
+            HelpersPayment::createInvoicePdf($this->db,$system,$this->data['auction_id'],$user,$invoice,$doc_name,$error);
             if($error != '') {
                 $this->addError('Could not create invoice pdf: '.$error); 
             } else {    
@@ -266,7 +268,7 @@ class InvoiceWizard extends Wizard
                     $lot_id = $items[4][$i];
                     $price = $items[2][$i];
                     if($lot_id != 0) {
-                        Helpers::updateSoldLot($this->db,TABLE_PREFIX,$lot_id,$price,AUCTION_ID,$user['user_id'],$error);
+                        Helpers::updateSoldLot($this->db,TABLE_PREFIX,$lot_id,$price,$this->data['auction_id'],$user['user_id'],$error);
                         if($error !== '') $this->addError($error); 
                     }
                 } 

@@ -32,7 +32,7 @@ class LotList extends Listing
     protected $table_prefix = MODULE_AUCTION['table_prefix'];
     //for storing linked auction details
     protected $auction;
-
+    
     //configure
     public function setup($param = []) 
     {
@@ -112,7 +112,7 @@ class LotList extends Listing
 
         //NB: submit action allows adding to cart with or without being logged in
         $show_submit = false;
-        if($this->auction['status'] !== 'CLOSED' or $access['bid_after_close']) {
+        if($this->auction['status'] !== 'CLOSED') {
             $show_submit = true;   
         }
 
@@ -120,7 +120,7 @@ class LotList extends Listing
             $user = $this->getContainer('user');
             if($user->getId() == 0) {
                 $show_submit = false;
-                $this->addMessage('You need to <a href="/login">login</a> before you can add Lots to your bid form.');
+                $this->addMessage('<h2>You need to <a href="/login">login</a> before you can add Lots to your bid form, or view any sold prices<h2/>');
             }
         }
 

@@ -43,6 +43,7 @@ class Helpers {
         if($auction == 0) {
             $output['error'] .= 'Invalid Auction ID['.$auction_id.']';
         } else {
+            //NB: see updateAuctionStatus() which closes the auction and gets rid of any unprocessed bid carts
             if($auction['status'] !== 'CLOSED') {
                 $output['error'] .= 'Auction['.$auction['name'].'] status['.$auction['status'].'] is not CLOSED. You can only assign lot bidding results to a CLOSED auction.';
             } 
@@ -66,14 +67,6 @@ class Helpers {
                 $output['message'] .= 'Final bids already assigned to some Lots. These lots will not be updated.<br/>';
             }
         }
-
-        //remove all un-processed cart items linked to auction
-        if($output['error'] === '') {
-            $sql = 'DELETE O,I FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
-                   'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.status = "NEW" AND O.temp_token <> "" ';
-            $db->executeSql($sql,$error); 
-            if($error !== '') $output['error'] .= 'Could not remove all auction shopping cart items. '.$error;
-        }    
 
         //finally assign best bids where not done already
         if($output['error'] === '') {
@@ -353,18 +346,29 @@ class Helpers {
 
         $table_auction = TABLE_PREFIX.'auction';
         $table_order = TABLE_PREFIX.'order';
+        $table_order_item = TABLE_PREFIX.'order_item';
 
         $sql = 'SELECT auction_id,status FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
         $auction = $db->readSqlRecord($sql); 
         if($auction['status'] !== $status_new) {
             if($status_new === 'CLOSED') {
-                $sql = 'UPDATE '.$table_order.' SET status = "CLOSED" WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
-                $db->executeSql($sql,$error_tmp); 
+                //first remove all bid form carts that have not been processed
+                $sql = 'DELETE O,I FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
+                       'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.status = "NEW" AND O.temp_token <> "" ';
+                $db->executeSql($sql,$error_tmp);
+
+                //now update all bid forms 
+                if($error_tmp === '') {
+                    $sql = 'UPDATE '.$table_order.' SET status = "CLOSED" WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+                    $db->executeSql($sql,$error_tmp); 
+                }
             }
+            /* this will allow users to delete lots from ACTIVE bid forms after an auction has been closed
             if($status_new === 'ACTIVE' and $auction['status'] === 'CLOSED') {
                 $sql = 'UPDATE '.$table_order.' SET status = "ACTIVE" WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
                 $db->executeSql($sql,$error_tmp); 
             }
+            */
             
             if($error_tmp != '') {
                 $error .= 'Could not close '.MODULE_AUCTION['labels']['order'].'s for auction. ';
@@ -469,6 +473,8 @@ class Helpers {
 
         $system = $container['system'];
         $mail = $container['mail'];
+        $user = $container['user'];
+        $user_id = $user->getId();
 
         //setup email parameters
         $mail_footer = $system->getDefault('AUCTION_EMAIL_FOOTER','');
@@ -488,6 +494,7 @@ class Helpers {
             $mail_to = $data['order']['user_email'];
 
             $mail_subject = SITE_NAME.' '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.'] ';
+            $audit_str = MODULE_AUCTION['labels']['order'].' ID['.$order_id.'] ';
 
             if($subject !== '') $mail_subject .= ': '.$subject;
             
@@ -511,8 +518,13 @@ class Helpers {
             
             $mail->sendEmail($mail_from,$mail_to,$mail_subject,$mail_body,$error_tmp,$mail_param);
             if($error_tmp != '') { 
-                $error .= 'Error sending '.MODULE_AUCTION['labels']['order'].' details to email['. $mail_to.']:'.$error_tmp; 
+                $error .= 'ERROR sending '.MODULE_AUCTION['labels']['order'].' details to email['. $mail_to.']:'.$error_tmp; 
+                $audit_str .=  $error_str;
+            } else {
+                $audit_str .= 'SUCCESS sending '.MODULE_AUCTION['labels']['order'].' details to email['. $mail_to.']'; 
             }
+
+            Audit::action($db,$user_id,'ORDER_EMAIL',$audit_str);
         }
 
         if($error === '') return true; else return false;
@@ -768,6 +780,7 @@ class Helpers {
         $table_item = $table_prefix.'order_item';
         $table_lot = $table_prefix.'lot';
 
+        //NB: THIS WILL ONLY WORK ON CART AND NOT ORDERS
         $cart = Helpers::getCart($db,$table_prefix,$temp_token);
         if($cart === 0) {
             $error .= 'Cart has expired';

@@ -58,6 +58,8 @@ class OrderOrphan extends Table
         $error = '';
         //should always be UPDATE as INSERT not allowed
         if($edit_type === 'UPDATE' and $form['user_id'] != 0) { 
+            
+
             $sql = 'UPDATE '.$this->table.' SET date_update = NOW(), user_id = "'.$this->db->escapeSql($form['user_id']).'", status = "ACTIVE", temp_token = "" '.
                    'WHERE order_id = "'.$this->db->escapeSql($id).'"';
             $this->db->executeSql($sql,$error);
@@ -69,7 +71,8 @@ class OrderOrphan extends Table
                           'Please check lot details and contact us if you have any concerns.';
                $param=[];
                Helpers::sendOrderMessage($this->db,TABLE_PREFIX,$this->container,$order_id,$subject,$message,$param,$error);
-               
+               //make sure no_items and total bid correct as no checkout process followed
+               Helpers::updateOrderTotals($this->db,TABLE_PREFIX,$order_id,$error);
             }
         }    
     }

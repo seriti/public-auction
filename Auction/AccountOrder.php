@@ -42,7 +42,7 @@ class AccountOrder extends Table
         $this->addTableCol(array('id'=>'ship_option_id','type'=>'INTEGER','title'=>'Shipping option','join'=>'name FROM '.$this->table_prefix.'ship_option WHERE option_id'));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','edit'=>false));
 
-        $this->addSql('WHERE','T.user_id = "'.$this->db->escapeSql($this->user_id).'" ');
+        $this->addSql('WHERE','T.user_id = "'.$this->db->escapeSql($this->user_id).'" AND T.temp_token = "" AND T.status <> "NEW" ');
 
         $this->addSortOrder('T.order_id DESC','Most recent first','DEFAULT');
         
