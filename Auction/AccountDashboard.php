@@ -56,6 +56,7 @@ class AccountDashboard extends DashboardTool
         //(block_id,col,row,title)
         $this->addBlock('USER',1,1,'User data: <a href="profile?mode=edit">edit</a>');
         $this->addItem('USER','<strong>Email:</strong> '.$user->getEmail());
+        $this->addItem('USER','<strong>Invoice name:</strong> '.$user_extend['name_invoice']);
         $this->addItem('USER','<strong>Cellphone:</strong> '.$user_extend['cell']);
         $this->addItem('USER','<strong>Landline:</strong> '.$user_extend['tel']);
         $this->addItem('USER','<strong>Shipping Address:</strong><br/>'.nl2br($user_extend['ship_address']));

@@ -32,6 +32,8 @@ class LotList extends Listing
     protected $table_prefix = MODULE_AUCTION['table_prefix'];
     //for storing linked auction details
     protected $auction;
+    protected $access_custom;
+    protected $user_id = 0;
     
     //configure
     public function setup($param = []) 
@@ -54,11 +56,13 @@ class LotList extends Listing
 
         $labels = MODULE_AUCTION['labels'];
         $images = MODULE_AUCTION['images'];
-        $access = MODULE_AUCTION['access'];
+        $this->access_custom = MODULE_AUCTION['access'];
 
         $lot_id_display = false;
         $lot_no_display = true;
 
+        $user = $this->getContainer('user');
+        $this->user_id = $user->getId();
         
         $currency = 'R';
 
@@ -110,21 +114,19 @@ class LotList extends Listing
         //if not using this sort order then JOIN to condition table above not necessary for CN.sort
         //$this->addSortOrder('CT.rank,T.type_txt1,T.type_txt2,CN.sort',$labels['category'].', then '.$labels['type_txt1'].', then '.$labels['type_txt2'].', then Condition','DEFAULT');
 
-        //NB: submit action allows adding to cart with or without being logged in
-        $show_submit = false;
-        if($this->auction['status'] !== 'CLOSED') {
-            $show_submit = true;   
+        //NB: Action column allows adding to cart with or without being logged in unless customListAction() return content.
+        if($this->auction['status'] === 'CLOSED' and !$this->access_custom['show_sold_price']) {
+            $show_action = false;  
+        } else {
+            $show_action = true; 
         }
 
-        if($access['login_before_bid']) {
-            $user = $this->getContainer('user');
-            if($user->getId() == 0) {
-                $show_submit = false;
-                $this->addMessage('<h2>You need to <a href="/login">login</a> before you can add Lots to your bid form, or view any sold prices<h2/>');
-            }
+        if($this->auction['status'] !== 'CLOSED' and $this->access_custom['login_before_bid'] and $this->user_id == 0) {
+            //$show_action = false;
+            $this->addMessage('You need to <a href="/login">login</a> before you can add Lots to your bid form.');
         }
 
-        if($show_submit) {
+        if($show_action) {
             $this->addListAction('submit',['type'=>'text','text'=>'','pos'=>'R']);      
         } 
         
@@ -148,7 +150,7 @@ class LotList extends Listing
        
     }
 
-    //NB: if this returns any html then default actions NOT displayed
+    //NB: If this returns any html then default actions NOT displayed
     protected function customListAction($data,$row_no,$pos) 
     {
         $html = '';
@@ -157,15 +159,24 @@ class LotList extends Listing
         $lot_sold = false;
         if($data['status'] === 'SOLD' or $data['bid_final'] > 0 ) {
             $lot_sold = true;
-            $html .= '<strong>SOLD @'.CURRENCY_SYMBOL.$data['bid_final'].'</strong><br/>';
+            if($this->access_custom['show_sold_price']) {
+                $html .= '<strong>SOLD @'.CURRENCY_SYMBOL.$data['bid_final'].'</strong><br/>';
+            } else {
+                $html .= '<strong>SOLD</strong><br/>';
+            }
+            
         }        
 
         if($this->auction['status'] === 'CLOSED') {
             if(!$lot_sold) $html .= 'Lot not sold.';
             //just in case any error in logic above    
             if($html === '') $html .= 'Auction closed.';
+        } else {
+            if($html === '' and $this->user_id == 0 and $this->access_custom['login_before_bid']) {
+                $html .= '<a href="/login">Login to Bid</a>';
+            }    
         }
-            
+
         return $html;   
     }
 

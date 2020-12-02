@@ -40,8 +40,9 @@ class AccountProfile extends Record
         $this->addRecordCol(array('id'=>'extend_id','type'=>'INTEGER','title'=>'Extend ID','key'=>true,'key_auto'=>true,'view'=>false));
         $this->addRecordCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'User','join'=>'CONCAT(name,": ",email) FROM '.TABLE_USER.' WHERE user_id','edit'=>false));
         $this->addRecordCol(array('id'=>'bid_no','type'=>'STRING','title'=>'Bid number','edit'=>false));
+        $this->addRecordCol(array('id'=>'name_invoice','type'=>'STRING','title'=>'Invoice name','edit'=>true));
         //$this->addRecordCol(array('id'=>'seller_id','type'=>'Boolean','title'=>'Registered seller','edit'=>false));
-        $this->addRecordCol(array('id'=>'cell','type'=>'STRING','title'=>'Cellphone','required'=>false));
+        $this->addRecordCol(array('id'=>'cell','type'=>'STRING','title'=>'Cellphone','required'=>true));
         $this->addRecordCol(array('id'=>'tel','type'=>'STRING','title'=>'Telephone','required'=>false));
         $this->addRecordCol(array('id'=>'email_alt','type'=>'EMAIL','title'=>'Email alternative','required'=>false));
         $this->addRecordCol(array('id'=>'bill_address','type'=>'TEXT','title'=>'Billing address','required'=>false));

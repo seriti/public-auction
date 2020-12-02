@@ -25,7 +25,7 @@ $html_items .= '<h1>'.$user['name'].' Auction: '.AUCTION_NAME.'</h1>';
 $param['class'] = 'form-control';
   
 $html_items .= '<table>'.
-               '<tr><td>FOR: </td><td>'.Form::textAreaInput('invoice_for',$user['name'],'','',$param).'</td></tr>'.
+               '<tr><td>FOR: </td><td>'.Form::textAreaInput('invoice_for',$user['name_invoice'],'','',$param).'</td></tr>'.
                '<tr><td>COMMENT: </td><td>'.Form::textAreaInput('invoice_comment',$comment,'','',$param).'</td></tr>'.
                '</table>';
 

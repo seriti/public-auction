@@ -12,6 +12,6 @@ $container['config']->set('module','auction',['name'=>'Auction manager',
                                                            'task'=>'Tasks','report'=>'Reports'],
                                             'labels'=>['category'=>'Category','type'=>'Type','type_txt1'=>'Year','type_txt2'=>'Catalog','order'=>'Order'],
                                             'images'=>['access'=>'PUBLIC','width'=>900,'height'=>600,'width_tn'=>120,'height_tn'=>80],
-                                            'access'=>['login_before_bid'=>false],
+                                            'access'=>['login_before_bid'=>false,'show_sold_price'=>true],
                                             'table_prefix'=>'auc_'
                                             ]);

@@ -268,6 +268,7 @@ class SetupData extends SetupModuledata
                             'CREATE TABLE `TABLE_NAME` (
                               `extend_id` INT NOT NULL AUTO_INCREMENT,
                               `user_id` INT NOT NULL,
+                              `name_invoice` varchar(250) NOT NULL,
                               `bid_no` varchar(64) NOT NULL,
                               `seller_id` INT NOT NULL,
                               `cell` varchar(64) NOT NULL,

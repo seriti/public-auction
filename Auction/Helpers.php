@@ -664,7 +664,7 @@ class Helpers {
             if($ref_type === 'BID_NO') $where .= 'E.bid_no = "'.$db->escapeSql($ref_value).'" ';
 
             if($where !== '') {
-                $sql = 'SELECT U.user_id,U.name,U.email,U.access,E.extend_id,E.bid_no,E.seller_id,E.cell,E.tel,E.email_alt,E.bill_address,E.ship_address '.
+                $sql = 'SELECT U.user_id,U.name,U.email,U.access,E.extend_id,E.name_invoice,E.bid_no,E.seller_id,E.cell,E.tel,E.email_alt,E.bill_address,E.ship_address '.
                        'FROM '.TABLE_USER.' AS U LEFT JOIN '.TABLE_PREFIX.'user_extend AS E ON(U.user_id = E.user_id) '.
                        'WHERE '.$where;
                 $rec = $db->readSqlRecord($sql);    
