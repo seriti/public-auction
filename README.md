@@ -33,7 +33,7 @@ That said, if you are an experienced PHP programmer you will have no problem doi
 You will be able to setup and manage auction lots but for the public to view them and place bids/orders you will need to have the **git clone https://github.com/seriti/public-website**
 module installed. Payment processing still needs to be added, coming soon...
 
-## Optional Seriti public-website module
+## Optional Seriti contact-manager module
 
 This module would be very useful in managing email campaigns for Auction catalogues and realisations. **git clone https://github.com/seriti/contact-manager**
 
