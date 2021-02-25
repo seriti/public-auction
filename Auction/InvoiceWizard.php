@@ -376,7 +376,7 @@ class InvoiceWizard extends Wizard
                 $invoice_files = $this->db->readSqlList($sql);
                 if($invoice_files != 0) {
                     foreach($invoice_files as $file_id => $file_name_orig) {
-                        $file_path = 'invoice_files?mode=download&id='.$file_id; 
+                        $file_path = 'invoice_file?mode=download&id='.$file_id; 
                         $file_html .= '<li><a href="'.$file_path.'" target="_blank">'.$file_name_orig.'</a></li>';
                     }   
                 }
