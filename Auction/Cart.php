@@ -13,6 +13,7 @@ class Cart extends Table
     protected $table_prefix = MODULE_AUCTION['table_prefix'];
     protected $order_id;
     protected $auction_id;
+    protected $labels = MODULE_AUCTION['labels'];
     
     //configure
     public function setup($param = []) 
@@ -49,6 +50,7 @@ class Cart extends Table
         $this->addAction(['type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R']);
 
         $this->addMessage('Bid price defaults to reserve price, Please modify and then click [Update cart] button below to save changes.');
+        $this->addMessage('<b>NB: You must checkout your '.$this->labels['order'].' cart to confirm your bids!</b> (Until you do this, bids are not official.)</b>');
     }
 
     protected function beforeUpdate($id,$context,&$data,&$error) 

@@ -37,7 +37,7 @@ class CartController
             $html = '<h2>If you have just completed checkout process then <a href="account/dashboard">check your account</a> for active '.$order_name_plural.'.</h2>';
             $html = '<h2>You can start adding new auction lots to your cart.</h2>';
         } else {
-            $title = 'Auction <b>'.$cart['auction'].'</b> '.$order_name.' cart: <a href="checkout" class="btn btn-primary">Proceed to checkout</a>';
+            $title = '<b>'.$cart['auction'].'</b> '.$order_name.' cart: <a href="checkout" class="btn btn-primary">Proceed to checkout</a>';
 
             $table_name = $table_prefix.'order_item'; 
             $table = new Cart($this->container->mysql,$this->container,$table_name);
@@ -54,7 +54,10 @@ class CartController
             
             if(strpos('list',$table->getMode()) !== false) {
                 $totals = Helpers::getCartItemTotals($db,$table_prefix,$cart['order_id']);
-                $html .= '<p><strong>Bid total: </strong>'.CURRENCY_SYMBOL.number_format($totals['total'],2).' for '.$totals['no_items'].' lots</p>';
+                $html .= '<p><strong>Bid total: </strong>'.CURRENCY_SYMBOL.number_format($totals['total'],2).' for '.$totals['no_items'].' lots : '.
+                         '<a href="checkout" class="btn btn-primary">Proceed to checkout</a></p>';
+
+                //$html .= '<p></p>';
 
                 /*
                 $template_auction = new Template(BASE_TEMPLATE.'auction/');

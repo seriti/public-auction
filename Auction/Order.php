@@ -33,7 +33,7 @@ class Order extends Table
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','new'=>'ACTIVE'));
         
         //order table also store cart contents before converted to an order in checkout wizard
-        $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'" AND T.user_id <> 0 ');
+        $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'" AND T.user_id <> 0 AND T.status <> "NEW"');
 
         $this->addSortOrder('T.order_id DESC','Most recent first','DEFAULT');
 
@@ -43,7 +43,7 @@ class Order extends Table
         $this->addAction(array('type'=>'popup','text'=>'Lots','url'=>'order_item','mode'=>'view','width'=>700,'height'=>600));
         $this->addAction(array('type'=>'popup','text'=>'Messages','url'=>'order_message','mode'=>'view','width'=>700,'height'=>600));
 
-        $sql_status = '(SELECT "ACTIVE") UNION (SELECT "CLOSED") UNION (SELECT "HIDE")';
+        $sql_status = '(SELECT "ACTIVE") UNION (SELECT "CLOSED") UNION (SELECT "HIDE") UNION (SELECT "NEW")';
         $this->addSelect('status',$sql_status);
         $this->addSelect('auction_id','SELECT auction_id,name FROM '.TABLE_PREFIX.'auction ORDER BY date_start_live DESC');
 
