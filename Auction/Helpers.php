@@ -412,18 +412,19 @@ class Helpers {
         $table_item = $table_prefix.'order_item';
         $table_ship_location = $table_prefix.'ship_location';
         $table_ship_option = $table_prefix.'ship_option';
-        //NB: payment is associated with Auction Invoices NOT Orders
-        //$table_payment = $table_prefix.'payment';
+        $table_payment_option = $table_prefix.'pay_option';
 
         $sql = 'SELECT O.order_id,O.auction_id,O.date_create,O.status,O.total_bid,O.total_success,'.
                       'O.ship_address,O.ship_location_id,O.ship_option_id, '.
                       'A.name AS auction, A.date_start_postal AS auction_start_postal, A.date_start_live AS auction_start_live, '.
-                      'O.user_id, U.name AS user_name, U.email AS user_email, L.name AS ship_location, S.name AS ship_option '.
+                      'O.user_id, U.name AS user_name, U.email AS user_email, '.
+                      'L.name AS ship_location, S.name AS ship_option, P.name AS pay_option '.
                'FROM '.$table_order.' AS O '.
                      'JOIN '.$table_auction.' AS A ON(O.auction_id = A.auction_id) '.
                      'LEFT JOIN '.TABLE_USER.' AS U ON(O.user_id = U.user_id) '.
                      'LEFT JOIN '.$table_ship_location.' AS L ON(O.ship_location_id = L.location_id) '.
                      'LEFT JOIN '.$table_ship_option.' AS S ON(O.ship_option_id = S.option_id) '.
+                     'LEFT JOIN '.$table_payment_option.' AS P ON(O.pay_option_id = P.option_id) '.
                'WHERE O.order_id = "'.$db->escapeSql($order_id).'" ';
         $order = $db->readSqlRecord($sql);
         if($order === 0) {
@@ -667,7 +668,10 @@ class Helpers {
                 $sql = 'SELECT U.user_id,U.name,U.email,U.access,E.extend_id,E.name_invoice,E.bid_no,E.seller_id,E.cell,E.tel,E.email_alt,E.bill_address,E.ship_address '.
                        'FROM '.TABLE_USER.' AS U LEFT JOIN '.TABLE_PREFIX.'user_extend AS E ON(U.user_id = E.user_id) '.
                        'WHERE '.$where;
-                $rec = $db->readSqlRecord($sql);    
+                $rec = $db->readSqlRecord($sql); 
+                if($rec != 0) {
+                    if($rec['name_invoice'] === '' or is_null($rec['name_invoice'])) $rec['name_invoice'] = $rec['name'];
+                }   
             }
         }    
 

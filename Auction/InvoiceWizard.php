@@ -80,9 +80,24 @@ class InvoiceWizard extends Wizard
                     $user_id = $order['order']['user_id'];
                     $user = Helpers::getUserData($this->db,'USER_ID',$user_id);
                     if($user === 0 ) $this->addError('INVALID '.MODULE_AUCTION['labels']['order'].' linked user ID['.$user_id.']');
+
+                    $payment_option = $order['order']['pay_option'];
                 }    
+            } else {
+                //find most recent order for location/payment/shipping options selected
+                $sql = 'SELECT order_id FROM '.TABLE_PREFIX.'order '.
+                       'WHERE auction_id = "'.AUCTION_ID.'" AND user_id = "'.$user['user_id'].'" '.
+                       'ORDER BY order_id DESC LIMIT 1';
+                $last_order_id = $this->db->readSqlValue($sql,0);
+                if($last_order_id !== 0) {
+                    $last_order = Helpers::getOrderDetails($this->db,TABLE_PREFIX,$last_order_id,$error_tmp);
+                    $payment_option = $last_order['order']['pay_option'];
+                }
             }
 
+            //echo 'COMMENT;'.$this->form['invoice_comment'];
+            //die('Paymentr:'.$payment_option);
+            
             if(!$this->errors_found) {
 
                 //invoicing an order assumes that order created only with unsold lots after an auction
@@ -109,6 +124,9 @@ class InvoiceWizard extends Wizard
             }
 
             if(!$this->errors_found) {
+                //populate any additional info related to order/invoice
+                $this->form['invoice_comment'] = 'Your prefered payment option: '.$payment_option;
+                
                 //invoice items setup
                 $item_no = 0;
                 $item_total = 0.00;
@@ -394,7 +412,7 @@ class InvoiceWizard extends Wizard
                 } else {
                     $this->addMessage('Successfully sent invoice to "'.$email.'" ');
                 }  
-                if($email_xtra != '' and $error == '') {
+                if($error == '' and $email_xtra != '' and $email_xtra !== $email) {
                     HelpersPayment::sendInvoice($this->db,$this->container,$user['user_id'],$this->data['invoice_id'],$email_xtra,$error);
                     if($error != '') {
                         $error_tmp = 'Could not send invoice to "'.$email_xtra.'" ';

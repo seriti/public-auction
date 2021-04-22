@@ -206,10 +206,22 @@ class CheckoutWizard extends Wizard
             //finally email order details 
             if(!$this->errors_found) {
                 $subject = 'Initial '.MODULE_AUCTION['labels']['order'].' details';
+
+                //NB: must make this configurable by admin at some point
+                $message = 'Thank you for your bids received.<br/>'.
+                           'You can view or review your bid form in <a href="'.BASE_URL.'public/account/dashboard">Your Account</a> and delete or amend bids if you wish,  '.
+                           'or <a href="'.BASE_URL.'public/contact">contact us</a> and we will do so on your behalf.<br/>'.
+                           'You may also simply generate another bid form. Multiple bid forms are not a problem.<br/>'.
+                           'If you want us to break any bidding ties, please <a href="'.BASE_URL.'public/contact">contact us</a> and we will increase your bid by one bidding step.<br/>'.
+                           'You will be advised after completion of auction.';
+
+                /*
                 $message = 'You will be contacted after completion of auction.<br/>'.
                            'You can view your bid forms on <a href="'.BASE_URL.'public/account/dashboard">account dashboard</a> and delete bids if you wish.<br/> '.
                            'Please contact us If you want to raise or add any bids, and we will do so on your behalf.<br/>'.
                            'Alternatively you can simply generate another bid form. Multiple bid forms are not a problem.';
+                */
+                           
                 $param = [];
                 Helpers::sendOrderMessage($this->db,$this->table_prefix,$this->container,$this->data['order_id'],$subject,$message,$param,$error_tmp);
                 if($error_tmp == '') {

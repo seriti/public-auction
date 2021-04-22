@@ -14,9 +14,11 @@ $item_vat = $data['item_vat'];
 
 if($form['email'] !== '') $email = $form['email']; else $email = $user['email'];
 if($form['email_xtra'] !== '') $email_xtra = $form['email_xtra']; else $email_xtra = $user['email_alt'];
-if($form['vat'] !== '') $vat = $form['vat']; else $vat = $item_vat;
-if($form['comment'] !== '') $comment = $form['comment']; else $comment = '';
+//dont want duplicate emails being sent
+if($email_xtra === $email) $email_xtra = '';
 
+if($form['vat'] !== '') $vat = $form['vat']; else $vat = $item_vat;
+if($form['invoice_comment'] !== '') $comment = $form['invoice_comment']; else $comment = '';
 
 //identify user and invoice dates
 $html_items = '';
@@ -25,8 +27,8 @@ $html_items .= '<h1>'.$user['name'].' Auction: '.AUCTION_NAME.'</h1>';
 $param['class'] = 'form-control';
   
 $html_items .= '<table>'.
-               '<tr><td>FOR: </td><td>'.Form::textAreaInput('invoice_for',$user['name_invoice'],'','',$param).'</td></tr>'.
-               '<tr><td>COMMENT: </td><td>'.Form::textAreaInput('invoice_comment',$comment,'','',$param).'</td></tr>'.
+               '<tr><td>FOR: </td><td>'.Form::textAreaInput('invoice_for',$user['name_invoice'],40,'',$param).'</td></tr>'.
+               '<tr><td>COMMENT: </td><td>'.Form::textAreaInput('invoice_comment',$comment,40,'',$param).'</td></tr>'.
                '</table>';
 
 $item_no = count($items[0])-1; //first line contains headers for pdf

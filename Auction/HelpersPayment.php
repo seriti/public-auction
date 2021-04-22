@@ -113,9 +113,12 @@ class HelpersPayment {
         $pdf->Cell(30,$row_h,'Invoice :',0,0,'R',0);
         $pdf->Cell(30,$row_h,$data['no'],0,0,'L',0);
         $pdf->Ln($row_h);
+
+        $str = $data['for'].' (User ID '.$user['user_id'].')';
         $pdf->Cell(30,$row_h,'To :',0,0,'R',0);
-        $pdf->Cell(30,$row_h,$data['for'],0,0,'L',0);
+        $pdf->Cell(30,$row_h,$str,0,0,'L',0);
         $pdf->Ln($row_h);
+        
         $pdf->Cell(30,$row_h,'Date issued :',0,0,'R',0);
         $pdf->Cell(30,$row_h,date('j-F-Y'),0,0,'L',0);
         $pdf->Ln($row_h);
