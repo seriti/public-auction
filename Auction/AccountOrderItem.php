@@ -20,8 +20,6 @@ class AccountOrderItem extends Table
         $table_param = ['row_name'=>'Lot','col_label'=>'lot_id','pop_up'=>true,
                         'table_edit_all'=>$active_order,'update_calling_page'=>$active_order];
         parent::setup($table_param);    
-
-        
                        
         //NB: specify master table relationship
         $this->setupMaster(array('table'=>$this->table_prefix.'order','key'=>'order_id','child_col'=>'order_id', 
@@ -88,6 +86,18 @@ class AccountOrderItem extends Table
     {
         $order_id = $this->master['key_val'];
         Helpers::updateOrderTotals($this->db,$this->table_prefix,$order_id,$error);
+    }
+
+    protected function afterUpdateTable($action) 
+    {
+        if($action === 'UPDATE' or $action === 'DELETE') {
+            $order_id = $this->master['key_val'];
+            $error = '';
+            $subject = 'UPDATED';
+            $message = 'You updated your '.MODULE_AUCTION['labels']['order'].'. Please view revised details below.';
+            $param=[];
+            Helpers::sendOrderMessage($this->db,$this->table_prefix,$this->container,$order_id,$subject,$message,$param,$error);    
+        }
     }
 }
 

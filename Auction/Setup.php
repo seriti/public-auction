@@ -41,5 +41,17 @@ class Setup extends SetupModule
         $param['info'] = 'Specify the name and title you wish to have below signature im age.';
         $param['value'] = 'Chief Executive Officer';
         $this->addDefault('TEXT','AUCTION_SIGN_TXT','Invoice signature subtext',$param);
+
+        $param = [];
+        $param['info'] = 'Select the number of lots per page when capturing auction results';
+        $param['value'] = 10;
+        $param['options'] = array(10=>'10 lots per page',20=>'20 lots per page',50=>'50 lots per page');
+        $this->addDefault('SELECT','AUCTION_LOTS_PER_PAGE','Auction Lots per page',$param);
+
+        $param = [];
+        $param['info'] = 'Select the lot table header options for catalogs';
+        $param['value'] = 'NONE';
+        $param['options'] = array('NONE'=>'No headers','ALL'=>'Header in ALL catalog documents');
+        $this->addDefault('SELECT','AUCTION_CATALOG_HEADER','Catalog '.MODULE_AUCTION['labels']['category'].' headers',$param);
     }    
 }

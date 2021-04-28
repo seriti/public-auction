@@ -445,7 +445,10 @@ class HelpersReport {
 
         $category_header = false;
         $lot_no_display = true;
-        $pdf_override = true;;
+        $pdf_override = true;
+
+        $str = $system->getDefault('ACTION_CATEGORY_HEADER','NONE');
+        if($str === 'ALL') $category_header = true;
         
         if(!isset($options['output'])) $options['output'] = 'BROWSER';
         if(!isset($options['format'])) $options['format'] = 'PDF';
@@ -467,7 +470,7 @@ class HelpersReport {
                 $error .= 'Invalid Auction['.$auction_id.'] selected.';
             } else {
                 $sql = 'SELECT L.lot_id,L.lot_no,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
-                              'L.bid_open,L.bid_book_top,L.bid_final,L.status,L.seller_id, '.  
+                              'L.buyer_id,L.bid_no,L.bid_open,L.bid_book_top,L.bid_final,L.status,L.seller_id, '.  
                               'CT.level AS cat_level,CT.title AS cat_name,CN.name AS `condition` '.
                        'FROM '.$table_lot.' AS L '.
                              'JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
@@ -516,11 +519,7 @@ class HelpersReport {
 
             $doc_name = $doc_name_base.'.pdf';
             $page_layout = 'Portrait';
-            if($options['layout'] === 'MASTER') {
-                $page_layout = 'Landscape';
-                $category_header = true;
-            }    
-
+            if($options['layout'] === 'MASTER') $page_layout = 'Landscape';
 
             $pdf = new Pdf($page_layout,'mm','A4');
             $pdf->AliasNbPages();
@@ -531,8 +530,8 @@ class HelpersReport {
             if($pdf_override) {
                 $pdf->bg_image = array('images/logo.jpeg',5,140,50,20,'YES'); //NB: YES flag turns off logo image display
                 $pdf->page_margin = array(10,10,10,10);//top,left,right,bottom!!
-                $pdf->text = array(33,33,33,'',6);
-                $pdf->h1_title = array(33,33,33,'B',10,'',8,20,'L','YES',33,33,33,'B',12,20,180);
+                //$pdf->text = array(33,33,33,'',11);
+                //$pdf->h1_title = array(33,33,33,'B',10,'',8,20,'L','YES',33,33,33,'B',12,20,180);
             }
             
             //NB footer must be set before this
@@ -558,16 +557,19 @@ class HelpersReport {
             $pdf->MultiCell(120,$row_h,$auction['description'],0,'L',0);      
             $pdf->Ln($row_h);
             */
-            
-            $pdf->Cell(100,$row_h,'End date POSTAL :',0,0,'R',0);
-            $pdf->Cell(100,$row_h,Date::formatDate($auction['date_end_postal']),0,0,'L',0);
-            $pdf->Ln($row_h);
-            if(!$auction['postal_only']) {
-                $pdf->Cell(100,$row_h,'Start date LIVE :',0,0,'R',0);
-                $pdf->Cell(100,$row_h,Date::formatDate($auction['date_start_live']),0,0,'L',0);
+
+            if($options['layout'] !== 'MASTER') {
+                $pdf->Cell(100,$row_h,'End date POSTAL :',0,0,'R',0);
+                $pdf->Cell(100,$row_h,Date::formatDate($auction['date_end_postal']),0,0,'L',0);
                 $pdf->Ln($row_h);
+                if(!$auction['postal_only']) {
+                    $pdf->Cell(100,$row_h,'Start date LIVE :',0,0,'R',0);
+                    $pdf->Cell(100,$row_h,Date::formatDate($auction['date_start_live']),0,0,'L',0);
+                    $pdf->Ln($row_h);
+                }
+                $pdf->Ln($row_h);    
             }
-            $pdf->Ln($row_h);
+            
            
             //need to add some images here??
             /* 
@@ -615,7 +617,7 @@ class HelpersReport {
             }
 
             if($options['layout'] === 'MASTER') {
-                $col_width = array(10,20,30,10,100,10,10,20,20,20,20,10);
+                $col_width = array(10,20,30,10,120,10,10,15,15,15,15,10);
                 $col_type  = array('','','','','','CASH0','CASH0','','','','',''); 
                
                 $cat_data_initial[0][$row] = 'Lot';
@@ -627,9 +629,9 @@ class HelpersReport {
                 $cat_data_initial[6][$row] = 'Est.';
                 $cat_data_initial[7][$row] = 'Seller';
                 $cat_data_initial[8][$row] = 'Open@';
-                $cat_data_initial[9][$row] = 'Top book bid';
+                $cat_data_initial[9][$row] = 'Book bid';
                 $cat_data_initial[10][$row] = 'Price';
-                $cat_data_initial[11][$row] = 'Buyer no';
+                $cat_data_initial[11][$row] = 'Buyer';
             }
             
             foreach($lots as $lot_id => $lot) {
@@ -700,9 +702,20 @@ class HelpersReport {
                     $cat_data[6][$row] = $lot['price_estimate']; 
                     $cat_data[7][$row] = $lot['seller_id'];
                     $cat_data[8][$row] = '';
-                    $cat_data[9][$row] = '';
+
+                    //top online bid or live bid depending on when report run
+                    if($lot['bid_book_top'] != 0) $str = $lot['bid_book_top']; else $str = '';
+                    $cat_data[9][$row] = $str;
                     $cat_data[10][$row] = '';
-                    $cat_data[11][$row] = '';
+
+                    //top bid buyer id or winning bid id & buyer no if captured at live auction
+                    if($lot['buyer_id'] != 0) {
+                        $str = $lot['buyer_id'];
+                        if($lot['bid_no'] !== '' and $lot['bid_no'] != $lot['buyer_id']) $str .= '('.$lot['bid_no'].')';
+                    } else {
+                        $str = '';
+                    }    
+                    $cat_data[11][$row] = $str;
                 }
 
                 $lot_index[$lot_id] = $pdf->PageNo().', '.$category.', row '.$row;

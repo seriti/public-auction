@@ -79,7 +79,7 @@ class Helpers {
                 } else {
                     $sql = 'SELECT O.user_id,O.date_create,I.price '.
                            'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
-                           'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" AND O.user_id > 0 AND O.status = "ACTIVE" '.
+                           'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" AND O.user_id > 0 AND O.status = "CLOSED" '.
                            'ORDER BY I.price DESC, O.date_create '.
                            'LIMIT 1';
                     $best_bid = $db->readSqlRecord($sql); 
@@ -241,7 +241,7 @@ class Helpers {
         if($lot == 0) {
             $error .= 'Unrecognised Lot['.$lot_id.']';
         } else {
-            if($lot['auction_id'] !== $auction_id) $error .= 'Lot No['.$lot['lot_no'].'] & ID['.$lot_id.'] auction['.$lot['auction_id'].'] not same as active auction['.$auction_id.'] ';
+            if($lot['auction_id'] !== $auction_id) $error .= 'Lot No['.$lot['lot_no'].'] & ID['.$lot_id.'] auction ID['.$lot['auction_id'].'] not same as active auction ID['.$auction_id.'] ';
             if($lot['status'] === 'SOLD') {
                 $sql = 'SELECT invoice_id,price '.
                        'FROM '.$table_invoice_item.' WHERE lot_id = "'.$db->escapeSql($lot_id).'" ';
@@ -262,13 +262,13 @@ class Helpers {
             $sql = 'SELECT O.order_id,O.user_id,I.price '.
                    'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
                    'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.status <> "HIDE" AND '.
-                         'I.lot_id = "'.$db->escapeSql($id).'" AND I.price > "'.$db->escapeSql($price).'" ';
+                         'I.lot_id = "'.$db->escapeSql($lot_id).'" AND I.price > "'.$db->escapeSql($price).'" ';
             $shafted = $db->readSqlArray($sql);            
             if($shafted != 0) {
                 foreach($shafted as $order_id => $order) {
                     $user = Self::getUserData($db,'USER_ID',$order['user_id']);
                     $error .= 'User :'.$user['name'].' ID['.$order['user_id'].'] ';
-                    if($user['bid_no'] != '') $error .= 'with Bid code['.$user['bid_no'].'] ';
+                    if($user['bid_no'] != '') $error .= '& Bid No.['.$user['bid_no'].'] ';
                     $error .= 'Submitted a higher online bid['.$order['price'].'] in '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']<br/>';
                 }
                 $error .= 'You can change '.MODULE_AUCTION['labels']['order'].' status to HIDE if you wish to ignore this '.MODULE_AUCTION['labels']['order'].'.';

@@ -12,7 +12,9 @@ class LotAuction extends Table
     //configure
     public function setup($param = []) 
     {
-        $param = ['row_name'=>'Lot','col_label'=>'name','table_edit_all'=>true,'max_rows'=>10];
+        $max_rows = $this->container->system->getDefault('AUCTION_LOTS_PER_PAGE',10);
+
+        $param = ['row_name'=>'Lot','col_label'=>'name','table_edit_all'=>true,'max_rows'=>$max_rows,'nav_show'=>'TOP_BOTTOM'];
         parent::setup($param);
 
         $access['delete']=false;
