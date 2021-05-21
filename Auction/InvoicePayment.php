@@ -22,6 +22,9 @@ class InvoicePayment extends Table
 
         $status_list = ['NEW','CONFIRMED'];
         $this->addSelect('status',['list'=>$status_list,'list_assoc'=>false]);
+
+        $this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit'));
+        $this->addAction(array('type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R'));
     }    
 }
 

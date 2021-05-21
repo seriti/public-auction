@@ -23,6 +23,7 @@ $app->group('/admin', function () {
         $this->any('/type', \App\Auction\TypeController::class);
         $this->any('/lot', \App\Auction\LotController::class);
         $this->any('/lot_auction', \App\Auction\LotAuctionController::class);
+        $this->any('/lot_archive', \App\Auction\LotArchiveController::class);
         $this->any('/lot_bid', \App\Auction\BidController::class);
         $this->any('/lot_image', \App\Auction\LotImageController::class);
         $this->any('/lot_info', \App\Auction\LotInfoController::class);

@@ -23,6 +23,7 @@ class Task extends SeritiTask
         $this->addTask('AUCTION','AUCTION_SETUP','All Auctions defaults');
 
         $this->addBlock('LOT',2,1,'Manage lot setup');
+        $this->addTask('LOT','LOT_ARCHIVE','View all archived lots'); 
         $this->addTask('LOT','LOT_SELLER','Manage lot sellers'); 
         $this->addTask('LOT','LOT_CONDITION','Manage lot conditions options');    
         $this->addTask('LOT','LOT_INDEX','Manage lot index terms'); 
@@ -73,6 +74,12 @@ class Task extends SeritiTask
 
         if($id === 'AUCTION_SETUP') {
             $location = 'setup';
+            header('location: '.$location);
+            exit;
+        }
+
+        if($id === 'LOT_ARCHIVE') {
+            $location = 'lot_archive';
             header('location: '.$location);
             exit;
         }

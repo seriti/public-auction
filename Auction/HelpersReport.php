@@ -617,8 +617,8 @@ class HelpersReport {
             }
 
             if($options['layout'] === 'MASTER') {
-                $col_width = array(10,20,30,10,120,10,10,15,15,15,15,10);
-                $col_type  = array('','','','','','CASH0','CASH0','','','','',''); 
+                $col_width = array(10,20,30,10,105,15,15,15,15,15,15,15);
+                $col_type  = array('','','','','','CASH0','CASH0','','CASH0','CASH0','CASH0',''); 
                
                 $cat_data_initial[0][$row] = 'Lot';
                 $cat_data_initial[1][$row] = $labels['category'];
