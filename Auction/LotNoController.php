@@ -28,7 +28,9 @@ class LotNoController
 
     public function __invoke($request, $response, $args)
     {
-        $output = Helpers::setupAuctionLotNos($this->db,AUCTION_ID);
+        //could pass through user access level and allow GOD to re-allocate lot numbers if no orders linked to auction
+        $options = ['user_access'=>'ADMIN'];
+        $output = Helpers::setupAuctionLotNos($this->db,AUCTION_ID,$options);
         if($output['error'] != '') $this->addError($output['error']);
         if($output['message'] != '') $this->addMessage($output['message']);
         

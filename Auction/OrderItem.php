@@ -24,7 +24,7 @@ class OrderItem extends Table
         $this->addTableCol(array('id'=>'item_id','type'=>'INTEGER','title'=>'Item ID','key'=>true,'key_auto'=>true,'list'=>false));
         //NB: set as STRING so can either capture Lot No(using "N" prefix) or ID 
         $this->addTableCol(array('id'=>'lot_no','type'=>'INTEGER','title'=>'Lot No.','linked'=>'L.lot_no'));
-        $this->addTableCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot description','edit_title'=>'Lot ID','new'=>'0'));
+        $this->addTableCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot description','edit_title'=>'Lot ID','new'=>'0','autofocus'=>true));
         $this->addTableCol(array('id'=>'price','type'=>'DECIMAL','title'=>'Bid Price'));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status'));
 

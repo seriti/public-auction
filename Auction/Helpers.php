@@ -24,6 +24,20 @@ use Psr\Container\ContainerInterface;
 //see also HelpersPayment and HelperReport
 class Helpers {
     
+    //generic record get, add any exceptions you want
+    public static function get($db,$table_prefix,$table,$id,$key = '') 
+    {
+        $table_name = $table_prefix.$table;
+
+        if($key === '') $key = $table.'_id';    
+        
+        $sql = 'SELECT * FROM '.$table_name.' WHERE '.$key.' = "'.$db->escapeSql($id).'" ';
+        
+        $record = $db->readSqlRecord($sql);
+                        
+        return $record;
+    }
+
     //assign best online bid data and remove shopping cart items linked to auction 
     public static function setupAuctionLotResults($db,$auction_id)
     {
@@ -113,17 +127,20 @@ class Helpers {
         return $output;
     }
 
-    public static function setupAuctionLotNos($db,$auction_id)
+    public static function setupAuctionLotNos($db,$auction_id,$options = [])
     {
         $error = '';
         $output = [];
         $output['error'] = '';
         $output['message'] = '';
 
+        if(!isset($options['user_access'])) $options['user_access'] = 'ADMIN';
+
         $table_auction = TABLE_PREFIX.'auction';
         $table_lot = TABLE_PREFIX.'lot';
         $table_condition = TABLE_PREFIX.'condition';
         $table_category = TABLE_PREFIX.'category';
+        $table_order = TABLE_PREFIX.'order';
 
         $sql = 'SELECT auction_id,name,summary,status '.
                'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
@@ -139,7 +156,22 @@ class Helpers {
         $sql = 'SELECT SUM(lot_no) FROM '.$table_lot.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
         $sum_lot_no = $db->readSqlValue($sql,0);
         if($sum_lot_no > 0) {
-            $output['error'] .= 'Auction['.$auction['name'].'] has already assigned Lot No`s. You cannot assign numbers again.';
+            if($options['user_access'] !== 'GOD') {
+                $output['error'] .= 'Auction['.$auction['name'].'] has already assigned Lot No`s. You cannot assign numbers again.';    
+            } else {
+                $sql = 'SELECT COUNT(*) FROM '.$table_order.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+                $sum_order_no = $db->readSqlValue($sql,0);
+                if($sum_order_no > 0) {
+                   $output['error'] .= 'Auction['.$auction['name'].'] has already assigned Lot No`s. '.
+                                       'AND '.$sum_order_no.' linked Orders, You cannot assign numbers again.'; 
+                } else {
+                    $output['message'] .= 'Auction['.$auction['name'].'] has already assigned Lot No`s, '.
+                                          'but NO orders are linked to auction so Lot numbers will be re-assigned. '.
+                                          'If you have sent catalogues out this will be a problem!<br/>'; 
+                }
+
+            }
+            
         }
 
         if($output['error'] === '') {
@@ -254,26 +286,29 @@ class Helpers {
 
         if($error === '') {
             //check above reserve price
-            if($price < $lot['price_reserve']) {
-                $error .= 'Lot price['.$price.'] less than reserve price['.$lot['price_reserve'].']. ';
-            }    
-       
-            //check that no valid order exists with a higher bid 
-            $sql = 'SELECT O.order_id,O.user_id,I.price '.
-                   'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
-                   'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.status <> "HIDE" AND '.
-                         'I.lot_id = "'.$db->escapeSql($lot_id).'" AND I.price > "'.$db->escapeSql($price).'" ';
-            $shafted = $db->readSqlArray($sql);            
-            if($shafted != 0) {
-                foreach($shafted as $order_id => $order) {
-                    $user = Self::getUserData($db,'USER_ID',$order['user_id']);
-                    $error .= 'User :'.$user['name'].' ID['.$order['user_id'].'] ';
-                    if($user['bid_no'] != '') $error .= '& Bid No.['.$user['bid_no'].'] ';
-                    $error .= 'Submitted a higher online bid['.$order['price'].'] in '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']<br/>';
+            if(MODULE_AUCTION['result']['check_reserve']) {
+                if($price < $lot['price_reserve']) {
+                    $error .= 'Lot price['.$price.'] less than reserve price['.$lot['price_reserve'].']. ';
                 }
-                $error .= 'You can change '.MODULE_AUCTION['labels']['order'].' status to HIDE if you wish to ignore this '.MODULE_AUCTION['labels']['order'].'.';
             }
-
+           
+            //check that no valid order exists with a higher bid 
+            if(MODULE_AUCTION['result']['check_bid_highest']) {
+                $sql = 'SELECT O.order_id,O.user_id,I.price '.
+                       'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
+                       'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.status <> "HIDE" AND '.
+                             'I.lot_id = "'.$db->escapeSql($lot_id).'" AND I.price > "'.$db->escapeSql($price).'" ';
+                $shafted = $db->readSqlArray($sql);            
+                if($shafted != 0) {
+                    foreach($shafted as $order_id => $order) {
+                        $user = Self::getUserData($db,'USER_ID',$order['user_id']);
+                        $error .= 'User :'.$user['name'].' ID['.$order['user_id'].'] ';
+                        if($user['bid_no'] != '') $error .= '& Bid No.['.$user['bid_no'].'] ';
+                        $error .= 'Submitted a higher online bid['.$order['price'].'] in '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']<br/>';
+                    }
+                    $error .= 'You can change '.MODULE_AUCTION['labels']['order'].' status to HIDE if you wish to ignore this '.MODULE_AUCTION['labels']['order'].'.';
+                }
+            }    
         } 
     }
 

@@ -13,8 +13,9 @@ class Dashboard extends DashboardTool
         $this->col_count = 2;  
 
         $login_user = $this->getContainer('user'); 
+        $user_access = $login_user->getAccessLevel();
 
-         $access = MODULE_AUCTION['access'];
+        $access = MODULE_AUCTION['access'];
 
         //(block_id,col,row,title)
         $this->addBlock('ADD',1,1,'Capture data');
@@ -26,6 +27,7 @@ class Dashboard extends DashboardTool
         $this->addItem('AUCTION','Capture multiple auction results',['link'=>'lot_auction']);
         $this->addItem('AUCTION','Invoice a user/order',['link'=>'invoice_wizard']);
         $this->addItem('AUCTION','Assign Lot numbers',['link'=>'lot_no']);
+            
         $this->addItem('AUCTION','Assign Online bid results to lots & clear any unprocessed carts',['link'=>'lot_result']);
 
         $this->addBlock('USER',1,2,'System Users');
@@ -37,7 +39,7 @@ class Dashboard extends DashboardTool
         }
         $this->addItem('USER',$title,['link'=>'order_orphan']);
 
-        if($login_user->getAccessLevel() === 'GOD') {
+        if($user_access === 'GOD') {
             $this->addBlock('CONFIG',1,3,'Module Configuration');
             $this->addItem('CONFIG','Setup Database',['link'=>'setup_data','icon'=>'setup']);
             $this->addItem('CONFIG','Setup Defaults',['link'=>'setup','icon'=>'setup']);

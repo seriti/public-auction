@@ -18,8 +18,8 @@ class LotArchive extends Table
         $param = ['row_name'=>'Lot','col_label'=>'name'];
         parent::setup($param);
 
-        //DO NOT ALLOW ANY EDITING HERE EVER
-        $this->modifyAccess(['read_only'=>true]);
+        //ALLOW ANY EDITING WITH EXTREME CAUTION, only allowed so can make copies
+        //$this->modifyAccess(['read_only'=>true]);
         
         $this->addTableCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'auction_id','type'=>'INTEGER','title'=>'Auction','join'=>'name FROM '.TABLE_PREFIX.'auction WHERE auction_id'));
@@ -50,6 +50,7 @@ class LotArchive extends Table
         $this->addSortOrder('CT.rank,T.type_txt1,T.type_txt2,CN.sort',$this->labels['category'].', then '.$this->labels['type_txt1'].', then '.$this->labels['type_txt2'].', then Condition');
         $this->addSortOrder('T.lot_id DESC','Order of creation, most recent first.','DEFAULT');
 
+        $this->addAction(array('type'=>'check_box','text'=>''));
         $this->addAction(array('type'=>'view','text'=>'view','icon_text'=>'view'));
         //$this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit'));
 
@@ -76,6 +77,139 @@ class LotArchive extends Table
                                   'list'=>true,'list_no'=>1,'storage'=>STORAGE,'access'=>IMAGE_CONFIG['access'],
                                   'link_url'=>'lot_image','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
 
+    }
+
+    protected function viewTableActions() {
+        $html = '';
+        $list = array();
+            
+        $status_set = 'NEW';
+        $date_set = date('Y-m-d');
+        
+        if(!$this->access['read_only']) {
+            $list['SELECT'] = 'Action for selected '.$this->row_name_plural;
+            //$list['STATUS_CHANGE'] = 'Change Lot Status.';
+            $list['COPY_LOT'] = 'Copy lot to another auction';
+        }  
+        
+        if(count($list) != 0){
+            $html .= '<span style="padding:8px;"><input type="checkbox" id="checkbox_all"></span> ';
+            $param['class'] = 'form-control input-medium input-inline';
+            $param['onchange'] = 'javascript:change_table_action()';
+            $action_id = '';
+            $status_change = 'NONE';
+            $auction_id_copy = '';
+            
+            $html .= Form::arrayList($list,'table_action',$action_id,true,$param);
+            
+            //javascript to show collection list depending on selecetion      
+            $html .= '<script type="text/javascript">'.
+                     '$("#checkbox_all").click(function () {$(".checkbox_action").prop(\'checked\', $(this).prop(\'checked\'));});'.
+                     'function change_table_action() {'.
+                     'var table_action = document.getElementById(\'table_action\');'.
+                     'var action = table_action.options[table_action.selectedIndex].value; '.
+                     'var status_select = document.getElementById(\'status_select\');'.
+                     'var auction_select = document.getElementById(\'auction_select\');'.
+                     'status_select.style.display = \'none\'; '.
+                     'auction_select.style.display = \'none\'; '.
+                     'if(action==\'STATUS_CHANGE\') status_select.style.display = \'inline\';'.
+                     'if(action==\'COPY_LOT\') auction_select.style.display = \'inline\';'.
+                     '}'.
+                     '</script>';
+            
+            $param = array();
+            $param['class'] = 'form-control input-small input-inline';
+            //$param['class']='form-control col-sm-3';
+            $sql = '(SELECT "NONE") UNION (SELECT "NEW") UNION (SELECT "OK") UNION (SELECT "SOLD") UNION (SELECT "HIDE")';
+            $html .= '<span id="status_select" style="display:none"> status&raquo;'.
+                     Form::sqlList($sql,$this->db,'status_change',$status_change,$param).
+                     '</span>'; 
+            
+            $param['class'] = 'form-control input-medium input-inline';       
+            $sql = 'SELECT auction_id,name FROM '.TABLE_PREFIX.'auction WHERE status <> "HIDE" ';
+            $html .= '<span id="auction_select" style="display:none"> To Auction&raquo;'.
+                     Form::sqlList($sql,$this->db,'auction_id_copy',$auction_id_copy,$param).
+                     '</span>';
+                    
+            $html .= '&nbsp;<input type="submit" name="action_submit" value="Apply action to selected '.
+                     $this->row_name_plural.'" class="btn btn-primary">';
+        }  
+        
+        return $html; 
+    }
+  
+    //update multiple records based on selected action
+    protected function updateTable() {
+        $error_str = '';
+        $error_tmp = '';
+        $message_str = '';
+        $audit_str = '';
+        $audit_count = 0;
+        $html = '';
+            
+        $action = Secure::clean('basic',$_POST['table_action']);
+        if($action === 'SELECT') {
+            $this->addError('You have not selected any action to perform on '.$this->row_name_plural.'!');
+        } else {
+            if($action === 'STATUS_CHANGE') {
+                $status_change = Secure::clean('alpha',$_POST['status_change']);
+                $audit_str = 'Status change['.$status_change.'] ';
+                if($status_change === 'NONE') $this->addError('You have not selected a valid status['.$status_change.']!');
+            }
+            
+            if($action === 'COPY_LOT') {
+                $auction_id_copy = Secure::clean('integer',$_POST['auction_id_copy']);
+                $audit_str = 'Copy Lot to auction['.$auction_id_copy.'] ';
+            }
+            
+            if(!$this->errors_found) {     
+                foreach($_POST as $key => $value) {
+                    if(substr($key,0,8) === 'checked_') {
+                        $lot_id = substr($key,8);
+                        $audit_str .= 'Lot ID['.$lot_id.'] ';
+                                            
+                        if($action === 'STATUS_CHANGE') {
+                            $sql = 'UPDATE '.$this->table.' SET status = "'.$this->db->escapeSql($status_change).'" '.
+                                   'WHERE lot_id = "'.$this->db->escapeSql($lot_id).'" ';
+                            $this->db->executeSql($sql,$error_tmp);
+                            if($error_tmp === '') {
+                                $message_str = 'Status set['.$status_change.'] for lot ID['.$lot_id.'] ';
+                                $audit_str .= ' success!';
+                                $audit_count++;
+                                
+                                $this->addMessage($message_str);                
+                            } else {
+                                $this->addError('Could not update status for lot['.$lot_id.']: '.$error_tmp);                
+                            }  
+                        }
+                        
+                        if($action === 'COPY_LOT') {
+                            Helpers::copyLot($this->db,$lot_id,$auction_id_copy,$error_tmp);
+                            
+                            if($error_tmp === '') {
+                                $audit_str .= ' success!';
+                                $audit_count++;
+                                $this->addMessage('lot['.$lot_id.'] copied to auction['.$auction_id_copy.']');      
+                            } else {
+                                $this->addError('Could NOT copy lot['.$lot_id.']:'.$error_tmp);
+                            }   
+                        }  
+                    }   
+                }  
+            
+            }  
+        }  
+        
+        //audit any updates except for deletes as these are already audited 
+        if($audit_count != 0 and $action != 'DELETE') {
+            $audit_action = $action.'_'.strtoupper($this->table);
+            Audit::action($this->db,$this->user_id,$audit_action,$audit_str);
+        }  
+            
+        $this->mode = 'list';
+        $html .= $this->viewTable();
+            
+        return $html;
     }
 
 

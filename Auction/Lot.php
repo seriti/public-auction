@@ -23,7 +23,7 @@ class Lot extends Table
         $this->addForeignKey(array('table'=>TABLE_PREFIX.'order_item','col_id'=>'lot_id','message'=>'Auction Order item'));
 
         $this->addTableCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
-        $this->addTableCol(array('id'=>'lot_no','type'=>'INTEGER','title'=>'Catalog No.','edit'=>false));
+        $this->addTableCol(array('id'=>'lot_no','type'=>'INTEGER','title'=>'Catalog No.','edit'=>true,'required'=>false));
         $this->addTableCol(array('id'=>'seller_id','type'=>'INTEGER','title'=>'Seller','join'=>'name FROM '.TABLE_PREFIX.'seller WHERE seller_id'));
         $this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$this->labels['category'],'join'=>'title FROM '.TABLE_PREFIX.'category WHERE id'));
         $this->addTableCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$this->labels['type'],'join'=>'name FROM '.TABLE_PREFIX.'type WHERE type_id'));

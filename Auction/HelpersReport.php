@@ -14,6 +14,7 @@ use Seriti\Tools\Doc;
 
 use Seriti\Tools\MAIL_FROM;
 use Seriti\Tools\BASE_URL;
+use Seriti\Tools\TABLE_AUDIT;
 use Seriti\Tools\TABLE_USER;
 use Seriti\Tools\SITE_NAME;
 use Seriti\Tools\BASE_UPLOAD;
@@ -22,9 +23,66 @@ use Seriti\Tools\UPLOAD_TEMP;
 
 use Psr\Container\ContainerInterface;
 
+use App\Auction\Helpers;
+
 
 //static functions for auction module
 class HelpersReport {
+    public static function AuctionStatistics($db,$auction_id,$options = [],&$error)  
+    {
+        $html = '';
+        $error = '';
+        $stats = [];
+
+        $table_seller = TABLE_PREFIX.'seller';
+        $table_lot = TABLE_PREFIX.'lot';
+        $table_auction = TABLE_PREFIX.'auction';
+        $table_condition = TABLE_PREFIX.'condition';
+        $table_category = TABLE_PREFIX.'category';
+
+                                
+        if(!isset($options['output'])) $options['output'] = 'BROWSER';
+        if(!isset($options['format'])) $options['format'] = 'HTML';
+        $options['format'] = strtoupper($options['format']);
+
+        if(!isset($options['layout'])) $options['layout'] = 'COMPRESSED';
+
+        if($options['format'] !== 'HTML') {
+            $error .= 'Only HTML on page format supported for this report';
+        }
+
+        if($auction_id === 'ALL') {
+            $error .= 'Cannot generate document for ALL auctions.';
+        } else {
+            $sql = 'SELECT auction_id,name,summary,description,postal_only,date_start_postal,date_end_postal,date_start_live,status '.
+                   'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $auction = $db->readSqlRecord($sql,$db); 
+            if($auction === 0) {
+                $error .= 'Invalid Auction['.$auction_id.'] selected.';
+            } else {
+                $sql = 'SELECT COUNT(*) AS lot_count,SUM(L.price_reserve) AS reserve,SUM(L.price_estimate) AS estimate,SUM(L.bid_final) AS bid '.                
+                       'FROM '.$table_lot.' AS L '.
+                       'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" ';
+                $stats = $db->readSqlRecord($sql);
+                if($stats == 0) $error .= 'No lots found for auction!';
+            }    
+        }
+
+        if($error !== '') return false;
+       
+
+        if($options['format'] === 'ARRAY') return $stats;
+
+        if($options['format'] === 'HTML') {
+            $html .= '<H1>'.$auction['name'].': statistics</H1>';
+            $html .= '<h2>Total Lots: '.number_format($stats['lot_count'],0).'</h2>';    
+            $html .= '<h2>Total reserve value: '.number_format($stats['reserve'],2).'</h2>';
+            $html .= '<h2>Total estimate value: '.number_format($stats['estimate'],2).'</h2>'; 
+            $html .= '<h2>Total bid value: '.number_format($stats['bid'],2).'</h2>';
+
+            return $html;       
+        }
+    }    
 
     //get lists of successful bids for each buyer so can prepare for invoicing
     public static function buyerInvoiceLotsReport($db,$auction_id,$options = [],&$doc_name,&$error)  
@@ -591,7 +649,7 @@ class HelpersReport {
             $labels = MODULE_AUCTION['labels'];
 
             if($options['layout'] === 'STANDARD') {
-                $col_width = array(10,20,30,10,100,10,10);
+                $col_width = array(10,20,30,10,80,20,20);
                 $col_type  = array('','','','','','CASH0','CASH0'); 
                
                 $cat_data_initial[0][$row] = 'Lot';
@@ -604,7 +662,7 @@ class HelpersReport {
             }
 
             if($options['layout'] === 'REALISED') {
-                $col_width = array(10,20,30,10,100,10,10);
+                $col_width = array(10,20,30,10,80,20,20);
                 $col_type  = array('','','','','','CASH0',''); 
                
                 $cat_data_initial[0][$row] = 'Lot';
@@ -854,8 +912,7 @@ class HelpersReport {
         } else {
             $doc_name_base = 'auction_'.$auction_id.'_'.str_replace(' ','_',$auction['name']).'_'.strtolower($options['layout']).'_'.date('Y-m-d');
         }
-        
-       
+              
 
         //lot block setup
         $pdf_options = [];
@@ -902,7 +959,7 @@ class HelpersReport {
                 $data[1][$row] = 'Price';
             }
 
-                       
+            $totals = ['reserve'=>0.00,'estimate'=>0.00,'bid'=>0.00,'lots'=>count($lots)];
             foreach($lots as $lot_id => $lot) {
 
                 $row++;
@@ -912,10 +969,34 @@ class HelpersReport {
                 
                 if($options['layout'] === 'COMPRESSED') {
                     $data[0][$row] = $lot_str;
-                    if($lot['bid_final']== 0) $price_str = ''; else $price_str = number_format(round($lot['bid_final'],0));
+                    if($lot['bid_final']== 0) {
+                        $price_str = '';
+                    } else {
+                        $price_str = number_format(round($lot['bid_final'],0));
+                        $totals['bid'] += $lot['bid_final'];
+                    }    
                     $data[1][$row] = $price_str; 
                 }
+
+                $totals['reserve'] += $lot['price_reserve'];
+                $totals['estimate'] += $lot['price_estimate'];
             }
+
+            $pdf->changeFont('H2');
+            $pdf->Cell(100,$row_h,'Total lots :',0,0,'R',0);
+            $pdf->Cell(100,$row_h,number_format($totals['lots'],0),0,0,'L',0);
+            $pdf->Ln($row_h);
+            $pdf->Cell(100,$row_h,'Total reserve value :',0,0,'R',0);
+            $pdf->Cell(100,$row_h,number_format($totals['reserve'],2),0,0,'L',0);
+            $pdf->Ln($row_h);
+            $pdf->Cell(100,$row_h,'Total estimate value :',0,0,'R',0);
+            $pdf->Cell(100,$row_h,number_format($totals['estimate'],2),0,0,'L',0);
+            $pdf->Ln($row_h);
+            $pdf->Ln($row_h);
+            $pdf->Cell(100,$row_h,'Total bid value :',0,0,'R',0);
+            $pdf->Cell(100,$row_h,number_format($totals['bid'],2),0,0,'L',0);
+            $pdf->Ln($row_h);
+            $pdf->Ln($row_h);
 
             
             $pdf->changeFont('TEXT');
@@ -1073,6 +1154,163 @@ class HelpersReport {
                 exit();
             }    
         }            
+                    
+
+        return $html;
+    }
+
+    //admin user productivity reportLOTS_CAPTURED
+    public static function lotCaptureReport($db,$user_id,$date_from,$date_to,$options = [],&$error)  
+    {
+        $error = '';
+        $error_tmp = '';
+        $html = '';
+
+        $table_audit = TABLE_AUDIT;
+        $table_auction = TABLE_PREFIX.'auction';
+        $table_lot = TABLE_PREFIX.'lot';
+
+        $name_str = 'Lots_created_';
+        
+        if(!isset($options['format'])) $options['format'] = 'HTML';
+
+        if($options['format'] == 'PDF') $error .= 'PDF format not currently available for this report.';
+
+        $user = Helpers::getUserData($db,'USER_ID',$user_id); 
+        
+        if($auction_id !== 'ALL') {
+            $sql = 'SELECT auction_id,name,summary,description,date_start_postal,date_start_live,status '.
+                   'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $auction = $db->readSqlRecord($sql,$db); 
+            if($auction === 0) {
+                $error .= 'Invalid Auction['.$auction_id.'] selected.';
+            }
+            $name_str .= 'auction'.$auction_id.'_'; 
+        } else {
+            $name_str .= 'all_auctions_';
+        }
+
+        $name_str .= 'user'.$user_id.'_from_'.$date_from.'_to_'.$date_to;
+
+        if($error !== '') return false;
+
+        $doc_name_base = $name_str;
+
+        $sql = 'SELECT audit_id, DATE(`date`) AS `date`, text, action  '.
+               'FROM '.$table_audit.' AS A '.
+               'WHERE A.user_id = "'.$db->escapeSql($user_id).'" AND A.action LIKE "%_AUC_LOT" AND  '.
+                     'DATE(A.date) >= "'.$db->escapeSql($date_from).'" AND DATE(A.date) <= "'.$db->escapeSql($date_to).'"'.
+               'ORDER BY A.date';
+        $audits = $db->readSqlArray($sql);
+        if($audits == 0) $error .= 'No lots created matching your criteria';
+
+        if($error !== '') return false;
+
+        //construct data array
+        $data = [];
+        $r = 0;
+        $data[0][$r] = 'Date';
+        $data[1][$r] = 'No. Created';
+        $data[2][$r] = 'Create value';
+        $data[3][$r] = 'No. Updated';
+        $data[4][$r] = 'Update value';
+        $data[5][$r] = 'No. Deleted';
+        $data[6][$r] = 'Deleted value';
+        
+        $date_prev = '';
+        $total = ['create_no'=>0,'create_value'=>0,
+                  'update_no'=>0,'update_value'=>0,
+                  'delete_no'=>0,'delete_value'=>0];
+        foreach($audits as $audit) {
+            if($audit['date'] !== $date_prev) {
+                                    
+                if($date_prev !== '') {
+                    $r++; 
+                    $data[0][$r] = Date::formatDate($date_prev);
+                    $data[1][$r] = $total['date_create_no'];
+                    $data[2][$r] = $total['date_create_value'];
+                    $data[3][$r] = $total['date_update_no'];
+                    $data[4][$r] = $total['date_update_value'];
+                    $data[5][$r] = $total['date_delete_no'];
+                    $data[6][$r] = $total['date_delete_value'];
+                }                   
+                                    
+                
+                $total['date_create_no'] = 0;
+                $total['date_create_value'] = 0;
+                $total['date_update_no'] = 0;
+                $total['date_update_value'] = 0;
+                $total['date_delete_no'] = 0;
+                $total['date_delete_value'] = 0;
+            }
+
+            $action = explode('_',$audit['action']);
+            $verb = $action[0];
+            $lot = json_decode($audit['text'],true);
+            $value = $lot['price_reserve']; //could use price_estimate
+            switch($verb) {
+                case 'CREATE': 
+                    $total['create_no']++;
+                    $total['create_value'] += $value;
+                    $total['date_create_no']++;
+                    $total['date_create_value'] += $value;
+                    break;
+                case 'UPDATE': 
+                    $total['update_no']++;
+                    $total['update_value'] += $value;
+                    $total['date_update_no']++;
+                    $total['date_update_value'] += $value;
+                    break;
+                case 'DELETE':
+                    $total['delete_no']++;
+                    $total['delete_value'] += $value;
+                    $total['date_delete_no']++;
+                    $total['date_delete_value'] += $value;
+                    break;
+              
+            }
+
+            $date_prev = $audit['date'];
+        }
+
+        //final date totals
+        $r++; 
+        $data[0][$r] = Date::formatDate($date_prev);
+        $data[1][$r] = $total['date_create_no'];
+        $data[2][$r] = $total['date_create_value'];
+        $data[3][$r] = $total['date_update_no'];
+        $data[4][$r] = $total['date_update_value'];
+        $data[5][$r] = $total['date_delete_no'];
+        $data[6][$r] = $total['date_delete_value'];
+        
+
+        //totals for all cols
+        $r++; 
+        $data[0][$r] = 'Totals';
+        $data[1][$r] = $total['create_no'];
+        $data[2][$r] = $total['create_value'];
+        $data[3][$r] = $total['update_no'];
+        $data[4][$r] = $total['update_value'];
+        $data[5][$r] = $total['delete_no'];
+        $data[6][$r] = $total['delete_value'];
+
+        
+        if($options['format'] === 'HTML') {
+            $html = '<h2>'.$user['name'].'</h2>'.
+                    Html::arrayDumpHtml2($data,['show_key'=>true]);
+        }
+
+        if($options['format'] === 'CSV') {
+            $csv_data = '';
+            $doc_name = $doc_name_base.'.csv';
+
+            $csv_data = Csv::arrayDumpCsv($data);
+            Doc::outputDoc($csv_data,$doc_name,'DOWNLOAD');
+            exit();
+        }
+
+
+        //if($options['format'] === 'PDF') 
                     
 
         return $html;

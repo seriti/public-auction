@@ -24,10 +24,14 @@ class Report extends ReportTool
         $this->addReport('INVOICES_ISSUED','Auction invoices issued',$param); 
         $this->addReport('ORDERS_CREATED','Auction orders created',$param); 
 
+        //$param = ['input'=>['select_admin_user','select_dates','format']];
+        //$this->addReport('LOTS_CAPTURED','Auction lots created by admin user',$param); 
+        
         $param = ['input'=>['select_auction','select_seller','format']];
         $this->addReport('SELLER_IOU','Auction Seller IOU',$param); 
 
         $param = ['input'=>['select_auction','format']];
+        $this->addReport('AUCTION_STATS','View Auction Statistics',$param); 
         $this->addReport('AUCTION_PDF','Create Auction Lots listing PDF',$param); 
         $this->addReport('AUCTION_REALISED_PDF','Create REALISED Auction lots listing PDF',$param); 
         $this->addReport('AUCTION_REALISED_SMALL','Create REALISED COMPRESSED Auction lots listing PDF',$param);
@@ -43,7 +47,9 @@ class Report extends ReportTool
     
         $this->addInput('select_auction','');
         $this->addInput('select_user','');
+        $this->addInput('select_admin_user','');
         $this->addInput('select_seller','');
+        $this->addInput('select_dates','Select date period');
         $this->addInput('select_date_create','');
         $this->addInput('select_format','');
     }
@@ -70,12 +76,50 @@ class Report extends ReportTool
             $html .= Form::sqlList($sql,$this->db,'user_id',$user_id,$param);
         }
 
+        if($id === 'select_admin_user') {
+            $param = [];
+            $param['class'] = 'form-control input-medium';
+            $sql = 'SELECT user_id,name FROM '.TABLE_USER.' WHERE zone = "ADMIN" AND status <> "HIDE" ORDER BY name'; 
+            if(isset($form['admin_user_id'])) $admin_user_id = $form['admin_user_id']; else $admin_user_id = '';
+            $html .= Form::sqlList($sql,$this->db,'admin_user_id',$admin_user_id,$param);
+        }
+
         if($id === 'select_seller') {
             $param = [];
             $param['class'] = 'form-control input-medium';
             $sql = 'SELECT seller_id,name FROM '.TABLE_PREFIX.'seller WHERE status <> "HIDE" ORDER BY name'; 
             if(isset($form['seller_id'])) $seller_id = $form['seller_id']; else $seller_id = '';
             $html .= Form::sqlList($sql,$this->db,'seller_id',$seller_id,$param);
+        }
+
+        if($id === 'select_dates') {
+            $param = [];
+            $param['class'] = 'form-control bootstrap_date input-small';
+
+            $date = getdate();
+
+            if(isset($form['from_date'])) {
+                $from_date = $form['from_date'];
+            } else {
+                $from_date = date('Y-m-d',mktime(0,0,0,$date['mon']-1,$date['mday'],$date['year']));;
+            }
+
+            if(isset($form['to_date'])) {
+                $to_date = $form['to_date'];
+            } else {
+                $to_date = date('Y-m-d');;
+            }     
+            
+            $html .= '<table>
+                        <tr>
+                          <td align="right" valign="top" width="20%"><b>From date : </b></td>
+                          <td>'.Form::textInput('from_date',$from_date,$param).'</td>
+                        </tr>
+                        <tr>
+                          <td align="right" valign="top" width="20%"><b>To date : </b></td>
+                          <td>'.Form::textInput('to_date',$to_date,$param).'</td>
+                        </tr>
+                     </table>';
         }
 
         if($id === 'select_date_create') {
@@ -104,6 +148,11 @@ class Report extends ReportTool
         $pdf_name = '';
         $options['format'] = $form['format'];
         
+        if($id === 'AUCTION_STATS') {
+            $html .= HelpersReport::AuctionStatistics($this->db,$form['auction_id'],$options,$error);
+            if($error !== '') $this->addError($error);
+        }
+
         if($id === 'INVOICES_ISSUED') {
             $html .= HelpersReport::invoiceReport($this->db,'ALL',$form['user_id'],$form['auction_id'],$options,$error);
             if($error !== '') $this->addError($error);
@@ -111,6 +160,11 @@ class Report extends ReportTool
 
         if($id === 'ORDERS_CREATED') {
             $html .= HelpersReport::orderReport($this->db,'ALL',$form['user_id'],$form['auction_id'],$options,$error);
+            if($error !== '') $this->addError($error);
+        }
+
+        if($id === 'LOTS_CAPTURED') {
+            $html .= HelpersReport::lotCaptureReport($this->db,$form['admin_user_id'],$form['from_date'],$form['to_date'],$options,$error);
             if($error !== '') $this->addError($error);
         }
 
