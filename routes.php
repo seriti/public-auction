@@ -28,6 +28,7 @@ $app->group('/admin', function () {
         $this->any('/lot_image', \App\Auction\LotImageController::class);
         $this->any('/lot_info', \App\Auction\LotInfoController::class);
         $this->any('/lot_no', \App\Auction\LotNoController::class);
+        $this->any('/lot_notify_outbid', \App\Auction\LotNotifyOutbidController::class);
         $this->any('/lot_result', \App\Auction\LotResultController::class);
         $this->any('/dashboard', \App\Auction\DashboardController::class);
         $this->any('/order', \App\Auction\OrderController::class);

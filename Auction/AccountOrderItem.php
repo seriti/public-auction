@@ -2,12 +2,15 @@
 namespace App\Auction;
 
 use Seriti\Tools\Table;
+use Seriti\Tools\Secure;
+use Seriti\Tools\Form;
 
 use App\Auction\Helpers;
 
 class AccountOrderItem extends Table 
 {
     protected $table_prefix = MODULE_AUCTION['table_prefix'];
+    protected $lot_id_row;
 
     //configure
     public function setup($param = []) 
@@ -44,6 +47,10 @@ class AccountOrderItem extends Table
         $this->addTableCol(array('id'=>'price','type'=>'DECIMAL','title'=>'Bid Price','edit'=>true));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','edit'=>false));
 
+        //sort lots by auction specific lot no. 
+        $this->addSql('JOIN','LEFT JOIN '.$this->table_prefix.'lot AS L ON(T.lot_id = L.lot_id)');
+        $this->addSortOrder('L.lot_no','Lot Number','DEFAULT');
+
         if($active_order) {
             $this->addAction(['type'=>'check_box','text'=>'','checked'=>true]);
             //$this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit','pos'=>'L'));
@@ -54,11 +61,37 @@ class AccountOrderItem extends Table
         $this->addSearch(array('lot_id','price'),array('rows'=>1));
     } 
 
+    protected function modifyEditValue($col_id,$value,$edit_type,$param) 
+    {
+        if($col_id === 'price') {
+            $value = Secure::clean('float',$value);
+            $name = $param['name']; 
+
+            $input_param = [];
+            $input_param['class'] = $this->classes['edit_small'];
+            $html = Form::textInput($name,$value,$input_param);
+
+            $info = '';
+            $bids = Helpers::getBestBid($this->db,$this->table_prefix,$this->lot_id_row);
+            if($bids['active_bids']) {
+                if($bids['best_bid']['user_id'] != $this->user_id) $info .= '<span class="'.$this->classes['message'].'">There is a higher bid!</span>';
+            }
+
+            if($info !== '') $html .= $info;
+            
+            return $html;
+        }
+
+    }
+
     protected function modifyRowValue($col_id,$data,&$value)
     {
         if($col_id === 'lot_id') {
             $lot_id = $value;
             $s3 = $this->getContainer('s3');
+
+            //set for use by modifyEditValue()
+            $this->lot_id_row = $lot_id;
 
             $value = Helpers::getLotSummary($this->db,$this->table_prefix,$s3,$lot_id);
         }
@@ -95,7 +128,8 @@ class AccountOrderItem extends Table
             $error = '';
             $subject = 'UPDATED';
             $message = 'You updated your '.MODULE_AUCTION['labels']['order'].'. Please view revised details below.';
-            $param=[];
+            $param = [];
+            //$param['notify_higher_bid'] = true;
             Helpers::sendOrderMessage($this->db,$this->table_prefix,$this->container,$order_id,$subject,$message,$param,$error);    
         }
     }

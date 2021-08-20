@@ -501,12 +501,16 @@ class HelpersReport {
         $table_condition = TABLE_PREFIX.'condition';
         $table_category = TABLE_PREFIX.'category';
 
+        $description_only = false;
         $category_header = false;
         $lot_no_display = true;
         $pdf_override = true;
 
-        $str = $system->getDefault('ACTION_CATEGORY_HEADER','NONE');
+        $str = $system->getDefault('AUCTION_CATALOG_HEADER','NONE');
         if($str === 'ALL') $category_header = true;
+
+        $str = $system->getDefault('AUCTION_CATALOG_LAYOUT','NONE');
+        if($str === 'CONDENSED') $description_only = true;
         
         if(!isset($options['output'])) $options['output'] = 'BROWSER';
         if(!isset($options['format'])) $options['format'] = 'PDF';
@@ -647,49 +651,89 @@ class HelpersReport {
             $row = 0;
 
             $labels = MODULE_AUCTION['labels'];
-
+            
             if($options['layout'] === 'STANDARD') {
-                $col_width = array(10,20,30,10,80,20,20);
-                $col_type  = array('','','','','','CASH0','CASH0'); 
-               
-                $cat_data_initial[0][$row] = 'Lot';
-                $cat_data_initial[1][$row] = $labels['category'];
-                $cat_data_initial[2][$row] = 'Name';
-                $cat_data_initial[3][$row] = 'Cond.';
-                $cat_data_initial[4][$row] = 'Description';
-                $cat_data_initial[5][$row] = 'Res.';
-                $cat_data_initial[6][$row] = 'Est.';
+                if($description_only) {
+                    $col_width = array(10,20,120,20,20);
+                    $col_type  = array('','','','CASH0','CASH0'); 
+
+                    $cat_data_initial[0][$row] = 'Lot';
+                    $cat_data_initial[1][$row] = 'Condition';
+                    $cat_data_initial[2][$row] = 'Description';
+                    $cat_data_initial[3][$row] = 'Reserve';
+                    $cat_data_initial[4][$row] = 'Estimate';
+                } else {
+                    $col_width = array(10,20,30,10,80,20,20);
+                    $col_type  = array('','','','','','CASH0','CASH0'); 
+
+                    $cat_data_initial[0][$row] = 'Lot';
+                    $cat_data_initial[1][$row] = $labels['category'];
+                    $cat_data_initial[2][$row] = 'Name';
+                    $cat_data_initial[3][$row] = 'Cond.';
+                    $cat_data_initial[4][$row] = 'Description';
+                    $cat_data_initial[5][$row] = 'Res.';
+                    $cat_data_initial[6][$row] = 'Est.';
+                }
             }
 
             if($options['layout'] === 'REALISED') {
-                $col_width = array(10,20,30,10,80,20,20);
-                $col_type  = array('','','','','','CASH0',''); 
-               
-                $cat_data_initial[0][$row] = 'Lot';
-                $cat_data_initial[1][$row] = $labels['category'];
-                $cat_data_initial[2][$row] = 'Name';
-                $cat_data_initial[3][$row] = 'Con.';
-                $cat_data_initial[4][$row] = 'Description';
-                $cat_data_initial[5][$row] = 'Reserve';
-                $cat_data_initial[6][$row] = 'Realised';
+                if($description_only) {
+                    $col_width = array(10,20,120,20,20);
+                    $col_type  = array('','','','CASH0',''); 
+
+                    $cat_data_initial[0][$row] = 'Lot';
+                    $cat_data_initial[1][$row] = 'Condition';
+                    $cat_data_initial[2][$row] = 'Description';
+                    $cat_data_initial[3][$row] = 'Reserve';
+                    $cat_data_initial[4][$row] = 'Realised';
+                } else {
+                    $col_width = array(10,20,30,10,80,20,20);
+                    $col_type  = array('','','','','','CASH0',''); 
+                   
+                    $cat_data_initial[0][$row] = 'Lot';
+                    $cat_data_initial[1][$row] = $labels['category'];
+                    $cat_data_initial[2][$row] = 'Name';
+                    $cat_data_initial[3][$row] = 'Con.';
+                    $cat_data_initial[4][$row] = 'Description';
+                    $cat_data_initial[5][$row] = 'Reserve';
+                    $cat_data_initial[6][$row] = 'Realised';
+                }    
             }
 
             if($options['layout'] === 'MASTER') {
-                $col_width = array(10,20,30,10,105,15,15,15,15,15,15,15);
-                $col_type  = array('','','','','','CASH0','CASH0','','CASH0','CASH0','CASH0',''); 
-               
-                $cat_data_initial[0][$row] = 'Lot';
-                $cat_data_initial[1][$row] = $labels['category'];
-                $cat_data_initial[2][$row] = 'Name';
-                $cat_data_initial[3][$row] = 'Con.';
-                $cat_data_initial[4][$row] = 'Description';
-                $cat_data_initial[5][$row] = 'Res.';
-                $cat_data_initial[6][$row] = 'Est.';
-                $cat_data_initial[7][$row] = 'Seller';
-                $cat_data_initial[8][$row] = 'Open@';
-                $cat_data_initial[9][$row] = 'Book bid';
-                $cat_data_initial[10][$row] = 'Price';
-                $cat_data_initial[11][$row] = 'Buyer';
+                if($description_only) {
+                    $col_width = array(10,15,150,15,15,15,15,15,15,15);
+                    $col_type  = array('','','','CASH0','CASH0','','CASH0','CASH0','CASH0',''); 
+
+                    $cat_data_initial[0][$row] = 'Lot';
+                    $cat_data_initial[1][$row] = 'Con.';
+                    $cat_data_initial[2][$row] = 'Description';
+                    $cat_data_initial[3][$row] = 'Res.';
+                    $cat_data_initial[4][$row] = 'Est.';
+                    $cat_data_initial[5][$row] = 'Seller';
+                    $cat_data_initial[6][$row] = 'Open@';
+                    $cat_data_initial[7][$row] = 'Book bid';
+                    $cat_data_initial[8][$row] = 'Price';
+                    $cat_data_initial[9][$row] = 'Buyer';
+                } else {
+                    $col_width = array(10,20,30,10,105,15,15,15,15,15,15,15);
+                    $col_type  = array('','','','','','CASH0','CASH0','','CASH0','CASH0','CASH0',''); 
+                   
+                    $cat_data_initial[0][$row] = 'Lot';
+                    $cat_data_initial[1][$row] = $labels['category'];
+                    $cat_data_initial[2][$row] = 'Name';
+                    $cat_data_initial[3][$row] = 'Con.';
+                    $cat_data_initial[4][$row] = 'Description';
+                    $cat_data_initial[5][$row] = 'Res.';
+                    $cat_data_initial[6][$row] = 'Est.';
+                    $cat_data_initial[7][$row] = 'Seller';
+                    $cat_data_initial[8][$row] = 'Open@';
+                    $cat_data_initial[9][$row] = 'Book bid';
+                    $cat_data_initial[10][$row] = 'Price';
+                    $cat_data_initial[11][$row] = 'Buyer';
+                }    
+
+                
             }
             
             foreach($lots as $lot_id => $lot) {
@@ -735,15 +779,26 @@ class HelpersReport {
                 //only show postal only text if auction has both
                 if(!$auction['postal_only'] and $lot['postal_only']) $postal = '(***Postal only***)'; else $postal = '';
                 if($lot_no_display) $lot_str = $lot['lot_no']; else $lot_str = $lot_id;
-                $cat_data[0][$row] = $lot_str;
-                $cat_data[1][$row] = $lot['cat_name'];
-                $cat_data[2][$row] = $lot['name'];
-                $cat_data[3][$row] = $lot['condition'];
-                $cat_data[4][$row] = utf8_decode($lot['description']).$postal;
-                $cat_data[5][$row] = $lot['price_reserve'];
+
+                if($description_only) {
+                    $cat_data[0][$row] = $lot_str;
+                    $cat_data[1][$row] = $lot['condition'];
+                    $cat_data[2][$row] = utf8_decode($lot['description']).$postal;
+                    $cat_data[3][$row] = $lot['price_reserve'];
+                    $next_col = 4;
+                } else {
+                    $cat_data[0][$row] = $lot_str;
+                    $cat_data[1][$row] = $lot['cat_name'];
+                    $cat_data[2][$row] = $lot['name'];
+                    $cat_data[3][$row] = $lot['condition'];
+                    $cat_data[4][$row] = utf8_decode($lot['description']).$postal;
+                    $cat_data[5][$row] = $lot['price_reserve'];
+                    $next_col = 6;
+                }    
+                
  
                 if($options['layout'] === 'STANDARD') {
-                    $cat_data[6][$row] = $lot['price_estimate']; 
+                    $cat_data[$next_col][$row] = $lot['price_estimate']; 
                 }
 
                 if($options['layout'] === 'REALISED') {
@@ -753,18 +808,18 @@ class HelpersReport {
                         $text = 'available';
                     }
 
-                    $cat_data[6][$row] = $text;   
+                    $cat_data[$next_col][$row] = $text;   
                 }
 
                 if($options['layout'] === 'MASTER') {
-                    $cat_data[6][$row] = $lot['price_estimate']; 
-                    $cat_data[7][$row] = $lot['seller_id'];
-                    $cat_data[8][$row] = '';
+                    $cat_data[$next_col][$row] = $lot['price_estimate']; 
+                    $cat_data[$next_col+1][$row] = $lot['seller_id'];
+                    $cat_data[$next_col+2][$row] = '';
 
                     //top online bid or live bid depending on when report run
                     if($lot['bid_book_top'] != 0) $str = $lot['bid_book_top']; else $str = '';
-                    $cat_data[9][$row] = $str;
-                    $cat_data[10][$row] = '';
+                    $cat_data[$next_col+3][$row] = $str;
+                    $cat_data[$next_col+4][$row] = '';
 
                     //top bid buyer id or winning bid id & buyer no if captured at live auction
                     if($lot['buyer_id'] != 0) {
@@ -773,7 +828,7 @@ class HelpersReport {
                     } else {
                         $str = '';
                     }    
-                    $cat_data[11][$row] = $str;
+                    $cat_data[$next_col+5][$row] = $str;
                 }
 
                 $lot_index[$lot_id] = $pdf->PageNo().', '.$category.', row '.$row;

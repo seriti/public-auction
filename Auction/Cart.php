@@ -3,6 +3,7 @@ namespace App\Auction;
 
 use Seriti\Tools\Table;
 use Seriti\Tools\Form;
+use Seriti\Tools\Secure;
 use Seriti\Tools\BASE_URL;
 use Seriti\Tools\STORAGE;
 
@@ -14,6 +15,8 @@ class Cart extends Table
     protected $order_id;
     protected $auction_id;
     protected $labels = MODULE_AUCTION['labels'];
+
+    protected $lot_id_row;
     
     //configure
     public function setup($param = []) 
@@ -43,6 +46,10 @@ class Cart extends Table
         //$this->addTableCol(array('id'=>'subtotal','type'=>'DECIMAL','title'=>'Subtotal','edit'=>false));
         //$this->addTableCol(array('id'=>'tax','type'=>'DECIMAL','title'=>'Tax','edit'=>false));
         //$this->addTableCol(array('id'=>'total','type'=>'DECIMAL','title'=>'Total','edit'=>false));
+
+        //sort lots by auction specific lot no. 
+        $this->addSql('JOIN','LEFT JOIN '.$this->table_prefix.'lot AS L ON(T.lot_id = L.lot_id)');
+        $this->addSortOrder('L.lot_no','Lot Number','DEFAULT');
 
         $this->addSql('WHERE','T.order_id = "'.$this->db->escapeSql($param['order_id']).'" ');
         
@@ -107,7 +114,22 @@ class Cart extends Table
     protected function modifyEditValue($col_id,$value,$edit_type,$param) 
     {
         if($col_id === 'price') {
-            $value = 'WTF';//round($value);
+            $value = Secure::clean('float',$value);
+            $name = $param['name']; 
+
+            $input_param = [];
+            $input_param['class'] = $this->classes['edit_small'];
+            $html = Form::textInput($name,$value,$input_param);
+
+            $info = '';
+            $bids = Helpers::getBestBid($this->db,$this->table_prefix,$this->lot_id_row);
+            if($bids['active_bids']) {
+                if($bids['best_bid']['price'] >= $value) $info .= '<span class="'.$this->classes['message'].'">There is a higher bid!</span>';
+            }
+
+            if($info !== '') $html .= $info;
+            
+            return $html;
         }
 
     }
@@ -117,6 +139,8 @@ class Cart extends Table
         if($col_id === 'lot_id') {
             $lot_id = $value;
             $s3 = $this->getContainer('s3');
+            //set for use by modifyEditValue()
+            $this->lot_id_row = $lot_id;
 
             $value = Helpers::getLotSummary($this->db,$this->table_prefix,$s3,$lot_id);
         }

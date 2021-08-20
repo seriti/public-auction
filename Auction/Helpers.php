@@ -38,6 +38,71 @@ class Helpers {
         return $record;
     }
 
+    //email users who have ACTIVE orders with bids below winning bid
+    public static function notifyLowerBids($db,ContainerInterface $container,$auction_id)
+    {
+        $error = '';
+        $output = [];
+        $output['error'] = '';
+        $output['message'] = '';
+
+        $table_auction = TABLE_PREFIX.'auction';
+        $table_lot = TABLE_PREFIX.'lot';
+        $table_order = TABLE_PREFIX.'order';
+        $table_order_item = TABLE_PREFIX.'order_item';
+
+        $msg_param = [];
+        $msg_param['cc_admin'] = true;
+        $msg_param['notify_higher_bid'] = true;
+
+        $sql = 'SELECT auction_id,name,summary,status '.
+               'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+        $auction = $db->readSqlRecord($sql);
+        if($auction == 0) {
+            $output['error'] .= 'Invalid Auction ID['.$auction_id.']';
+        } else {
+            //NB: see updateAuctionStatus() which closes the auction and gets rid of any unprocessed bid carts
+            if($auction['status'] === 'CLOSED') {
+                $output['error'] .= 'Auction['.$auction['name'].'] is CLOSED. It is pointless to notify users as they cannot increase bids!';
+            } 
+        }
+
+        //get all orders that have lower/not winning bid 
+        if($output['error'] === '') {
+            $sql = 'SELECT I.lot_id,O.order_id,O.date_create,I.price '.
+                   'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
+                   'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.user_id > 0 AND O.status = "ACTIVE" '.
+                   'ORDER BY I.lot_id,I.price DESC, O.date_create ';
+            $bids = $db->readSqlArray($sql,false);
+
+            $notify_orders = [];
+            $lot_id_prev = '';
+            foreach($bids as $bid) {
+                //condition satisfied when more than one bid for a lot and first bid is best bid.
+                if($lot_id_prev !== '' and $lot_id_prev === $bid['lot_id']) {
+                    $notify_orders[$bid['order_id']] = true;
+                }
+                $lot_id_prev = $bid['lot_id'];
+            }
+
+            foreach($notify_orders as $order_id => $notify) {
+                $subject = 'outbid notification'; 
+                $message = 'You can view your bid form in <a href="'.BASE_URL.'public/account/dashboard">Your Account</a> and increase bids if you wish.';
+                
+                self::sendOrderMessage($db,TABLE_PREFIX,$container,$order_id,$subject,$message,$msg_param,$error);
+                if($error !== '') {
+                    $output['error'] .= 'Notification failed for bid form['.$order_id.']. ';
+                } else {
+                    $output['message'] .= 'Notification success for bid form['.$order_id.'].<br/>';
+                }    
+            }
+
+        } 
+
+        return $output;   
+
+    }
+
     //assign best online bid data and remove shopping cart items linked to auction 
     public static function setupAuctionLotResults($db,$auction_id)
     {
@@ -257,6 +322,31 @@ class Helpers {
                   
     }
 
+    //check for other higher bids
+    public static function getBestBid($db,$table_prefix,$lot_id)
+    {
+        $output = [];
+
+        //$table_lot = $table_prefix.'lot';
+        $table_order = $table_prefix.'order';
+        $table_order_item = $table_prefix.'order_item';
+
+        $sql = 'SELECT O.user_id,O.date_create,I.price '.
+               'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
+               'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" AND O.user_id > 0 AND O.status = "ACTIVE" '.
+               'ORDER BY I.price DESC, O.date_create '.
+               'LIMIT 1';
+        $best_bid = $db->readSqlRecord($sql); 
+        if($best_bid == 0) {
+            $output['active_bids'] = false;
+        } else {
+            $output['active_bids'] = true;
+            $output['best_bid'] = $best_bid;
+        }
+
+        return $output;
+    }
+
     //used to check final price is best price and not sold before
     public static function checkLotPriceValid($db,$table_prefix,$lot_id,$auction_id,$price,&$error)
     {
@@ -470,7 +560,8 @@ class Helpers {
 
         $sql = 'SELECT I.item_id,I.lot_id,L.lot_no,L.name,I.price,I.status,L.weight,L.volume '.
                'FROM '.$table_item.' AS I LEFT JOIN '.$table_lot.' AS L ON(I.lot_id = L.lot_id) '.
-               'WHERE I.order_id = "'.$db->escapeSql($order_id).'" ';
+               'WHERE I.order_id = "'.$db->escapeSql($order_id).'" '.
+               'ORDER BY L.lot_no ';
         $items = $db->readSqlArray($sql);
         if($items === 0) {
             $error .= 'Invalid or no auction lots for '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']. ';
@@ -481,7 +572,8 @@ class Helpers {
         //same as above but for presentation purposes.
         $sql = 'SELECT I.item_id,L.lot_no,L.name,I.price AS bid '.
                'FROM '.$table_item.' AS I LEFT JOIN '.$table_lot.' AS L ON(I.lot_id = L.lot_id) '.
-               'WHERE I.order_id = "'.$db->escapeSql($order_id).'" ';
+               'WHERE I.order_id = "'.$db->escapeSql($order_id).'" '.
+               'ORDER BY L.lot_no ';
         $items = $db->readSqlArray($sql);
         if($items === 0) {
             $error .= 'Invalid or no auction lots-2 for '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']. ';
@@ -507,6 +599,8 @@ class Helpers {
 
         if(!isset($param['cc_admin'])) $param['cc_admin'] = true;
 
+        if(!isset($param['notify_higher_bid'])) $param['notify_higher_bid'] = false;
+
         $system = $container['system'];
         $mail = $container['mail'];
         $user = $container['user'];
@@ -523,7 +617,22 @@ class Helpers {
             $error .= 'Could not get '.MODULE_AUCTION['labels']['order'].' details: '.$error_tmp;
         } else {
             if($data['order']['user_id'] == 0 or $data['order']['user_email'] === '') $error .= 'No user data linked to '.MODULE_AUCTION['labels']['order'];
-        }    
+        } 
+
+        if($error === '' and $param['notify_higher_bid'])  {
+            $outbid_no = 0;
+            foreach($data['items'] as $item_id => $item) {
+                $bids = self::getBestBid($db,$table_prefix,$item['lot_id']);
+                if($bids['active_bids']) {
+                    if($bids['best_bid']['user_id'] != $data['order']['user_id']) {
+                        $outbid_no++;
+                        $data['items_show'][$item_id]['bid'] .= '(there is a higher bid)';
+                    }
+                }
+            }
+
+            if($outbid_no !== 0) $message .= ' '.$outbid_no.' bids are not winning bids. ';
+        }
 
         if($error === '') {
             $mail_from = ''; //will use default MAIL_FROM
@@ -534,7 +643,7 @@ class Helpers {
 
             if($subject !== '') $mail_subject .= ': '.$subject;
             
-            $mail_body = '<h1>Attention: '.$data['order']['user_name'].'</h1>';
+            $mail_body = '<h1>Attention: '.$data['order']['user_name'].'(User ID '.$data['order']['user_id'].')</h1>';
             $mail_body .= '<h2>Auction: '.$data['order']['auction'].'</h2>';
 
             if($message !== '') $mail_body .= '<h2>'.$message.'</h2>';

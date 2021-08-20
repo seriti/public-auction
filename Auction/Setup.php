@@ -53,5 +53,11 @@ class Setup extends SetupModule
         $param['value'] = 'NONE';
         $param['options'] = array('NONE'=>'No headers','ALL'=>'Header in ALL catalog documents');
         $this->addDefault('SELECT','AUCTION_CATALOG_HEADER','Catalog '.MODULE_AUCTION['labels']['category'].' headers',$param);
+
+        $param = [];
+        $param['info'] = 'Select the lot description options for catalogs';
+        $param['value'] = 'STANDARD';
+        $param['options'] = array('STANDARD'=>'Lot '.MODULE_AUCTION['labels']['category'].', Name, Description','CONDENSED'=>'Lot description ONLY');
+        $this->addDefault('SELECT','AUCTION_CATALOG_LAYOUT','Catalog Lot description options',$param);
     }    
 }

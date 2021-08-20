@@ -125,7 +125,7 @@ class InvoiceWizard extends Wizard
 
             if(!$this->errors_found) {
                 //populate any additional info related to order/invoice
-                $this->form['invoice_comment'] = 'Your prefered payment option: '.$payment_option;
+                $this->form['invoice_comment'] = 'Your preferred payment option: '.$payment_option;
                 
                 //invoice items setup
                 $item_no = 0;
