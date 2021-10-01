@@ -32,7 +32,7 @@ class AccountOrderItem extends Table
         if($active_order) {
             $access['add'] = false;
             $access['edit'] = true;                                                  
-            $access['delete'] = true; 
+            $access['delete'] = false; 
             $access['email'] = false;                        
             $access['move'] = false;
         } else {
@@ -54,11 +54,13 @@ class AccountOrderItem extends Table
         if($active_order) {
             $this->addAction(['type'=>'check_box','text'=>'','checked'=>true]);
             //$this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit','pos'=>'L'));
-            $this->addAction(array('type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R'));    
+            //$this->addAction(array('type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R'));    
         }
         
 
         $this->addSearch(array('lot_id','price'),array('rows'=>1));
+
+        $this->addMessage('You may only increase your bids. You cannot decrease or delete them.');
     } 
 
     protected function modifyEditValue($col_id,$value,$edit_type,$param) 
@@ -74,7 +76,7 @@ class AccountOrderItem extends Table
             $info = '';
             $bids = Helpers::getBestBid($this->db,$this->table_prefix,$this->lot_id_row);
             if($bids['active_bids']) {
-                if($bids['best_bid']['user_id'] != $this->user_id) $info .= '<span class="'.$this->classes['message'].'">There is a higher bid!</span>';
+                if($bids['best_bid']['user_id'] != $this->user_id) $info .= '<span class="'.$this->classes['message'].'">Not&nbsp;best&nbsp;bid!</span>';
             }
 
             if($info !== '') $html .= $info;
@@ -101,12 +103,21 @@ class AccountOrderItem extends Table
     {
         $order_id = $this->master['key_val'];
         Helpers::checkOrderUpdateOk($this->db,$this->table_prefix,$order_id,$error);
+        //only allowed increase of bids
+        if($error === '') {
+            $data_before = $this->get($id);
+            if($data['price'] < $data_before['price']) $error .= 'You can only increase a confirmed bid!';
+        }
     }
 
     protected function beforeDelete($id,&$error) 
     {
+        $error .= 'You cannot delete confirmed bids!';
+
+        /*
         $order_id = $this->master['key_val'];
         Helpers::checkOrderUpdateOk($this->db,$this->table_prefix,$order_id,$error);
+        */
     }
 
     protected function afterUpdate($id,$context,$data) 

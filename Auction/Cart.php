@@ -113,6 +113,7 @@ class Cart extends Table
     
     protected function modifyEditValue($col_id,$value,$edit_type,$param) 
     {
+        /*
         if($col_id === 'price') {
             $value = Secure::clean('float',$value);
             $name = $param['name']; 
@@ -124,13 +125,14 @@ class Cart extends Table
             $info = '';
             $bids = Helpers::getBestBid($this->db,$this->table_prefix,$this->lot_id_row);
             if($bids['active_bids']) {
-                if($bids['best_bid']['price'] >= $value) $info .= '<span class="'.$this->classes['message'].'">There is a higher bid!</span>';
+                if($bids['best_bid']['price'] >= $value) $info .= '<span class="'.$this->classes['message'].'">Not&nbsp;best&nbsp;bid!</span>';
             }
 
             if($info !== '') $html .= $info;
             
             return $html;
         }
+        */
 
     }
 

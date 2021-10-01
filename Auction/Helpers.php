@@ -87,7 +87,8 @@ class Helpers {
 
             foreach($notify_orders as $order_id => $notify) {
                 $subject = 'outbid notification'; 
-                $message = 'You can view your bid form in <a href="'.BASE_URL.'public/account/dashboard">Your Account</a> and increase bids if you wish.';
+                $message = 'You have been outbid on the lot no/s as indicated below. You may review your bid form in '.
+                           '<a href="'.BASE_URL.'public/account/dashboard">Your Account</a> and increase bids if you wish any time before the auction closes.';
                 
                 self::sendOrderMessage($db,TABLE_PREFIX,$container,$order_id,$subject,$message,$msg_param,$error);
                 if($error !== '') {
@@ -626,7 +627,7 @@ class Helpers {
                 if($bids['active_bids']) {
                     if($bids['best_bid']['user_id'] != $data['order']['user_id']) {
                         $outbid_no++;
-                        $data['items_show'][$item_id]['bid'] .= '(there is a higher bid)';
+                        $data['items_show'][$item_id]['bid'] .= ' (there is a higher bid)';
                     }
                 }
             }
