@@ -23,7 +23,7 @@ class AuctionDocumentList extends Upload
             $this->auction_id = Secure::clean('integer',$param['auction_id']);
             $location_id = $this->id_prefix.$this->auction_id;
 
-            $this->addSql('WHERE','T.location_id = "'.$this->db->escapeSql($location_id).'" ');
+            $this->addSql('WHERE','T.`location_id` = "'.$this->db->escapeSql($location_id).'" ');
         }
         
         $param = ['row_name'=>'Document',

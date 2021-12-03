@@ -19,7 +19,8 @@ class Order extends Table
         $this->addForeignKey(array('table'=>TABLE_PREFIX.'invoice','col_id'=>'order_id','message'=>MODULE_AUCTION['labels']['order'].' Invoice'));
 
         $this->addTableCol(array('id'=>'order_id','type'=>'INTEGER','title'=>MODULE_AUCTION['labels']['order'].' ID','key'=>true,'key_auto'=>true,'list'=>true));
-        $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'User','join'=>'CONCAT(user_id,":",name,": ",email) FROM '.TABLE_USER.' WHERE user_id'));
+        $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'User',
+                                 'join'=>'CONCAT(`user_id`,":",`name`,": ",`email`) FROM `'.TABLE_USER.'` WHERE `user_id`'));
         //$this->addTableCol(array('id'=>'auction_id','type'=>'INTEGER','title'=>'Auction','join'=>'name FROM '.TABLE_PREFIX.'auction WHERE auction_id'));
         $this->addTableCol(array('id'=>'date_create','type'=>'DATETIME','title'=>'Date created','edit'=>false));
         $this->addTableCol(array('id'=>'date_update','type'=>'DATETIME','title'=>'Date updated','edit'=>false));
@@ -27,15 +28,18 @@ class Order extends Table
         $this->addTableCol(array('id'=>'total_bid','type'=>'DECIMAL','title'=>'Total BID','required'=>false));
         $this->addTableCol(array('id'=>'total_success','type'=>'DECIMAL','title'=>'Total SUCCESS','required'=>false));
         $this->addTableCol(array('id'=>'ship_address','type'=>'TEXT','title'=>'Shipping address','required'=>false));
-        $this->addTableCol(array('id'=>'ship_location_id','type'=>'INTEGER','title'=>'Shipping location','join'=>'name FROM '.TABLE_PREFIX.'ship_location WHERE location_id'));
-        $this->addTableCol(array('id'=>'ship_option_id','type'=>'INTEGER','title'=>'Shipping option','join'=>'name FROM '.TABLE_PREFIX.'ship_option WHERE option_id'));
-        $this->addTableCol(array('id'=>'pay_option_id','type'=>'INTEGER','title'=>'Payment option','join'=>'name FROM '.TABLE_PREFIX.'pay_option WHERE option_id'));
+        $this->addTableCol(array('id'=>'ship_location_id','type'=>'INTEGER','title'=>'Shipping location',
+                                 'join'=>'`name` FROM `'.TABLE_PREFIX.'ship_location` WHERE `location_id`'));
+        $this->addTableCol(array('id'=>'ship_option_id','type'=>'INTEGER','title'=>'Shipping option',
+                                 'join'=>'`name` FROM `'.TABLE_PREFIX.'ship_option` WHERE `option_id`'));
+        $this->addTableCol(array('id'=>'pay_option_id','type'=>'INTEGER','title'=>'Payment option',
+                                 'join'=>'`name` FROM `'.TABLE_PREFIX.'pay_option` WHERE `option_id`'));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','new'=>'ACTIVE'));
         
         //order table also store cart contents before converted to an order in checkout wizard
-        $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'" AND T.user_id <> 0 AND T.status <> "NEW"');
+        $this->addSql('WHERE','T.`auction_id` = "'.AUCTION_ID.'" AND T.`user_id` <> 0 AND T.`status` <> "NEW"');
 
-        $this->addSortOrder('T.order_id DESC','Most recent first','DEFAULT');
+        $this->addSortOrder('T.`order_id` DESC','Most recent first','DEFAULT');
 
         //$this->addAction(array('type'=>'check_box','text'=>''));
         $this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit'));
@@ -45,12 +49,12 @@ class Order extends Table
 
         $sql_status = '(SELECT "ACTIVE") UNION (SELECT "CLOSED") UNION (SELECT "HIDE") UNION (SELECT "NEW")';
         $this->addSelect('status',$sql_status);
-        $this->addSelect('auction_id','SELECT auction_id,name FROM '.TABLE_PREFIX.'auction ORDER BY date_start_live DESC');
+        $this->addSelect('auction_id','SELECT `auction_id`,`name` FROM `'.TABLE_PREFIX.'auction` ORDER BY `date_start_live` DESC');
 
-        $this->addSelect('user_id','SELECT user_id,name FROM '.TABLE_USER.' WHERE status <> "HIDE" ORDER BY name');
-        $this->addSelect('ship_location_id','SELECT location_id,name FROM '.TABLE_PREFIX.'ship_location WHERE status <> "HIDE" ORDER By sort');
-        $this->addSelect('ship_option_id','SELECT option_id,name FROM '.TABLE_PREFIX.'ship_option WHERE status <> "HIDE" ORDER By sort');
-        $this->addSelect('pay_option_id','SELECT option_id,name FROM '.TABLE_PREFIX.'pay_option WHERE status <> "HIDE" ORDER By sort');
+        $this->addSelect('user_id','SELECT `user_id`,`name` FROM `'.TABLE_USER.'` WHERE `status` <> "HIDE" ORDER BY `name`');
+        $this->addSelect('ship_location_id','SELECT `location_id`,`name` FROM `'.TABLE_PREFIX.'ship_location` WHERE `status` <> "HIDE" ORDER By `sort`');
+        $this->addSelect('ship_option_id','SELECT `option_id`,`name` FROM `'.TABLE_PREFIX.'ship_option` WHERE `status` <> "HIDE" ORDER By `sort`');
+        $this->addSelect('pay_option_id','SELECT `option_id`,`name` FROM `'.TABLE_PREFIX.'pay_option` WHERE `status` <> "HIDE" ORDER By `sort`');
 
         $this->addSearch(array('order_id','user_id','date_create','date_update','status'),array('rows'=>2));
 
@@ -76,14 +80,14 @@ class Order extends Table
     protected function afterUpdate($id,$edit_type,$form) {
         $error = '';
         if($edit_type === 'INSERT') {
-            $sql = 'UPDATE '.$this->table.' SET auction_id = "'.AUCTION_ID.'", date_create = NOW() '.
-                   'WHERE order_id = "'.$this->db->escapeSql($id).'"';
+            $sql = 'UPDATE `'.$this->table.'` SET `auction_id` = "'.AUCTION_ID.'", `date_create` = NOW() '.
+                   'WHERE `order_id` = "'.$this->db->escapeSql($id).'"';
             $this->db->executeSql($sql,$error);
         }
 
         if($edit_type === 'UPDATE') { 
-            $sql = 'UPDATE '.$this->table.' SET date_update = NOW() '.
-                   'WHERE order_id = "'.$this->db->escapeSql($id).'"';
+            $sql = 'UPDATE `'.$this->table.'` SET `date_update` = NOW() '.
+                   'WHERE `order_id` = "'.$this->db->escapeSql($id).'"';
             $this->db->executeSql($sql,$error);
         }    
     }
@@ -91,7 +95,7 @@ class Order extends Table
     protected function afterDelete($id) {
         $error = '';
 
-        $sql = 'DELETE FROM '.TABLE_PREFIX.'order_item WHERE order_id = "'.$this->db->escapeSql($id).'" ';
+        $sql = 'DELETE FROM `'.TABLE_PREFIX.'order_item` WHERE `order_id` = "'.$this->db->escapeSql($id).'" ';
         $this->db->executeSql($sql,$error); 
     } 
 }

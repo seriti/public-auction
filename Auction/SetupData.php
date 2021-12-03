@@ -281,25 +281,26 @@ class SetupData extends SetupModuledata
                             ) ENGINE = MyISAM DEFAULT CHARSET=utf8');
 
         //initialisation
-        $this->addInitialSql('INSERT INTO `TABLE_PREFIXseller` (name,sort,status) '.
+        $this->addInitialSql('INSERT INTO `TABLE_PREFIXseller` (`name`,`sort`,`status`) '.
                              'VALUES("INTERNAL",1,"OK")','Created default internal seller');
 
-        $this->addInitialSql('INSERT INTO `TABLE_PREFIXtype` (name,sort,status) '.
+        $this->addInitialSql('INSERT INTO `TABLE_PREFIXtype` (`name`,`sort`,`status`) '.
                              'VALUES("Standard",1,"OK")','Created default lot type');
 
-        $this->addInitialSql('INSERT INTO `TABLE_PREFIXauction` (name,summary,description,status) '.
+        $this->addInitialSql('INSERT INTO `TABLE_PREFIXauction` (`name`,`summary`,`description`,`status`) '.
                              'VALUES("My first auction","Summary of your auction","Detailed description of your auction","NEW")','Created default first auction');
 
-        $this->addInitialSql('INSERT INTO `TABLE_PREFIXpay_option` (type_id,name,config,sort,status) '.
+        $this->addInitialSql('INSERT INTO `TABLE_PREFIXpay_option` (`type_id`,`name`,`config`,`sort`,`status`) '.
                              'VALUES("EFT_TOKEN","Manual EFT with token","Your bank account details","1","OK")','Created default payment option');
 
-        $this->addInitialSql('INSERT INTO `TABLE_PREFIXship_location` (name,sort,status) '.
+        $this->addInitialSql('INSERT INTO `TABLE_PREFIXship_location` (`name`,`sort`,`status`) '.
                              'VALUES("South Africa","1","OK")','Created sample shipping location');
 
-        $this->addInitialSql('INSERT INTO `TABLE_PREFIXship_option` (name,sort,status) '.
+        $this->addInitialSql('INSERT INTO `TABLE_PREFIXship_option` (`name`,`sort`,`status`) '.
                              'VALUES("Collect","1","OK"),("Courier","2","OK"),("Postnet","3","OK")','Created sample shipping options');
 
-        $this->addInitialSql('INSERT INTO `TABLE_PREFIXship_cost` (location_id,option_id,cost_free,cost_base,cost_weight,cost_volume,cost_item,cost_max,status) '.
+        $this->addInitialSql('INSERT INTO `TABLE_PREFIXship_cost` (`location_id`,`option_id`,`cost_free`,`cost_base`,'.
+                                                                   '`cost_weight`,`cost_volume`,`cost_item`,`cost_max`,status`) '.
                              'VALUES("1","1","0","0","0","0","0","0","OK"),("1","2","1000","100","100","0","0","1000","OK"),("1","3","1000","100","0","0","0","0","OK")','Created sample shipping costs');
         
         //updates use time stamp in ['YYYY-MM-DD HH:MM'] format, must be unique and sequential

@@ -25,7 +25,7 @@ class AccountDashboard extends DashboardTool
         $order_name_plural = $order_name.'s';
 
 
-        $sql = 'SELECT * FROM '.$table_prefix.'user_extend WHERE user_id = "'.$user->getId().'" ';
+        $sql = 'SELECT * FROM `'.$table_prefix.'user_extend` WHERE `user_id` = "'.$user->getId().'" ';
         $user_extend = $this->db->readSqlRecord($sql);
 
         $cart = Helpers::getCart($this->db,$table_prefix,$temp_token);
@@ -35,10 +35,10 @@ class AccountDashboard extends DashboardTool
             $cart_html = '<p>'.$order_name.' cart created on '.Date::formatDate($cart['date_create']).' <a href="/public/cart">'.$cart['item_count'].' items</a></p>'; 
         }  
 
-        $sql = 'SELECT O.order_id,O.auction_id,O.date_create,O.no_items,O.total_bid,A.name AS auction '.
-               'FROM '.$table_prefix.'order AS O JOIN '.$table_prefix.'auction AS A ON(O.auction_id = A.auction_id) '.
-               'WHERE O.user_id = "'.$user->getId().'" AND O.status = "ACTIVE" '.
-               'ORDER BY O.date_create DESC ';
+        $sql = 'SELECT O.`order_id`,O.`auction_id`,O.`date_create`,O.`no_items`,O.`total_bid`,A.`name` AS `auction` '.
+               'FROM `'.$table_prefix.'order` AS O JOIN `'.$table_prefix.'auction` AS A ON(O.`auction_id` = A.`auction_id`) '.
+               'WHERE O.`user_id` = "'.$user->getId().'" AND O.`status` = "ACTIVE" '.
+               'ORDER BY O.`date_create` DESC ';
         $new_orders = $this->db->readSqlArray($sql);
         if($new_orders === 0) {
             $order_html = 'NO outstanding active '.$order_name_plural;

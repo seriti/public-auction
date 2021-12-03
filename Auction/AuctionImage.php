@@ -38,7 +38,7 @@ class AuctionImage extends Upload
         $param['label']     = 'name';
         $param['child_col'] = 'location_id';
         $param['child_prefix'] = $id_prefix ;
-        $param['show_sql'] = 'SELECT CONCAT("Images for Auction: ",name) FROM '.TABLE_PREFIX.'auction WHERE auction_id = "{KEY_VAL}"';
+        $param['show_sql'] = 'SELECT CONCAT("Images for Auction: ",`name`) FROM `'.TABLE_PREFIX.'auction` WHERE `auction_id` = "{KEY_VAL}"';
         $this->setupMaster($param);
 
         $this->addAction(array('type'=>'edit','text'=>'edit details of','icon_text'=>'edit'));
@@ -52,7 +52,7 @@ class AuctionImage extends Upload
         $this->addFileCol(array('id'=>'caption','type'=>'STRING','title'=>'Caption','upload'=>true,'required'=>false));
         $this->addFileCol(['id'=>'location_rank','title'=>'Location rank','type'=>'INTEGER','upload'=>true,'list'=>true,'update'=>true]);
 
-        $this->addSortOrder('T.location_rank','Location rank modified','DEFAULT');
+        $this->addSortOrder('T.`location_rank`','Location rank modified','DEFAULT');
         
         $this->addSearch(array('file_name_orig','caption'),array('rows'=>1));
         

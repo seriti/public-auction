@@ -16,7 +16,7 @@ class OrderItem extends Table
                        
         //NB: specify master table relationship
         $this->setupMaster(array('table'=>TABLE_PREFIX.'order','key'=>'order_id','child_col'=>'order_id', 
-                                 'show_sql'=>'SELECT CONCAT("Order ID[",order_id,"] created-",date_create) FROM '.TABLE_PREFIX.'order WHERE order_id = "{KEY_VAL}" '));  
+                                 'show_sql'=>'SELECT CONCAT("Order ID[",`order_id`,"] created-",`date_create`) FROM `'.TABLE_PREFIX.'order` WHERE `order_id` = "{KEY_VAL}" '));  
         
         //$access['read_only'] = true;                         
         //$this->modifyAccess($access);
@@ -28,8 +28,8 @@ class OrderItem extends Table
         $this->addTableCol(array('id'=>'price','type'=>'DECIMAL','title'=>'Bid Price'));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status'));
 
-        $this->addSql('JOIN','JOIN '.TABLE_PREFIX.'lot AS L ON(T.lot_id = L.lot_id)');
-        $this->addSortOrder('L.lot_no ','Catalog Lot No','DEFAULT');
+        $this->addSql('JOIN','JOIN `'.TABLE_PREFIX.'lot` AS L ON(T.`lot_id` = L.`lot_id`)');
+        $this->addSortOrder('L.`lot_no` ','Catalog Lot No','DEFAULT');
 
         $this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit'));
         $this->addAction(array('type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R'));
@@ -38,7 +38,7 @@ class OrderItem extends Table
         $this->addSelect('status',$sql_status);
 
         $this->addSearch(array('lot_id','status','price'),array('rows'=>2));
-        $this->addSearchXtra('L.lot_no','Lot no');
+        $this->addSearchXtra('L.`lot_no`','Lot no');
     } 
 
     protected function modifyRowValue($col_id,$data,&$value)
@@ -97,9 +97,9 @@ class OrderItem extends Table
 
         //check that lot not already part of this order
         if(!$this->errors_found) {
-            $sql = 'SELECT COUNT(*) FROM '.$this->table.' '.
-                   'WHERE order_id = "'.$this->db->escapeSql($this->master['key_val']).'" AND '.
-                         'lot_id = "'.$this->db->escapeSql($lot['lot_id']).'" AND item_id <> "'.$this->db->escapeSql($id).'" ';
+            $sql = 'SELECT COUNT(*) FROM `'.$this->table.'` '.
+                   'WHERE `order_id` = "'.$this->db->escapeSql($this->master['key_val']).'" AND '.
+                         '`lot_id` = "'.$this->db->escapeSql($lot['lot_id']).'" AND `item_id` <> "'.$this->db->escapeSql($id).'" ';
             $exist = $this->db->readSqlValue($sql);
             if($exist) $this->addError('Lot is already part of order. Please update that record.');
         }

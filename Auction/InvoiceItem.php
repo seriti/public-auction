@@ -13,7 +13,7 @@ class InvoiceItem extends Table
                        
         //NB: specify master table relationship
         $this->setupMaster(array('table'=>TABLE_PREFIX.'invoice','key'=>'invoice_id','child_col'=>'invoice_id', 
-                                 'show_sql'=>'SELECT CONCAT("Invoice: ",invoice_no) FROM '.TABLE_PREFIX.'invoice WHERE invoice_id = "{KEY_VAL}" '));                        
+                                 'show_sql'=>'SELECT CONCAT("Invoice: ",`invoice_no`) FROM `'.TABLE_PREFIX.'invoice` WHERE `invoice_id` = "{KEY_VAL}" '));                        
 
         $access['read_only'] = true;                         
         $this->modifyAccess($access);

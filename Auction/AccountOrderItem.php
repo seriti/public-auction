@@ -26,7 +26,8 @@ class AccountOrderItem extends Table
                        
         //NB: specify master table relationship
         $this->setupMaster(array('table'=>$this->table_prefix.'order','key'=>'order_id','child_col'=>'order_id', 
-                                 'show_sql'=>'SELECT CONCAT("'.MODULE_AUCTION['labels']['order'].' ID[",order_id,"] created-",date_create) FROM '.$this->table_prefix.'order WHERE order_id = "{KEY_VAL}" '));  
+                                 'show_sql'=>'SELECT CONCAT("'.MODULE_AUCTION['labels']['order'].' ID[",`order_id`,"] created-",`date_create`) '.
+                                             'FROM `'.$this->table_prefix.'order` WHERE `order_id` = "{KEY_VAL}" '));  
 
         $access = [];
         if($active_order) {
@@ -48,8 +49,8 @@ class AccountOrderItem extends Table
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','edit'=>false));
 
         //sort lots by auction specific lot no. 
-        $this->addSql('JOIN','LEFT JOIN '.$this->table_prefix.'lot AS L ON(T.lot_id = L.lot_id)');
-        $this->addSortOrder('L.lot_no','Lot Number','DEFAULT');
+        $this->addSql('JOIN','LEFT JOIN `'.$this->table_prefix.'lot` AS L ON(T.`lot_id` = L.`lot_id`)');
+        $this->addSortOrder('L.`lot_no`','Lot Number','DEFAULT');
 
         if($active_order) {
             $this->addAction(['type'=>'check_box','text'=>'','checked'=>true]);
@@ -140,7 +141,7 @@ class AccountOrderItem extends Table
             $subject = 'UPDATED';
             $message = 'You updated your '.MODULE_AUCTION['labels']['order'].'. Please view revised details below.';
             $param = [];
-            //$param['notify_higher_bid'] = true;
+            $param['notify_higher_bid'] = true;
             Helpers::sendOrderMessage($this->db,$this->table_prefix,$this->container,$order_id,$subject,$message,$param,$error);    
         }
     }

@@ -23,7 +23,7 @@ class OrderFile extends Upload
         $param['label']     = 'order_id';
         $param['child_col'] = 'location_id';
         $param['child_prefix'] = $id_prefix;
-        $param['show_sql'] = 'SELECT CONCAT("Order[",order_id,"] created: ",date_create) FROM '.TABLE_PREFIX.'order WHERE order_id = "{KEY_VAL}"';
+        $param['show_sql'] = 'SELECT CONCAT("Order[",`order_id`,"] created: ",`date_create`) FROM `'.TABLE_PREFIX.'order` WHERE `order_id` = "{KEY_VAL}"';
         $this->setupMaster($param);
 
         $this->addAction(array('type'=>'edit','text'=>'edit details of','icon_text'=>'edit'));

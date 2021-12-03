@@ -14,7 +14,8 @@ class UserExtend extends Table
         parent::setup($param);        
 
         $this->addTableCol(array('id'=>'extend_id','type'=>'INTEGER','title'=>'Extend ID','key'=>true,'key_auto'=>true,'list'=>false));
-        $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'User ID - name: email','edit_title'=>'User','join'=>'CONCAT(user_id," - ",name,": ",email) FROM '.TABLE_USER.' WHERE user_id'));
+        $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'User ID - name: email','edit_title'=>'User',
+                                 'join'=>'CONCAT(`user_id`," - ",`name`,": ",`email`) FROM `'.TABLE_USER.'` WHERE `user_id`'));
         $this->addTableCol(array('id'=>'name_invoice','type'=>'STRING','title'=>'Invoice name','required'=>true));
         $this->addTableCol(array('id'=>'bid_no','type'=>'STRING','title'=>'Buyer No.','required'=>false));
         $this->addTableCol(array('id'=>'seller_id','type'=>'INTEGER','title'=>'Linked seller','new'=>0));
@@ -30,17 +31,17 @@ class UserExtend extends Table
 
         $this->addSearch(array('user_id','name_invoice','cell','tel','email_alt','bill_address','ship_address'),array('rows'=>2));
 
-        $this->addSelect('user_id','SELECT user_id,name FROM '.TABLE_USER.' ORDER BY name');
-        $this->addSelect('seller_id','(SELECT "0","NOT a seller") UNION SELECT seller_id,name FROM '.TABLE_PREFIX.'seller ');
+        $this->addSelect('user_id','SELECT `user_id`,`name` FROM `'.TABLE_USER.'` ORDER BY `name`');
+        $this->addSelect('seller_id','(SELECT "0","NOT a seller") UNION SELECT `seller_id`,`name` FROM `'.TABLE_PREFIX.'seller` ');
     }    
 
     protected function beforeUpdate($id,$context,&$data,&$error) 
     {
         //bid no must be unique if set
         if($data['bid_no'] !== '') {
-            $sql = 'SELECT COUNT(*) FROM '.$this->table.' '.
-                   'WHERE bid_no = "'.$this->db->escapeSql($data['bid_no']).'" ';
-            if($context === 'UPDATE') $sql .= 'AND extend_id <> "'.$this->db->escapeSql($id).'" ';
+            $sql = 'SELECT COUNT(*) FROM `'.$this->table.'` '.
+                   'WHERE `bid_no` = "'.$this->db->escapeSql($data['bid_no']).'" ';
+            if($context === 'UPDATE') $sql .= 'AND `extend_id` <> "'.$this->db->escapeSql($id).'" ';
 
             $count = $this->db->readSqlValue($sql);
             if($count > 0) $error .= 'Bid number['.$data['bid_no'].'] is already in use with another user!';

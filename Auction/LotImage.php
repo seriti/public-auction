@@ -40,7 +40,7 @@ class LotImage extends Upload
         $param['label']     = 'name';
         $param['child_col'] = 'location_id';
         $param['child_prefix'] = $id_prefix ;
-        $param['show_sql'] = 'SELECT CONCAT("Images for Lot: ",name) FROM '.TABLE_PREFIX.'lot WHERE lot_id = "{KEY_VAL}"';
+        $param['show_sql'] = 'SELECT CONCAT("Images for Lot: ",`name`) FROM `'.TABLE_PREFIX.'lot` WHERE `lot_id` = "{KEY_VAL}"';
         $this->setupMaster($param);
 
         $this->addAction(array('type'=>'edit','text'=>'edit details of','icon_text'=>'edit'));

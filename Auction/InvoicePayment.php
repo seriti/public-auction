@@ -13,7 +13,7 @@ class InvoicePayment extends Table
                        
         //NB: specify master table relationship
         $this->setupMaster(array('table'=>TABLE_PREFIX.'invoice','key'=>'invoice_id','child_col'=>'invoice_id', 
-                                 'show_sql'=>'SELECT CONCAT("Invoice ID[",invoice_id,"] created-",`date`) FROM '.TABLE_PREFIX.'invoice WHERE invoice_id = "{KEY_VAL}" '));  
+                                 'show_sql'=>'SELECT CONCAT("Invoice ID[",invoice_id,"] created-",`date`) FROM `'.TABLE_PREFIX.'invoice` WHERE `invoice_id` = "{KEY_VAL}" '));  
                 
         $this->addTableCol(array('id'=>'payment_id','type'=>'INTEGER','title'=>'Payment ID','key'=>true,'key_auto'=>true,'list'=>false));
         $this->addTableCol(array('id'=>'date_create','type'=>'DATETIME','title'=>'Date paid'));

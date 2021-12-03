@@ -27,11 +27,11 @@ class LotInfo
 
         $html = '<div class="container">';
 
-        $sql = 'SELECT O.order_id,O.date_create,O.user_id,U.name,U.email,I.price,I.status '.
-               'FROM '.TABLE_PREFIX.'order AS O JOIN '.TABLE_PREFIX.'order_item AS I ON(O.auction_id = "'.AUCTION_ID.'" AND O.order_id = I.order_id) '.
-               'JOIN '.TABLE_USER.' AS U ON(O.user_id = U.user_id) '.
-               'WHERE I.lot_id = "'.$this->db->escapeSql($this->lot_id).'" '.
-               'ORDER BY I.price DESC, O.date_create ';
+        $sql = 'SELECT O.`order_id`,O.`date_create`,O.`user_id`,U.`name`,U.`email`,I.`price`,I.`status` '.
+               'FROM `'.TABLE_PREFIX.'order` AS O JOIN `'.TABLE_PREFIX.'order_item` AS I ON(O.`auction_id` = "'.AUCTION_ID.'" AND O.`order_id` = I.`order_id`) '.
+               'JOIN `'.TABLE_USER.'` AS U ON(O.`user_id` = U.`user_id`) '.
+               'WHERE I.`lot_id` = "'.$this->db->escapeSql($this->lot_id).'" '.
+               'ORDER BY I.`price` DESC, O.`date_create` ';
         $orders = $this->db->readSqlArray($sql);
         if($orders == 0) {
             $html .= '<h2>NO online orders exist for this lot.</h2>';
@@ -48,11 +48,12 @@ class LotInfo
             $html .= '</table>';
         }
 
-        $sql = 'SELECT INV.invoice_id,INV.date,INV.user_id,U.name,U.email,I.price,INV.status '.
-               'FROM '.TABLE_PREFIX.'invoice AS INV JOIN '.TABLE_PREFIX.'invoice_item AS I ON(INV.auction_id = "'.AUCTION_ID.'" AND INV.invoice_id = I.invoice_id) '.
-               'JOIN '.TABLE_USER.' AS U ON(INV.user_id = U.user_id) '.
-               'WHERE I.lot_id = "'.$this->db->escapeSql($this->lot_id).'" '.
-               'ORDER BY I.price DESC ';
+        $sql = 'SELECT INV.`invoice_id`,INV.`date`,INV.`user_id`,U.`name`,U.`email`,I.`price`,INV.`status` '.
+               'FROM `'.TABLE_PREFIX.'invoice` AS INV '.
+               'JOIN `'.TABLE_PREFIX.'invoice_item` AS I ON(INV.`auction_id` = "'.AUCTION_ID.'" AND INV.`invoice_id` = I.`invoice_id`) '.
+               'JOIN `'.TABLE_USER.'` AS U ON(INV.`user_id` = U.`user_id`) '.
+               'WHERE I.`lot_id` = "'.$this->db->escapeSql($this->lot_id).'" '.
+               'ORDER BY I.`price` DESC ';
         $invoices = $this->db->readSqlArray($sql);
         if($invoices == 0) {
             $html .= '<h2>NO invoice exists for this lot.</h2>';

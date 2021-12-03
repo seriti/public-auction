@@ -77,11 +77,11 @@ class CheckoutWizard extends Wizard
                if($this->debug) $error .= $error_tmp; 
                $this->addError($error); 
             } else {
-                $sql = 'SELECT name FROM '.$this->table_prefix.'ship_location WHERE location_id = "'.$this->db->escapeSql($ship_location_id).'" ';
+                $sql = 'SELECT `name` FROM `'.$this->table_prefix.'ship_location` WHERE `location_id` = "'.$this->db->escapeSql($ship_location_id).'" ';
                 $this->data['ship_location'] = $this->db->readSqlValue($sql);
-                $sql = 'SELECT name FROM '.$this->table_prefix.'ship_option WHERE option_id = "'.$this->db->escapeSql($ship_option_id).'" ';
+                $sql = 'SELECT `name` FROM `'.$this->table_prefix.'ship_option` WHERE `option_id` = "'.$this->db->escapeSql($ship_option_id).'" ';
                 $this->data['ship_option'] = $this->db->readSqlValue($sql);
-                $sql = 'SELECT name,type_id,config FROM '.$this->table_prefix.'pay_option WHERE option_id = "'.$this->db->escapeSql($pay_option_id).'" ';
+                $sql = 'SELECT `name`,`type_id`,`config` FROM `'.$this->table_prefix.'pay_option` WHERE `option_id` = "'.$this->db->escapeSql($pay_option_id).'" ';
                 $this->data['pay'] = $this->db->readSqlRecord($sql);
                 $this->data['pay_option'] = $this->data['pay']['name'];
                 
@@ -209,10 +209,12 @@ class CheckoutWizard extends Wizard
 
                 //NB: must make this configurable by admin at some point
                 $message = 'Thank you for your bids received.<br/>'.
-                           'You can view or review your bid form in <a href="'.BASE_URL.'public/account/dashboard">Your Account</a> and delete or amend bids if you wish,  '.
+                           'You can view or review your bid form in <a href="'.BASE_URL.'public/account/dashboard">Your Account</a> and increase bids if you wish,  '.
                            'or <a href="'.BASE_URL.'public/contact">contact us</a> and we will do so on your behalf.<br/>'.
+                           'If you want to delete any bids <a href="'.BASE_URL.'public/contact">contact us</a> and we will do so on your behalf<br/>'.
                            'You may also simply generate another bid form. Multiple bid forms are not a problem.<br/>'.
-                           'If you want us to break any bidding ties, please <a href="'.BASE_URL.'public/contact">contact us</a> and we will increase your bid by one bidding step.<br/>'.
+                           'If you want us to break any bidding ties, please <a href="'.BASE_URL.'public/contact">contact us</a> and we will increase your bid by one bidding step, '.
+                           'or more if you so choose.<br/>'.
                            'You will be advised after completion of auction.';
 
                 /*
@@ -223,6 +225,7 @@ class CheckoutWizard extends Wizard
                 */
                            
                 $param = [];
+                $param['notify_higher_bid'] = true;
                 Helpers::sendOrderMessage($this->db,$this->table_prefix,$this->container,$this->data['order_id'],$subject,$message,$param,$error_tmp);
                 if($error_tmp == '') {
                     $this->addMessage(MODULE_AUCTION['labels']['order'].' details sent to email address['.$this->data['user_email'].'] '); 
@@ -244,7 +247,7 @@ class CheckoutWizard extends Wizard
             $this->saveData('data');
 
             //get extended user info if any
-            $sql = 'SELECT * FROM '.$this->table_prefix.'user_extend WHERE user_id = "'.$this->user_id.'" ';
+            $sql = 'SELECT * FROM `'.$this->table_prefix.'user_extend` WHERE `user_id` = "'.$this->user_id.'" ';
             $user_extend = $this->db->readSqlRecord($sql);
             
             if($user_extend != 0) {

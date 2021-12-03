@@ -19,7 +19,8 @@ class AccountInvoiceItem extends Table
                        
         //NB: specify master table relationship
         $this->setupMaster(array('table'=>$this->table_prefix.'invoice','key'=>'invoice_id','child_col'=>'invoice_id', 
-                                 'show_sql'=>'SELECT CONCAT("Items for Invoice: ",invoice_no) FROM '.$this->table_prefix.'invoice WHERE invoice_id = "{KEY_VAL}" '));                        
+                                 'show_sql'=>'SELECT CONCAT("Items for Invoice: ",`invoice_no`) '.
+                                             'FROM `'.$this->table_prefix.'invoice` WHERE `invoice_id` = "{KEY_VAL}" '));                        
 
         $access['read_only'] = true;                         
         $this->modifyAccess($access);
@@ -30,7 +31,7 @@ class AccountInvoiceItem extends Table
         $this->addTableCol(array('id'=>'price','type'=>'DECIMAL','title'=>'Price'));
         $this->addTableCol(array('id'=>'total','type'=>'DECIMAL','title'=>'Total'));
 
-        $this->addSortOrder('T.item_id','Order of capture','DEFAULT');
+        $this->addSortOrder('T.`item_id`','Order of capture','DEFAULT');
     }    
 }
 

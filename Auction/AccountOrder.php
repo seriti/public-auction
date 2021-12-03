@@ -30,7 +30,8 @@ class AccountOrder extends Table
         $this->modifyAccess($access);
 
         $this->addTableCol(array('id'=>'order_id','type'=>'INTEGER','title'=>$order_name.' ID','key'=>true,'key_auto'=>true,'list'=>true));
-        $this->addTableCol(array('id'=>'auction_id','type'=>'INTEGER','title'=>'Auction','join'=>'CONCAT(name," @",DATE_FORMAT(date_start_live,"%d %M %Y")) FROM '.$this->table_prefix.'auction WHERE auction_id','edit'=>false));
+        $this->addTableCol(array('id'=>'auction_id','type'=>'INTEGER','title'=>'Auction','edit'=>false,
+                                 'join'=>'CONCAT(`name`," @",DATE_FORMAT(`date_start_live`,"%d %M %Y")) FROM `'.$this->table_prefix.'auction` WHERE `auction_id`'));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','edit'=>false));
         $this->addTableCol(array('id'=>'date_create','type'=>'DATETIME','title'=>'Date created','edit'=>false));
         $this->addTableCol(array('id'=>'date_update','type'=>'DATETIME','title'=>'Date updated','edit'=>false));
@@ -38,20 +39,22 @@ class AccountOrder extends Table
         $this->addTableCol(array('id'=>'total_bid','type'=>'DECIMAL','title'=>'Bid total','edit'=>false));
         //$this->addTableCol(array('id'=>'total_success','type'=>'DECIMAL','title'=>'Success total'));
         $this->addTableCol(array('id'=>'ship_address','type'=>'TEXT','title'=>'Shipping address'));
-        $this->addTableCol(array('id'=>'ship_location_id','type'=>'INTEGER','title'=>'Shipping location','join'=>'name FROM '.$this->table_prefix.'ship_location WHERE location_id'));
-        $this->addTableCol(array('id'=>'ship_option_id','type'=>'INTEGER','title'=>'Shipping option','join'=>'name FROM '.$this->table_prefix.'ship_option WHERE option_id'));
+        $this->addTableCol(array('id'=>'ship_location_id','type'=>'INTEGER','title'=>'Shipping location',
+                                 'join'=>'`name` FROM `'.$this->table_prefix.'ship_location` WHERE `location_id`'));
+        $this->addTableCol(array('id'=>'ship_option_id','type'=>'INTEGER','title'=>'Shipping option',
+                                 'join'=>'`name` FROM `'.$this->table_prefix.'ship_option` WHERE `option_id`'));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','edit'=>false));
 
-        $this->addSql('WHERE','T.user_id = "'.$this->db->escapeSql($this->user_id).'" AND T.temp_token = "" AND T.status <> "NEW" ');
+        $this->addSql('WHERE','T.`user_id` = "'.$this->db->escapeSql($this->user_id).'" AND T.`temp_token` = "" AND T.`status` <> "NEW" ');
 
-        $this->addSortOrder('T.order_id DESC','Most recent first','DEFAULT');
+        $this->addSortOrder('T.`order_id` DESC','Most recent first','DEFAULT');
         
         $this->addAction(array('type'=>'edit','text'=>'edit shipping','icon_text'=>'edit','pos'=>'R','verify'=>true));
         $this->addAction(array('type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R','verify'=>true));
         $this->addAction(array('type'=>'popup','text'=>'Bid Lots','url'=>'order_item','mode'=>'view','width'=>600,'height'=>600)); 
 
-        $this->addSelect('ship_location_id','SELECT location_id,name FROM '.$this->table_prefix.'ship_location WHERE status <> "HIDE" ORDER By sort');
-        $this->addSelect('ship_option_id','SELECT option_id,name FROM '.$this->table_prefix.'ship_option WHERE status <> "HIDE" ORDER By sort');
+        $this->addSelect('ship_location_id','SELECT `location_id`,`name` FROM `'.$this->table_prefix.'ship_location` WHERE `status` <> "HIDE" ORDER By `sort`');
+        $this->addSelect('ship_option_id','SELECT `option_id`,`name` FROM `'.$this->table_prefix.'ship_option` WHERE `status` <> "HIDE" ORDER By `sort`');
 
     }
 
@@ -71,7 +74,7 @@ class AccountOrder extends Table
     {
         $error = '';
 
-        $sql = 'DELETE FROM '.$this->table_prefix.'order_item WHERE order_id = "'.$this->db->escapeSql($id).'" ';
+        $sql = 'DELETE FROM `'.$this->table_prefix.'order_item` WHERE `order_id` = "'.$this->db->escapeSql($id).'" ';
         $this->db->executeSql($sql,$error); 
     } 
 

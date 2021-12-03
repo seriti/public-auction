@@ -26,7 +26,8 @@ class Invoice extends Table
 
         $this->addTableCol(array('id'=>'invoice_id','type'=>'INTEGER','title'=>'Invoice ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'invoice_no','type'=>'STRING','title'=>'Invoice no','edit'=>false));
-        $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'User','join'=>'name FROM '.TABLE_USER.' WHERE user_id','edit'=>false));
+        $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'User',
+                                 'join'=>'`name` FROM `'.TABLE_USER.'` WHERE `user_id`','edit'=>false));
         $this->addTableCol(array('id'=>'date','type'=>'DATE','title'=>'Date','edit'=>false));
         $this->addTableCol(array('id'=>'sub_total','type'=>'DECIMAL','title'=>'Amount','edit'=>false));
         $this->addTableCol(array('id'=>'tax','type'=>'DECIMAL','title'=>'VAT','edit'=>false));
@@ -36,9 +37,9 @@ class Invoice extends Table
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','new'=>'OK'));
         $this->addTableCol(array('id'=>'order_id','type'=>'INTEGER','title'=>'Order ID','edit'=>false));
 
-        $this->addSortOrder('T.invoice_id DESC','Create date latest','DEFAULT');
+        $this->addSortOrder('T.`invoice_id` DESC','Create date latest','DEFAULT');
 
-        $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'" ');
+        $this->addSql('WHERE','T.`auction_id` = "'.AUCTION_ID.'" ');
 
         $this->setupFiles(array('location'=>'INV','max_no'=>10,
                                 'table'=>TABLE_PREFIX.'file','list'=>true,'list_no'=>10,
@@ -53,7 +54,7 @@ class Invoice extends Table
 
         $this->addSearch(array('user_id','invoice_no','date','total','comment','status'),array('rows'=>2));
 
-        $this->addSelect('user_id','SELECT user_id,name FROM '.TABLE_USER.' WHERE zone = "PUBLIC" ORDER BY name');
+        $this->addSelect('user_id','SELECT `user_id`,`name` FROM `'.TABLE_USER.'` WHERE `zone` = "PUBLIC" ORDER BY `name`');
         $this->addSelect('status','(SELECT "OK") UNION (SELECT "PAID") UNION (SELECT "BAD_DEBT")');
     }
 
@@ -61,8 +62,8 @@ class Invoice extends Table
     {
         $error_tmp = '';
         
-        $sql = 'SELECT COUNT(*) FROM '.TABLE_PREFIX.'payment '.
-               'WHERE invoice_id = "'.$this->db->escapeSql($id).'" ';
+        $sql = 'SELECT COUNT(*) FROM `'.TABLE_PREFIX.'payment` '.
+               'WHERE `invoice_id` = "'.$this->db->escapeSql($id).'" ';
         $count = $this->db->readSqlValue($sql);
         if($count > 0) {
             $error .= 'Cannot delete invoice as '.$count.' payments are linked to it!';
@@ -73,7 +74,7 @@ class Invoice extends Table
     {
         $error = '';
 
-        $sql = 'DELETE FROM '.TABLE_PREFIX.'invoice_item WHERE invoice_id = "'.$this->db->escapeSql($id).'" ';
+        $sql = 'DELETE FROM `'.TABLE_PREFIX.'invoice_item` WHERE `invoice_id` = "'.$this->db->escapeSql($id).'" ';
         $this->db->executeSql($sql,$error);
         if($error !== '') {
             throw new Exception('AUCTION_INVOICE_DELETE: Could not remove invoice['.$id.'] items');
@@ -172,8 +173,8 @@ class Invoice extends Table
                 $audit_str .= 'invoice ID['.$invoice_id.'] ';
                                     
                 if($action === 'STATUS_CHANGE') {
-                  $sql = 'UPDATE '.$this->table.' SET status = "'.$this->db->escapeSql($status_change).'" '.
-                         'WHERE invoice_id = "'.$this->db->escapeSql($invoice_id).'" ';
+                  $sql = 'UPDATE `'.$this->table.'` SET `status` = "'.$this->db->escapeSql($status_change).'" '.
+                         'WHERE `invoice_id` = "'.$this->db->escapeSql($invoice_id).'" ';
                   $this->db->executeSql($sql,$error_tmp);
                   if($error_tmp === '') {
                     $message_str = 'Status set['.$status_change.'] for Invoice ID['.$invoice_id.'] ';
@@ -187,8 +188,8 @@ class Invoice extends Table
                 }
                 
                 if($action === 'EMAIL_INVOICE') {
-                  $sql = 'SELECT user_id,doc_name,invoice_no FROM '.$this->table.' '.
-                         'WHERE invoice_id = "'.$this->db->escapeSql($invoice_id).'" ';
+                  $sql = 'SELECT `user_id`,`doc_name`,`invoice_no` FROM `'.$this->table.'` '.
+                         'WHERE `invoice_id` = "'.$this->db->escapeSql($invoice_id).'" ';
                   $invoice = $this->db->readSqlRecord($sql);
                   
                   HelpersPayment::sendInvoice($this->db,$this->container,$invoice['user_id'],$invoice_id,$email_address,$error_tmp);

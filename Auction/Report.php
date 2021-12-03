@@ -62,7 +62,7 @@ class Report extends ReportTool
             $param = [];
             $param['class'] = 'form-control input-medium';
             $param['xtra'] = ['ALL'=>'All auctions'];
-            $sql = 'SELECT auction_id,name FROM '.TABLE_PREFIX.'auction WHERE status <> "HIDE" ORDER BY name'; 
+            $sql = 'SELECT `auction_id`,`name` FROM `'.TABLE_PREFIX.'auction` WHERE `status` <> "HIDE" ORDER BY `name`'; 
             if(isset($form['auction_id'])) $auction_id = $form['auction_id']; else $auction_id = 'ALL';
             $html .= Form::sqlList($sql,$this->db,'auction_id',$auction_id,$param);
         }
@@ -71,7 +71,7 @@ class Report extends ReportTool
             $param = [];
             $param['class'] = 'form-control input-medium';
             $param['xtra'] = ['ALL'=>'All users'];
-            $sql = 'SELECT user_id,CONCAT(name,":",email) FROM '.TABLE_USER.' WHERE zone = "PUBLIC" AND status <> "HIDE" ORDER BY name'; 
+            $sql = 'SELECT `user_id`,CONCAT(`name`,":",`email`) FROM `'.TABLE_USER.'` WHERE `zone` = "PUBLIC" AND `status` <> "HIDE" ORDER BY `name`'; 
             if(isset($form['user_id'])) $user_id = $form['user_id']; else $user_id = 'ALL';
             $html .= Form::sqlList($sql,$this->db,'user_id',$user_id,$param);
         }
@@ -79,7 +79,7 @@ class Report extends ReportTool
         if($id === 'select_admin_user') {
             $param = [];
             $param['class'] = 'form-control input-medium';
-            $sql = 'SELECT user_id,name FROM '.TABLE_USER.' WHERE zone = "ADMIN" AND status <> "HIDE" ORDER BY name'; 
+            $sql = 'SELECT `user_id`,`name` FROM `'.TABLE_USER.'` WHERE `zone` = "ADMIN" AND `status` <> "HIDE" ORDER BY `name`'; 
             if(isset($form['admin_user_id'])) $admin_user_id = $form['admin_user_id']; else $admin_user_id = '';
             $html .= Form::sqlList($sql,$this->db,'admin_user_id',$admin_user_id,$param);
         }
@@ -87,7 +87,7 @@ class Report extends ReportTool
         if($id === 'select_seller') {
             $param = [];
             $param['class'] = 'form-control input-medium';
-            $sql = 'SELECT seller_id,name FROM '.TABLE_PREFIX.'seller WHERE status <> "HIDE" ORDER BY name'; 
+            $sql = 'SELECT `seller_id`,`name` FROM `'.TABLE_PREFIX.'seller` WHERE `status` <> "HIDE" ORDER BY `name`'; 
             if(isset($form['seller_id'])) $seller_id = $form['seller_id']; else $seller_id = '';
             $html .= Form::sqlList($sql,$this->db,'seller_id',$seller_id,$param);
         }

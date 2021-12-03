@@ -36,9 +36,20 @@ $item_total = 0;
 $html_items .= '<table><tr><th>Quantity</th><th width="300">Description</th><th>Unit price</th><th>Total</th></tr>';
 
 for($i = 1; $i <= $item_no; $i++) {
-  if($items[0][$i] == 0) $items[0][$i] = ''; //to stop display of zeros
+  //to stop display of zeros
+  if($items[0][$i] == 0) $items[0][$i] = ''; 
+
+  //preserve description for linked lots as lot_id used to update final bid price
+  $lot_id = $items[4][$i];
+  if($lot_id != 0) {
+    $value = str_replace('"','&quot;',$items[1][$i]);
+    $desc_input = '<input type="hidden" name="desc_'.$i.'" value="'.$value.'">'.$value;
+  } else {
+    $desc_input = Form::textInput('desc_'.$i,$items[1][$i],$param);
+  }  
+
   $html_items.='<tr><td>'.Form::textInput('quant_'.$i,$items[0][$i],$param).'</td>'.
-               '<td>'.Form::textInput('desc_'.$i,$items[1][$i],$param).'</td>'.
+               '<td>'.$desc_input.'</td>'.
                '<td>'.Form::textInput('price_'.$i,$items[2][$i],$param).'</td>'.
                '<td>'.Form::textInput('total_'.$i,$items[3][$i],$param).'</td>'.
                '</tr>';

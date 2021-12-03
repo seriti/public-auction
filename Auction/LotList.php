@@ -43,7 +43,7 @@ class LotList extends Listing
         } else {
             $this->auction_id = Secure::clean('integer',$param['auction_id']);
             //only list auction lots with status NOT = HIDE 
-            $this->addSql('WHERE','T.auction_id = "'.$this->db->escapeSql($this->auction_id).'" AND T.status <> "HIDE"');
+            $this->addSql('WHERE','T.`auction_id` = "'.$this->db->escapeSql($this->auction_id).'" AND T.`status` <> "HIDE"');
         }
 
         $this->setupAuction();
@@ -84,13 +84,16 @@ class LotList extends Listing
 
         $this->addListCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>$lot_id_display));
         $this->addListCol(array('id'=>'lot_no','type'=>'INTEGER','title'=>'Lot No.','list'=>$lot_no_display));
-        $this->addListCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$labels['category'],'class'=>'list_item_title','list'=>true,'tree'=>'CT','join'=>'title FROM '.$this->table_prefix.'category WHERE id'));
+        $this->addListCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$labels['category'],'class'=>'list_item_title','list'=>true,'tree'=>'CT',
+                                'join'=>'`title` FROM `'.$this->table_prefix.'category` WHERE `id`'));
         $this->addListCol(array('id'=>'name','type'=>'STRING','title'=>'Name','class'=>'list_item_title'));
 
-        $this->addListCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$labels['type'],'join'=>'name FROM '.$this->table_prefix.'type WHERE type_id'));
+        $this->addListCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$labels['type'],
+                                'join'=>'`name` FROM `'.$this->table_prefix.'type` WHERE `type_id`'));
         $this->addListCol(array('id'=>'type_txt1','type'=>'STRING','title'=>$labels['type_txt1']));
         //$this->addListCol(array('id'=>'type_txt2','type'=>'STRING','title'=>$labels['type_txt2']));
-        $this->addListCol(array('id'=>'condition_id','type'=>'INTEGER','title'=>'Condition','join'=>'name FROM '.$this->table_prefix.'condition WHERE condition_id'));
+        $this->addListCol(array('id'=>'condition_id','type'=>'INTEGER','title'=>'Condition',
+                                'join'=>'`name` FROM `'.$this->table_prefix.'condition` WHERE `condition_id`'));
 
         $this->addListCol(array('id'=>'description','type'=>'TEXT','title'=>'Description','class'=>'list_item_text'));
         $this->addListCol(array('id'=>'price_reserve','type'=>'DECIMAL','title'=>'Reserve Price','prefix'=>$currency));
@@ -100,13 +103,13 @@ class LotList extends Listing
         $this->addListCol(array('id'=>'bid_final','type'=>'DECIMAL','title'=>'Bid final','list'=>false));
 
         //NB: must have to be able to search on products below category_id in tree
-        $this->addSql('JOIN','JOIN '.$this->table_prefix.'category AS CT ON(T.category_id = CT.'.$this->tree_cols['node'].')');
-        $this->addSql('JOIN','JOIN '.$this->table_prefix.'condition AS CN ON(T.condition_id = CN.condition_id)');
+        $this->addSql('JOIN','JOIN `'.$this->table_prefix.'category` AS CT ON(T.`category_id` = CT.`'.$this->tree_cols['node'].'`)');
+        $this->addSql('JOIN','JOIN `'.$this->table_prefix.'condition` AS CN ON(T.`condition_id` = CN.`condition_id`)');
 
         //$this->addSql('JOIN','JOIN '.$this->table_prefix.'type AS L ON(T.type_id = L.type_id)');
         
         //NB: Lots will default to order on Lot No. unless alternative specified below
-        $this->addSortOrder('T.lot_no','Lot Number','DEFAULT');
+        $this->addSortOrder('T.`lot_no`','Lot Number','DEFAULT');
 
         //sort by primary category, then name, tyen description
         //$this->addSortOrder('CT.rank,T.name,T.description ',$labels['category'].', then Name then Description','DEFAULT');
@@ -132,12 +135,12 @@ class LotList extends Listing
         
         
         
-        $sql_cat = 'SELECT id,CONCAT(IF(level > 1,REPEAT("--",level - 1),""),title) FROM '.$this->table_prefix.'category  ORDER BY rank';
+        $sql_cat = 'SELECT `id`,CONCAT(IF(`level` > 1,REPEAT("--",`level` - 1),""),`title`) FROM `'.$this->table_prefix.'category`  ORDER BY `rank`';
         $this->addSelect('category_id',$sql_cat);
 
-        $this->addSelect('type_id','SELECT type_id,name FROM '.$this->table_prefix.'type WHERE status <> "HIDE" ORDER BY sort');
-        $this->addSelect('index_terms','SELECT term_code,name FROM '.$this->table_prefix.'index_term WHERE status <> "HIDE" ORDER BY name');
-        $this->addSelect('condition_id','SELECT condition_id,name FROM '.$this->table_prefix.'condition WHERE status <> "HIDE" ORDER BY sort');
+        $this->addSelect('type_id','SELECT `type_id`,`name` FROM `'.$this->table_prefix.'type` WHERE `status` <> "HIDE" ORDER BY `sort`');
+        $this->addSelect('index_terms','SELECT `term_code`,`name` FROM `'.$this->table_prefix.'index_term` WHERE `status` <> "HIDE" ORDER BY `name`');
+        $this->addSelect('condition_id','SELECT `condition_id`,`name` FROM `'.$this->table_prefix.'condition` WHERE `status` <> "HIDE" ORDER BY `sort`');
         
         //left out index_terms for now  removed('type_txt2')
         $this->addSearch(array('category_id','name','type_id','type_txt1','condition_id','description','index_terms'),array('rows'=>3));
@@ -212,9 +215,9 @@ class LotList extends Listing
 
     protected function setupAuction() 
     {
-        $sql = 'SELECT name,summary,description,date_start_postal,date_start_live,status '.
-               'FROM '.$this->table_prefix.'auction '.
-               'WHERE auction_id = "'.$this->db->escapeSql($this->auction_id).'" ';
+        $sql = 'SELECT `name`,`summary`,`description`,`date_start_postal`,`date_start_live`,`status` '.
+               'FROM `'.$this->table_prefix.'auction` '.
+               'WHERE `auction_id` = "'.$this->db->escapeSql($this->auction_id).'" ';
         $this->auction = $this->db->readSqlRecord($sql);
     }
 

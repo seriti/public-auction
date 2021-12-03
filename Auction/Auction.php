@@ -27,7 +27,7 @@ class Auction extends Table
         $this->addTableCol(array('id'=>'date_start_live','type'=>'DATETIME','title'=>'Date start_live'));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','new'=>'NEW'));
         
-        $this->addSortOrder('T.auction_id DESC','Order of creation, most recent first','DEFAULT');
+        $this->addSortOrder('T.`auction_id` DESC','Order of creation, most recent first','DEFAULT');
 
         //$this->addAction(array('type'=>'check_box','text'=>''));
         $this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit'));

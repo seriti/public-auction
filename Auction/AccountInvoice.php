@@ -25,7 +25,8 @@ class AccountInvoice extends Table
         $this->modifyAccess($access);
 
         $this->addTableCol(array('id'=>'invoice_id','type'=>'INTEGER','title'=>'Invoice ID','key'=>true,'key_auto'=>true,'list'=>false));
-        $this->addTableCol(array('id'=>'auction_id','type'=>'INTEGER','title'=>'Auction','join'=>'name FROM '.$this->table_prefix.'auction WHERE auction_id'));
+        $this->addTableCol(array('id'=>'auction_id','type'=>'INTEGER','title'=>'Auction',
+                                 'join'=>'`name` FROM `'.$this->table_prefix.'auction` WHERE `auction_id`'));
         $this->addTableCol(array('id'=>'invoice_no','type'=>'STRING','title'=>'Invoice no'));
         $this->addTableCol(array('id'=>'date','type'=>'DATE','title'=>'Date'));
         $this->addTableCol(array('id'=>'sub_total','type'=>'DECIMAL','title'=>'Amount'));
@@ -35,9 +36,9 @@ class AccountInvoice extends Table
         //$this->addTableCol(array('id'=>'doc_name','type'=>'FILE','title'=>'Invoice document','required'=>false));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','new'=>'OK'));
 
-        $this->addSortOrder('T.invoice_id DESC','Most recent latest','DEFAULT');
+        $this->addSortOrder('T.`invoice_id` DESC','Most recent latest','DEFAULT');
 
-        $this->addSql('WHERE','T.user_id = "'.$this->db->escapeSql($this->user_id).'" ');
+        $this->addSql('WHERE','T.`user_id` = "'.$this->db->escapeSql($this->user_id).'" ');
        
         //$this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit'));
         //$this->addAction(array('type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R'));

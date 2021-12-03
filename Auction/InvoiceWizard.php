@@ -85,9 +85,9 @@ class InvoiceWizard extends Wizard
                 }    
             } else {
                 //find most recent order for location/payment/shipping options selected
-                $sql = 'SELECT order_id FROM '.TABLE_PREFIX.'order '.
-                       'WHERE auction_id = "'.AUCTION_ID.'" AND user_id = "'.$user['user_id'].'" '.
-                       'ORDER BY order_id DESC LIMIT 1';
+                $sql = 'SELECT `order_id` FROM `'.TABLE_PREFIX.'order` '.
+                       'WHERE `auction_id` = "'.AUCTION_ID.'" AND `user_id` = "'.$user['user_id'].'" '.
+                       'ORDER BY `order_id` DESC LIMIT 1';
                 $last_order_id = $this->db->readSqlValue($sql,0);
                 if($last_order_id !== 0) {
                     $last_order = Helpers::getOrderDetails($this->db,TABLE_PREFIX,$last_order_id,$error_tmp);
@@ -102,15 +102,15 @@ class InvoiceWizard extends Wizard
 
                 //invoicing an order assumes that order created only with unsold lots after an auction
                 if($source_type === 'ORDER') {
-                    $sql = 'SELECT I.lot_id,L.lot_no,L.name,L.description,I.price AS bid_final,L.weight,L.volume,L.status '.
-                           'FROM '.TABLE_PREFIX.'order_item AS I LEFT JOIN '.TABLE_PREFIX.'lot AS L ON(I.lot_id = L.lot_id) '.
-                           'WHERE I.order_id = "'.$this->db->escapeSql($order_id).'" ';
+                    $sql = 'SELECT I.`lot_id`,L.`lot_no`,L.`name`,L.`description`,I.`price` AS `bid_final`,L.`weight`,L.`volume`,L.`status` '.
+                           'FROM `'.TABLE_PREFIX.'order_item` AS I LEFT JOIN `'.TABLE_PREFIX.'lot` AS L ON(I.`lot_id` = L.`lot_id`) '.
+                           'WHERE I.`order_id` = "'.$this->db->escapeSql($order_id).'" ';
                     $lots = $this->db->readSqlArray($sql);
                 } else {
-                    $sql = 'SELECT lot_id,lot_no,name,description,bid_final,weight,volume,status '.
-                           'FROM '.TABLE_PREFIX.'lot '.
-                           'WHERE auction_id = "'.AUCTION_ID.'" AND buyer_id = "'.$user['user_id'].'" '.
-                           'ORDER BY lot_no';
+                    $sql = 'SELECT `lot_id`,`lot_no`,`name`,`description`,`bid_final`,`weight`,`volume`,`status` '.
+                           'FROM `'.TABLE_PREFIX.'lot` '.
+                           'WHERE `auction_id` = "'.AUCTION_ID.'" AND `buyer_id` = "'.$user['user_id'].'" '.
+                           'ORDER BY `lot_no`';
                     $lots = $this->db->readSqlArray($sql);
                     if($lots == 0) $this->addError('No lots allocated to User ID['.$user['user_id'].'] for auction.');    
                 }
@@ -199,8 +199,8 @@ class InvoiceWizard extends Wizard
             $vat=$this->form['vat'];
             
             //check invoice_no unique
-            $sql='SELECT * FROM '.TABLE_PREFIX.'invoice '.
-                 'WHERE invoice_no = "'.$this->db->escapeSql($this->form['invoice_no']).'" ';
+            $sql='SELECT * FROM `'.TABLE_PREFIX.'invoice` '.
+                 'WHERE `invoice_no` = "'.$this->db->escapeSql($this->form['invoice_no']).'" ';
             $invoice_dup=$this->db->readSqlRecord($sql);
             if($invoice_dup!=0) {
                 $this->addError('Invoice No['.$this->form['invoice_no'].'] has been used before!'); 
@@ -389,8 +389,8 @@ class InvoiceWizard extends Wizard
             if(!$this->errors_found) {
                 $location_id = 'INV'.$this->data['invoice_id'];
                 $file_html = '<ul>';
-                $sql = 'SELECT file_id,file_name_orig FROM '.TABLE_PREFIX.'file '.
-                       'WHERE location_id ="'.$location_id.'" ORDER BY file_id ';
+                $sql = 'SELECT `file_id`,`file_name_orig` FROM `'.TABLE_PREFIX.'file` '.
+                       'WHERE `location_id` ="'.$location_id.'" ORDER BY `file_id` ';
                 $invoice_files = $this->db->readSqlList($sql);
                 if($invoice_files != 0) {
                     foreach($invoice_files as $file_id => $file_name_orig) {

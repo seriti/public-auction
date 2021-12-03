@@ -23,7 +23,7 @@ class InvoiceFile extends Upload
         $param['label']     = 'invoice_no';
         $param['child_col'] = 'location_id';
         $param['child_prefix'] = $id_prefix;
-        $param['show_sql'] = 'SELECT CONCAT("Invoice: ",invoice_no) FROM '.TABLE_PREFIX.'invoice WHERE invoice_id = "{KEY_VAL}"';
+        $param['show_sql'] = 'SELECT CONCAT("Invoice: ",`invoice_no`) FROM `'.TABLE_PREFIX.'invoice` WHERE `invoice_id` = "{KEY_VAL}"';
         $this->setupMaster($param);
 
         $this->addAction('delete');

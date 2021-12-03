@@ -15,7 +15,8 @@ class OrderMessage extends Table
                        
         //NB: specify master table relationship
         $this->setupMaster(array('table'=>TABLE_PREFIX.'order','key'=>'order_id','child_col'=>'order_id', 
-                                 'show_sql'=>'SELECT CONCAT("Order ID[",order_id,"] created-",date_create) FROM '.TABLE_PREFIX.'order WHERE order_id = "{KEY_VAL}" '));  
+                                 'show_sql'=>'SELECT CONCAT("Order ID[",`order_id`,"] created-",`date_create`) '.
+                                             'FROM `'.TABLE_PREFIX.'order` WHERE `order_id` = "{KEY_VAL}" '));  
 
         $access['edit'] = false;
         $access['delete'] = false;
@@ -28,17 +29,21 @@ class OrderMessage extends Table
         $this->addTableCol(array('id'=>'date_sent','type'=>'DATETIME','title'=>'Date sent','edit'=>false));
        
         $this->addSearch(array('subject','message','date_sent'),array('rows'=>1));
+
+        $this->addMessage('All messages will check for higher bids and also include links to user account(Only when auction is active).');
     } 
 
     protected function beforeUpdate($id,$edit_type,&$form,&$error) 
     {
         $error_tmp = '';
 
-        if($edit_type === 'INSERT') {
+        if($edit_type === 'INSERT' and !$this->errors_found) {
             $order_id = $this->master['key_val']; 
             $subject = $form['subject'];
             $message = $form['message'];
             $param=[];
+            $param['notify_higher_bid'] = true;
+            $param['include_links'] = true;
             Helpers::sendOrderMessage($this->db,TABLE_PREFIX,$this->container,$order_id,$subject,$message,$param,$error_tmp);
             if($error_tmp !== '') $error .= 'Could not send message: '.$error_tmp;
         }
@@ -46,8 +51,8 @@ class OrderMessage extends Table
 
     protected function afterUpdate($id,$edit_type,$form) {
         if($edit_type === 'INSERT') {
-            $sql='UPDATE '.$this->table.' SET date_sent = NOW() '.
-                 'WHERE message_id = "'.$this->db->escapeSql($id).'"';
+            $sql='UPDATE `'.$this->table.'` SET `date_sent` = NOW() '.
+                 'WHERE `message_id` = "'.$this->db->escapeSql($id).'"';
             $this->db->executeSql($sql,$error);
             if($error !== '') die($error);
 

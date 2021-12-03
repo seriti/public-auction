@@ -42,7 +42,7 @@ class HelpersPayment {
         if($error_tmp != '') $error .= 'Could NOT lock system table for INVOICE counter!'; 
                             
         if($error == '') {          
-            $sql = 'SELECT sys_count FROM `'.$table.'` WHERE system_id = "INVOICE" ';
+            $sql = 'SELECT `sys_count` FROM `'.$table.'` WHERE `system_id` = "INVOICE" ';
             $id = $db->readSqlValue($sql,0);
             if($id === 0) {
                 $error .= 'Could not read System table INVOICE value!';
@@ -52,7 +52,7 @@ class HelpersPayment {
         }
         
         if($error == '') {          
-            $sql = 'UPDATE `'.$table.'` SET sys_count = sys_count + 1 WHERE system_id = "INVOICE" ';
+            $sql = 'UPDATE `'.$table.'` SET `sys_count` = `sys_count` + 1 WHERE `system_id` = "INVOICE" ';
             $db->executeSql($sql,$error_tmp);
             if($error_tmp != '') $error .= 'Could not update system INVOICE value';
         }
@@ -83,8 +83,8 @@ class HelpersPayment {
 
         $table_auction = TABLE_PREFIX.'auction';
 
-        $sql = 'SELECT auction_id,name,summary,status '.
-               'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+        $sql = 'SELECT `auction_id`,`name`,`summary`,`status` '.
+               'FROM `'.$table_auction.'` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'" ';
         $auction = $db->readSqlRecord($sql);
         if($auction == 0) $error_str .= 'Invalid invoice auction ID['.$auction_id.']';
 
@@ -288,8 +288,8 @@ class HelpersPayment {
         $docs = new Upload($db,$container,TABLE_PREFIX.'file');
         $docs->setup(['upload_location'=>'INV','interface'=>'download']);
         
-        $sql = 'SELECT file_id,file_name_orig FROM '.TABLE_PREFIX.'file '.
-               'WHERE location_id ="INV'.$invoice_id.'" ORDER BY file_id ';
+        $sql = 'SELECT `file_id`,`file_name_orig` FROM `'.TABLE_PREFIX.'file` '.
+               'WHERE `location_id` ="INV'.$invoice_id.'" ORDER BY `file_id` ';
         $invoice_files = $db->readSqlList($sql);
         if($invoice_files != 0) {
             foreach($invoice_files as $file_id => $file_name) {

@@ -48,10 +48,10 @@ class Cart extends Table
         //$this->addTableCol(array('id'=>'total','type'=>'DECIMAL','title'=>'Total','edit'=>false));
 
         //sort lots by auction specific lot no. 
-        $this->addSql('JOIN','LEFT JOIN '.$this->table_prefix.'lot AS L ON(T.lot_id = L.lot_id)');
-        $this->addSortOrder('L.lot_no','Lot Number','DEFAULT');
+        $this->addSql('JOIN','LEFT JOIN `'.$this->table_prefix.'lot` AS L ON(T.`lot_id` = L.`lot_id`)');
+        $this->addSortOrder('L.`lot_no`','Lot Number','DEFAULT');
 
-        $this->addSql('WHERE','T.order_id = "'.$this->db->escapeSql($param['order_id']).'" ');
+        $this->addSql('WHERE','T.`order_id` = "'.$this->db->escapeSql($param['order_id']).'" ');
         
         $this->addAction(['type'=>'check_box','text'=>'','checked'=>true]);
         $this->addAction(['type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R']);
@@ -62,9 +62,9 @@ class Cart extends Table
 
     protected function beforeUpdate($id,$context,&$data,&$error) 
     {
-        $sql = 'SELECT T.price, L.name, L.price_reserve '.
-               'FROM '.$this->table.' AS T JOIN '.$this->table_prefix.'lot AS L ON(T.lot_id = L.lot_id) '.
-               'WHERE T.item_id = "'.$this->db->escapeSql($id).'" ';
+        $sql = 'SELECT T.`price`, L.`name`, L.`price_reserve` '.
+               'FROM `'.$this->table.'` AS T JOIN `'.$this->table_prefix.'lot` AS L ON(T.`lot_id` = L.`lot_id`) '.
+               'WHERE T.`item_id` = "'.$this->db->escapeSql($id).'" ';
         $rec = $this->db->readSqlRecord($sql);
         if($rec == 0) {
             $error .= $this->row_name.' linked Lot no longer available.';
@@ -84,9 +84,9 @@ class Cart extends Table
             //NB: lot_id NOT available in $data as not included in form
             $item = $this->get($id);
             
-            $sql = 'SELECT lot_id,name,status,price_reserve,weight,volume '.
-                   'FROM '.$this->table_prefix.'lot '.
-                   'WHERE lot_id = "'.$this->db->escapeSql($item['lot_id']).'" ';
+            $sql = 'SELECT `lot_id`,`name`,`status`,`price_reserve`,`weight`,`volume` '.
+                   'FROM `'.$this->table_prefix.'lot` '.
+                   'WHERE `lot_id` = "'.$this->db->escapeSql($item['lot_id']).'" ';
             $lot = $this->db->readSqlRecord($sql);
 
             if($lot === 0) {
@@ -155,7 +155,7 @@ class Cart extends Table
         $count = $this->count();
 
         if($count['row_count'] == 0) {
-            $sql = 'DELETE FROM '.$this->table_prefix.'order WHERE order_id = "'.$this->db->escapeSql($this->order_id).'" ';
+            $sql = 'DELETE FROM `'.$this->table_prefix.'order` WHERE `order_id` = "'.$this->db->escapeSql($this->order_id).'" ';
             $this->db->executeSql($sql,$error);
             if($error !== '') $this->addError('Could not erase auction order.');
         }

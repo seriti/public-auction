@@ -19,7 +19,8 @@ class AccountInvoicePayment extends Table
                        
         //NB: specify master table relationship
         $this->setupMaster(array('table'=>$this->table_prefix.'invoice','key'=>'invoice_id','child_col'=>'invoice_id', 
-                                 'show_sql'=>'SELECT CONCAT("Payments for Invoice: ",invoice_no) FROM '.$this->table_prefix.'invoice WHERE invoice_id = "{KEY_VAL}" '));      
+                                 'show_sql'=>'SELECT CONCAT("Payments for Invoice: ",`invoice_no`) '.
+                                             'FROM `'.$this->table_prefix.'invoice` WHERE `invoice_id` = "{KEY_VAL}" '));      
 
         
         $access['read_only'] = true;                         

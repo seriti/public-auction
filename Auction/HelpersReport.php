@@ -54,15 +54,15 @@ class HelpersReport {
         if($auction_id === 'ALL') {
             $error .= 'Cannot generate document for ALL auctions.';
         } else {
-            $sql = 'SELECT auction_id,name,summary,description,postal_only,date_start_postal,date_end_postal,date_start_live,status '.
-                   'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $sql = 'SELECT `auction_id`,`name`,`summary`,`description`,`postal_only`,`date_start_postal`,`date_end_postal`,`date_start_live`,`status` '.
+                   'FROM `'.$table_auction.'` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'"';
             $auction = $db->readSqlRecord($sql,$db); 
             if($auction === 0) {
                 $error .= 'Invalid Auction['.$auction_id.'] selected.';
             } else {
-                $sql = 'SELECT COUNT(*) AS lot_count,SUM(L.price_reserve) AS reserve,SUM(L.price_estimate) AS estimate,SUM(L.bid_final) AS bid '.                
-                       'FROM '.$table_lot.' AS L '.
-                       'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" ';
+                $sql = 'SELECT COUNT(*) AS `lot_count`,SUM(L.`price_reserve`) AS `reserve`,SUM(L.`price_estimate`) AS `estimate`,SUM(L.`bid_final`) AS `bid` '.
+                       'FROM `'.$table_lot.'` AS L '.
+                       'WHERE L.`auction_id` = "'.$db->escapeSql($auction_id).'" ';
                 $stats = $db->readSqlRecord($sql);
                 if($stats == 0) $error .= 'No lots found for auction!';
             }    
@@ -103,8 +103,8 @@ class HelpersReport {
         if($auction_id === 'ALL') {
             $error .= 'Cannot run for ALL auctions. Please select an individual auction.';
         } else {
-            $sql = 'SELECT auction_id,name,summary,description,date_start_postal,date_start_live,status '.
-                   'FROM '.TABLE_PREFIX.'auction WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $sql = 'SELECT `auction_id`,`name`,`summary`,`description`,`date_start_postal`,`date_start_live`,`status` '.
+                   'FROM `'.TABLE_PREFIX.'auction` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'"';
             $auction = $db->readSqlRecord($sql,$db); 
             if($auction === 0) $error .= 'Invalid Auction['.$auction_id.'] selected.';
         }    
@@ -113,10 +113,10 @@ class HelpersReport {
 
         $doc_name_base = 'buyer_invoice_lots_auction_'.$auction_id.'_'.date('Y-m-d');
 
-        $sql = 'SELECT L.lot_id,L.buyer_id,L.lot_no,L.name,L.bid_final,L.weight,L.volume,L.status,U.name AS buyer_name '.
-               'FROM '.TABLE_PREFIX.'lot AS L JOIN '.TABLE_USER.' AS U ON(L.buyer_id = U.user_id) '.
-               'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" AND L.buyer_id > 0 '.
-               'ORDER BY L.buyer_id,L.lot_no ';
+        $sql = 'SELECT L.`lot_id`,L.`buyer_id`,L.`lot_no`,L.`name`,L.`bid_final`,L.`weight`,L.`volume`,L.`status`,U.`name` AS `buyer_name` '.
+               'FROM `'.TABLE_PREFIX.'lot` AS L JOIN `'.TABLE_USER.'` AS U ON(L.`buyer_id` = U.`user_id`) '.
+               'WHERE L.`auction_id` = "'.$db->escapeSql($auction_id).'" AND L.`buyer_id` > 0 '.
+               'ORDER BY L.`buyer_id`,L.`lot_no` ';
                     
         $lots = $db->readSqlArray($sql);
         if($lots == 0) $error .= 'No auction lots found with a linked buyer id.';
@@ -247,10 +247,10 @@ class HelpersReport {
     {
         $index = [];
 
-        $sql = 'SELECT lot_id,index_terms '.
-               'FROM '.TABLE_PREFIX.'lot '.
-               'WHERE auction_id = "'.$db->escapeSql($auction_id).'" AND index_terms <> "" '.
-               'ORDER BY lot_id ';
+        $sql = 'SELECT `lot_id`,`index_terms` '.
+               'FROM `'.TABLE_PREFIX.'lot` '.
+               'WHERE `auction_id` = "'.$db->escapeSql($auction_id).'" AND `index_terms` <> "" '.
+               'ORDER BY `lot_id` ';
 
         $lots = $db->readSqlList($sql);
         if($lots !== 0) {
@@ -296,27 +296,28 @@ class HelpersReport {
         if($auction_id === 'ALL') {
             $error .= 'Cannot generate auction seller document for ALL auctions.';
         } else {
-            $sql = 'SELECT auction_id,name,summary,description,date_start_postal,date_start_live,status '.
-                   'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $sql = 'SELECT `auction_id`,`name`,`summary`,`description`,`date_start_postal`,`date_start_live`,`status` '.
+                   'FROM `'.$table_auction.'` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'"';
             $auction = $db->readSqlRecord($sql,$db); 
             if($auction === 0) $error .= 'Invalid Auction['.$auction_id.'] selected.';
         }
 
         
-        $sql = 'SELECT seller_id,name,cell,tel,email,address,status,comm_pct '.
-               'FROM '.$table_seller.' WHERE seller_id = "'.$db->escapeSql($seller_id).'"';
+        $sql = 'SELECT `seller_id`,`name`,`cell`,`tel`,`email`,`address`,`status`,`comm_pct` '.
+               'FROM `'.$table_seller.'` WHERE `seller_id` = "'.$db->escapeSql($seller_id).'"';
         $seller = $db->readSqlRecord($sql,$db); 
         if($seller === 0) $error .= 'Invalid Seller['.$seller_id.'] selected.';
 
         if($error === '') {
-            $sql = 'SELECT L.lot_id,L.lot_no,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
-                          'L.bid_open,L.bid_book_top,L.bid_final,L.status, '.  
-                          'CT.level AS cat_level,CT.title AS cat_name,CN.name AS `condition` '.
-                   'FROM '.$table_lot.' AS L '.
-                         'JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
-                         'JOIN '.$table_category.' AS CT ON(L.category_id = CT.id) '.
-                   'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" AND L.seller_id = "'.$db->escapeSql($seller_id).'" '.
-                   'ORDER BY CT.rank,L.type_txt1,L.type_txt2,CN.sort ';
+            $sql = 'SELECT L.`lot_id`,L.`lot_no`,L.`category_id`,L.`index_terms`,L.`name`,L.`description`,'.
+                          'L.`price_reserve`,L.`price_estimate`,L.`postal_only`, '.                
+                          'L.`bid_open`,L.`bid_book_top`,L.`bid_final`,L.`status`, '.  
+                          'CT.`level` AS `cat_level`,CT.`title` AS `cat_name`,CN.`name` AS `condition` '.
+                   'FROM `'.$table_lot.'` AS L '.
+                         'JOIN `'.$table_condition.'` AS CN ON(L.`condition_id` = CN.`condition_id`) '.
+                         'JOIN `'.$table_category.'` AS CT ON(L.`category_id` = CT.`id`) '.
+                   'WHERE L.`auction_id` = "'.$db->escapeSql($auction_id).'" AND L.`seller_id` = "'.$db->escapeSql($seller_id).'" '.
+                   'ORDER BY CT.`rank`,L.`type_txt1`,L.`type_txt2`,CN.`sort` ';
             $lots = $db->readSqlArray($sql);
             if($lots == 0) $error .= 'No lots found for seller in auction!';
         }
@@ -525,20 +526,21 @@ class HelpersReport {
         if($auction_id === 'ALL') {
             $error .= 'Cannot generate auction document for ALL auctions.';
         } else {
-            $sql = 'SELECT auction_id,name,summary,description,postal_only,date_start_postal,date_end_postal,date_start_live,status '.
-                   'FROM '.TABLE_PREFIX.'auction WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $sql = 'SELECT `auction_id`,`name`,`summary`,`description`,`postal_only`,`date_start_postal`,`date_end_postal`,`date_start_live`,`status` '.
+                   'FROM `'.TABLE_PREFIX.'auction` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'"';
             $auction = $db->readSqlRecord($sql,$db); 
             if($auction === 0) {
                 $error .= 'Invalid Auction['.$auction_id.'] selected.';
             } else {
-                $sql = 'SELECT L.lot_id,L.lot_no,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
-                              'L.buyer_id,L.bid_no,L.bid_open,L.bid_book_top,L.bid_final,L.status,L.seller_id, '.  
-                              'CT.level AS cat_level,CT.title AS cat_name,CN.name AS `condition` '.
-                       'FROM '.$table_lot.' AS L '.
-                             'JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
-                             'JOIN '.$table_category.' AS CT ON(L.category_id = CT.id) '.
-                       'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" '.
-                       'ORDER BY CT.rank,L.type_txt1,L.type_txt2,CN.sort ';
+                $sql = 'SELECT L.`lot_id`,L.`lot_no`,L.`category_id`,L.`index_terms`,L.`name`,L.`description`,'.
+                              'L.`price_reserve`,L.`price_estimate`,L.`postal_only`, '.                
+                              'L.`buyer_id`,L.`bid_no`,L.`bid_open`,L.`bid_book_top`,L.`bid_final`,L.`status`,L.`seller_id`, '.  
+                              'CT.`level` AS `cat_level`,CT.`title` AS `cat_name`,CN.`name` AS `condition` '.
+                       'FROM `'.$table_lot.'` AS L '.
+                             'JOIN `'.$table_condition.'` AS CN ON(L.`condition_id` = CN.`condition_id`) '.
+                             'JOIN `'.$table_category.'` AS CT ON(L.`category_id` = CT.`id`) '.
+                       'WHERE L.`auction_id` = "'.$db->escapeSql($auction_id).'" '.
+                       'ORDER BY CT.`rank`,L.`type_txt1`,L.`type_txt2`,CN.`sort` ';
                 $lots = $db->readSqlArray($sql);
                 if($lots == 0) $error .= 'No lots found for auction!';
             }    
@@ -929,17 +931,18 @@ class HelpersReport {
         if($auction_id === 'ALL') {
             $error .= 'Cannot generate document for ALL auctions.';
         } else {
-            $sql = 'SELECT auction_id,name,summary,description,postal_only,date_start_postal,date_end_postal,date_start_live,status '.
-                   'FROM '.TABLE_PREFIX.'auction WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $sql = 'SELECT `auction_id`,`name`,`summary`,`description`,`postal_only`,`date_start_postal`,`date_end_postal`,`date_start_live`,`status` '.
+                   'FROM `'.TABLE_PREFIX.'auction` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'"';
             $auction = $db->readSqlRecord($sql,$db); 
             if($auction === 0) {
                 $error .= 'Invalid Auction['.$auction_id.'] selected.';
             } else {
-                $sql = 'SELECT L.lot_id,L.lot_no,L.category_id,L.index_terms,L.name,L.description,L.price_reserve,L.price_estimate,L.postal_only, '.                
-                              'L.bid_open,L.bid_book_top,L.bid_final,L.status '.  
-                       'FROM '.$table_lot.' AS L '.
-                       'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" '.
-                       'ORDER BY L.lot_no ';
+                $sql = 'SELECT L.`lot_id`,L.`lot_no`,L.`category_id`,L.`index_terms`,L.`name`,L.`description`,'.
+                              'L.`price_reserve`,L.`price_estimate`,L.`postal_only`, '.                
+                              'L.`bid_open`,L.`bid_book_top`,L.`bid_final`,L.`status` '.  
+                       'FROM `'.$table_lot.'` AS L '.
+                       'WHERE L.`auction_id` = "'.$db->escapeSql($auction_id).'" '.
+                       'ORDER BY L.`lot_no` ';
                 $lots = $db->readSqlArray($sql);
                 if($lots == 0) $error .= 'No lots found for auction!';
             }    
@@ -1098,8 +1101,8 @@ class HelpersReport {
         if($status === 'ALL') $name_str .= 'all_';
 
         if($auction_id !== 'ALL') {
-            $sql = 'SELECT auction_id,name,summary,description,date_start_postal,date_start_live,status '.
-                   'FROM '.TABLE_PREFIX.'auction WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $sql = 'SELECT `auction_id`,`name`,`summary`,`description`,`date_start_postal`,`date_start_live`,`status` '.
+                   'FROM `'.TABLE_PREFIX.'auction` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'"';
             $auction = $db->readSqlRecord($sql,$db); 
             if($auction === 0) {
                 $error .= 'Invalid Auction['.$auction_id.'] selected.';
@@ -1115,16 +1118,16 @@ class HelpersReport {
 
         $doc_name_base = 'invoices_'.$name_str;
 
-        $sql = 'SELECT I.invoice_id, I.user_id, U.name, U.email, I.date, I.sub_total, I.tax, I.total '.
-               'FROM '.TABLE_PREFIX.'invoice  AS I JOIN '.TABLE_USER.' AS U ON(I.user_id = U.user_id) ';
+        $sql = 'SELECT I.`invoice_id`, I.`user_id`, U.`name`, U.`email`, I.`date`, I.`sub_total`, I.`tax`, I.`total` '.
+               'FROM `'.TABLE_PREFIX.'invoice` AS I JOIN `'.TABLE_USER.'` AS U ON(I.`user_id` = U.`user_id`) ';
         
         $where = '';       
-        if($status !== 'ALL') $where .= 'I.status = "'.$db->escapeSql($status).'" AND ';
-        if($auction_id !== 'ALL') $where .= 'I.auction_id = "'.$db->escapeSql($auction_id).'" AND ';
-        if($user_id !== 'ALL') $where .= 'I.user_id = "'.$db->escapeSql($user_id).'" AND '; 
+        if($status !== 'ALL') $where .= 'I.`status` = "'.$db->escapeSql($status).'" AND ';
+        if($auction_id !== 'ALL') $where .= 'I.`auction_id` = "'.$db->escapeSql($auction_id).'" AND ';
+        if($user_id !== 'ALL') $where .= 'I.`user_id` = "'.$db->escapeSql($user_id).'" AND '; 
         if($where !== '')  $sql .= 'WHERE '.substr($where,0,-4).' ';
 
-        $sql .= 'ORDER BY date ';
+        $sql .= 'ORDER BY `date` ';
 
         $invoices = $db->readSqlArray($sql);
         if($invoices == 0) {
@@ -1163,8 +1166,8 @@ class HelpersReport {
         if($status === 'ALL') $name_str .= 'all_';
 
         if($auction_id !== 'ALL') {
-            $sql = 'SELECT auction_id,name,summary,description,date_start_postal,date_start_live,status '.
-                   'FROM '.TABLE_PREFIX.'auction WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $sql = 'SELECT `auction_id`,`name`,`summary`,`description`,`date_start_postal`,`date_start_live`,`status` '.
+                   'FROM `'.TABLE_PREFIX.'auction` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'"';
             $auction = $db->readSqlRecord($sql,$db); 
             if($auction === 0) {
                 $error .= 'Invalid Auction['.$auction_id.'] selected.';
@@ -1180,16 +1183,16 @@ class HelpersReport {
 
         $doc_name_base = 'orders_'.$name_str;
 
-        $sql = 'SELECT O.order_id, O.user_id, U.name, U.email, O.date_create, O.no_items, O.total_bid '.
-               'FROM '.TABLE_PREFIX.'order  AS O JOIN '.TABLE_USER.' AS U ON(O.user_id = U.user_id) ';
+        $sql = 'SELECT O.`order_id`, O.`user_id`, U.`name`, U.`email`, O.`date_create`, O.`no_items`, O.`total_bid` '.
+               'FROM `'.TABLE_PREFIX.'order`  AS O JOIN `'.TABLE_USER.'` AS U ON(O.`user_id` = U.`user_id`) ';
 
         $where = '';       
-        if($status !== 'ALL') $where .= 'O.status = "'.$db->escapeSql($status).'" AND ';
-        if($auction_id !== 'ALL') $where .= 'O.auction_id = "'.$db->escapeSql($auction_id).'" AND ';
-        if($user_id !== 'ALL') $where .= 'O.user_id = "'.$db->escapeSql($user_id).'" AND '; 
+        if($status !== 'ALL') $where .= 'O.`status` = "'.$db->escapeSql($status).'" AND ';
+        if($auction_id !== 'ALL') $where .= 'O.`auction_id` = "'.$db->escapeSql($auction_id).'" AND ';
+        if($user_id !== 'ALL') $where .= 'O.`user_id` = "'.$db->escapeSql($user_id).'" AND '; 
         if($where !== '')  $sql .= 'WHERE '.substr($where,0,-4).' ';
 
-        $sql .= 'ORDER BY date_create ';
+        $sql .= 'ORDER BY `date_create` ';
 
         $orders = $db->readSqlArray($sql);
         if($orders == 0) {
@@ -1234,8 +1237,8 @@ class HelpersReport {
         $user = Helpers::getUserData($db,'USER_ID',$user_id); 
         
         if($auction_id !== 'ALL') {
-            $sql = 'SELECT auction_id,name,summary,description,date_start_postal,date_start_live,status '.
-                   'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $sql = 'SELECT `auction_id`,`name`,`summary`,`description`,`date_start_postal`,`date_start_live`,`status` '.
+                   'FROM `'.$table_auction.'` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'"';
             $auction = $db->readSqlRecord($sql,$db); 
             if($auction === 0) {
                 $error .= 'Invalid Auction['.$auction_id.'] selected.';
@@ -1251,11 +1254,11 @@ class HelpersReport {
 
         $doc_name_base = $name_str;
 
-        $sql = 'SELECT audit_id, DATE(`date`) AS `date`, text, action  '.
-               'FROM '.$table_audit.' AS A '.
-               'WHERE A.user_id = "'.$db->escapeSql($user_id).'" AND A.action LIKE "%_AUC_LOT" AND  '.
-                     'DATE(A.date) >= "'.$db->escapeSql($date_from).'" AND DATE(A.date) <= "'.$db->escapeSql($date_to).'"'.
-               'ORDER BY A.date';
+        $sql = 'SELECT `audit_id`, DATE(`date`) AS `date`, `text`, `action`  '.
+               'FROM `'.$table_audit.'` AS A '.
+               'WHERE A.`user_id` = "'.$db->escapeSql($user_id).'" AND A.`action` LIKE "%_AUC_LOT" AND  '.
+                     'DATE(A.`date`) >= "'.$db->escapeSql($date_from).'" AND DATE(A.`date`) <= "'.$db->escapeSql($date_to).'"'.
+               'ORDER BY A.`date`';
         $audits = $db->readSqlArray($sql);
         if($audits == 0) $error .= 'No lots created matching your criteria';
 
@@ -1384,8 +1387,8 @@ class HelpersReport {
         $doc_name_base = 'sellers_';
         
         if($auction_id !== 'ALL') {
-            $sql = 'SELECT auction_id,name,summary,description,date_start_postal,date_start_live,status '.
-                   'FROM '.TABLE_PREFIX.'auction WHERE auction_id = "'.$db->escapeSql($auction_id).'"';
+            $sql = 'SELECT `auction_id`,`name`,`summary`,`description`,`date_start_postal`,`date_start_live`,`status` '.
+                   'FROM `'.TABLE_PREFIX.'auction` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'"';
             $auction = $db->readSqlRecord($sql,$db); 
             if($auction === 0) {
                 $error .= 'Invalid Auction['.$auction_id.'] selected.';
@@ -1401,17 +1404,17 @@ class HelpersReport {
 
         if($error !== '') return false;
 
-        $sql = 'SELECT L.seller_id, S.name, 
-                       GROUP_CONCAT(L.lot_id ORDER BY L.lot_no SEPARATOR ", ") AS Lot_ids, 
-                       GROUP_CONCAT(L.lot_no ORDER BY L.lot_no SEPARATOR ", ") AS Lot_nos,
-                       COUNT(*) AS Total_lots '.
-               'FROM '.TABLE_PREFIX.'lot AS L LEFT JOIN '.TABLE_PREFIX.'seller AS S ON(L.seller_id = S.seller_id) ';
+        $sql = 'SELECT L.`seller_id`, S.`name`, 
+                       GROUP_CONCAT(L.`lot_id` ORDER BY L.`lot_no` SEPARATOR ", ") AS `Lot_ids`, 
+                       GROUP_CONCAT(L.`lot_no` ORDER BY L.`lot_no` SEPARATOR ", ") AS `Lot_nos`,
+                       COUNT(*) AS `Total_lots` '.
+               'FROM `'.TABLE_PREFIX.'lot` AS L LEFT JOIN `'.TABLE_PREFIX.'seller` AS S ON(L.`seller_id` = S.`seller_id`) ';
 
         $where = '';       
-        if($auction_id !== 'ALL') $where .= 'L.auction_id = "'.$db->escapeSql($auction_id).'" AND ';
+        if($auction_id !== 'ALL') $where .= 'L.`auction_id` = "'.$db->escapeSql($auction_id).'" AND ';
         if($where !== '')  $sql .= 'WHERE '.substr($where,0,-4).' ';
 
-        $sql .= 'GROUP BY L.seller_id ORDER BY S.sort, S.name ';
+        $sql .= 'GROUP BY L.`seller_id` ORDER BY S.`sort`, S.`name` ';
 
         $sellers = $db->readSqlArray($sql);
         if($sellers == 0) {

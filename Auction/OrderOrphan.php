@@ -25,14 +25,15 @@ class OrderOrphan extends Table
         $this->addForeignKey(array('table'=>TABLE_PREFIX.'invoice','col_id'=>'order_id','message'=>MODULE_AUCTION['labels']['order'].' Invoice'));
 
         $this->addTableCol(array('id'=>'order_id','type'=>'INTEGER','title'=>MODULE_AUCTION['labels']['order'].' ID','key'=>true,'key_auto'=>true,'list'=>true));
-        $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'Linked User','join'=>'name FROM '.TABLE_USER.' WHERE user_id'));
+        $this->addTableCol(array('id'=>'user_id','type'=>'INTEGER','title'=>'Linked User',
+                                 'join'=>'`name` FROM `'.TABLE_USER.'` WHERE `user_id`'));
         $this->addTableCol(array('id'=>'date_create','type'=>'DATETIME','title'=>'Date created','edit'=>false));
         $this->addTableCol(array('id'=>'date_update','type'=>'DATETIME','title'=>'Date updated','edit'=>false));
         $this->addTableCol(array('id'=>'no_items','type'=>'INTEGER','title'=>'Number of lots','edit'=>false));
         $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','new'=>'ACTIVE','edit'=>false));
         
         //order table also store cart contents before converted to an order in checkout wizard
-        $this->addSql('WHERE','T.auction_id = "'.AUCTION_ID.'" AND T.temp_token <> "" AND T.status = "NEW" ');
+        $this->addSql('WHERE','T.`auction_id` = "'.AUCTION_ID.'" AND T.`temp_token` <> "" AND T.`status` = "NEW" ');
 
         $this->addSortOrder('T.order_id DESC','Most recent first','DEFAULT');
 
@@ -41,7 +42,7 @@ class OrderOrphan extends Table
         $this->addAction(array('type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R'));
         $this->addAction(array('type'=>'popup','text'=>'Lots','url'=>'order_item','mode'=>'view','width'=>700,'height'=>600));
         
-        $this->addSelect('user_id','SELECT user_id,name FROM '.TABLE_USER.' WHERE status <> "HIDE" ORDER BY name');
+        $this->addSelect('user_id','SELECT `user_id`,`name` FROM `'.TABLE_USER.'` WHERE `status` <> "HIDE" ORDER BY `name`');
         
         $this->addSearch(array('date_create','date_update'),array('rows'=>1));
 
@@ -60,8 +61,9 @@ class OrderOrphan extends Table
         if($edit_type === 'UPDATE' and $form['user_id'] != 0) { 
             
 
-            $sql = 'UPDATE '.$this->table.' SET date_update = NOW(), user_id = "'.$this->db->escapeSql($form['user_id']).'", status = "ACTIVE", temp_token = "" '.
-                   'WHERE order_id = "'.$this->db->escapeSql($id).'"';
+            $sql = 'UPDATE `'.$this->table.'` SET `date_update` = NOW(), `user_id` = "'.$this->db->escapeSql($form['user_id']).'", '.
+                          '`status` = "ACTIVE", `temp_token` = "" '.
+                   'WHERE `order_id` = "'.$this->db->escapeSql($id).'"';
             $this->db->executeSql($sql,$error);
 
             if($error === '') {
@@ -81,7 +83,7 @@ class OrderOrphan extends Table
     {
         //NB: this must be calculated as not necessarily assigned yet
         if($col_id === 'no_items') {
-            $sql = 'SELECT COUNT(*) FROM '.TABLE_PREFIX.'order_item WHERE order_id = "'.$this->db->escapeSql($data['order_id']).'" ';
+            $sql = 'SELECT COUNT(*) FROM `'.TABLE_PREFIX.'order_item` WHERE `order_id` = "'.$this->db->escapeSql($data['order_id']).'" ';
             $value = $this->db->readSqlValue($sql,0);    
         }
         
@@ -102,7 +104,7 @@ class OrderOrphan extends Table
     protected function afterDelete($id) {
         $error = '';
 
-        $sql = 'DELETE FROM '.TABLE_PREFIX.'order_item WHERE order_id = "'.$this->db->escapeSql($id).'" ';
+        $sql = 'DELETE FROM `'.TABLE_PREFIX.'order_item` WHERE `order_id` = "'.$this->db->escapeSql($id).'" ';
         $this->db->executeSql($sql,$error); 
     } 
 }

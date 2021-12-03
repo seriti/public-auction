@@ -31,7 +31,7 @@ class Helpers {
 
         if($key === '') $key = $table.'_id';    
         
-        $sql = 'SELECT * FROM '.$table_name.' WHERE '.$key.' = "'.$db->escapeSql($id).'" ';
+        $sql = 'SELECT * FROM `'.$table_name.'` WHERE `'.$key.'` = "'.$db->escapeSql($id).'" ';
         
         $record = $db->readSqlRecord($sql);
                         
@@ -55,8 +55,8 @@ class Helpers {
         $msg_param['cc_admin'] = true;
         $msg_param['notify_higher_bid'] = true;
 
-        $sql = 'SELECT auction_id,name,summary,status '.
-               'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+        $sql = 'SELECT `auction_id`,`name`,`summary`,`status` '.
+               'FROM `'.$table_auction.'` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'" ';
         $auction = $db->readSqlRecord($sql);
         if($auction == 0) {
             $output['error'] .= 'Invalid Auction ID['.$auction_id.']';
@@ -69,10 +69,10 @@ class Helpers {
 
         //get all orders that have lower/not winning bid 
         if($output['error'] === '') {
-            $sql = 'SELECT I.lot_id,O.order_id,O.date_create,I.price '.
-                   'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
-                   'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.user_id > 0 AND O.status = "ACTIVE" '.
-                   'ORDER BY I.lot_id,I.price DESC, O.date_create ';
+            $sql = 'SELECT I.`lot_id`,O.`order_id`,O.`date_create`,I.`price` '.
+                   'FROM `'.$table_order.'` AS O JOIN `'.$table_order_item.'` AS I ON(O.`order_id` = I.`order_id`) '.
+                   'WHERE O.`auction_id` = "'.$db->escapeSql($auction_id).'" AND O.`user_id` > 0 AND O.`status` = "ACTIVE" '.
+                   'ORDER BY I.`lot_id`,I.`price` DESC, O.`date_create` ';
             $bids = $db->readSqlArray($sql,false);
 
             $notify_orders = [];
@@ -117,8 +117,8 @@ class Helpers {
         $table_order = TABLE_PREFIX.'order';
         $table_order_item = TABLE_PREFIX.'order_item';
                 
-        $sql = 'SELECT auction_id,name,summary,status '.
-               'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+        $sql = 'SELECT `auction_id`,`name`,`summary`,`status` '.
+               'FROM `'.$table_auction.'` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'" ';
         $auction = $db->readSqlRecord($sql);
         if($auction == 0) {
             $output['error'] .= 'Invalid Auction ID['.$auction_id.']';
@@ -131,17 +131,17 @@ class Helpers {
         
         //make sure lots exist 
         if($output['error'] === '') {
-            $sql = 'SELECT L.lot_id,L.lot_no,L.name,L.status,L.bid_book_top,L.bid_final,L.buyer_id,L.bid_no '.
-                   'FROM '.$table_lot.' AS L '.
-                   'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" '.
-                   'ORDER BY L.lot_no';
+            $sql = 'SELECT L.`lot_id`,L.`lot_no`,L.`name`,L.`status`,L.`bid_book_top`,L.`bid_final`,L.`buyer_id`,L.`bid_no` '.
+                   'FROM `'.$table_lot.'` AS L '.
+                   'WHERE L.`auction_id` = "'.$db->escapeSql($auction_id).'" '.
+                   'ORDER BY L.`lot_no`';
             $lots = $db->readSqlArray($sql);
             if($lots == 0) $output['error'] .= 'No lots found to process for auction!';
         }    
 
         //check for any existing final bids and warn
         if($output['error'] === '') {
-            $sql = 'SELECT SUM(bid_final) FROM '.$table_lot.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+            $sql = 'SELECT SUM(`bid_final`) FROM `'.$table_lot.'` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'" ';
             $sum_bid_final = $db->readSqlValue($sql,0);
             if($sum_bid_final > 0) {
                 $output['message'] .= 'Final bids already assigned to some Lots. These lots will not be updated.<br/>';
@@ -157,21 +157,21 @@ class Helpers {
                 if($lot['buyer_id'] != 0) {
                     $output['message'] .= 'Lot no['.$lot['lot_no'].'] & ID['.$lot_id.'] already assigned final bids.<br/>';
                 } else {
-                    $sql = 'SELECT O.user_id,O.date_create,I.price '.
-                           'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
-                           'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" AND O.user_id > 0 AND O.status = "CLOSED" '.
-                           'ORDER BY I.price DESC, O.date_create '.
+                    $sql = 'SELECT O.`user_id`,O.`date_create`,I.`price` '.
+                           'FROM `'.$table_order.'` AS O JOIN `'.$table_order_item.'` AS I ON(O.`order_id` = I.`order_id`) '.
+                           'WHERE I.`lot_id` = "'.$db->escapeSql($lot_id).'" AND O.`user_id` > 0 AND O.`status` = "CLOSED" '.
+                           'ORDER BY I.`price` DESC, O.`date_create` '.
                            'LIMIT 1';
                     $best_bid = $db->readSqlRecord($sql); 
 
                     //capture best bid if any
                     if($best_bid != 0) {
 
-                        $sql = 'UPDATE '.$table_lot.' SET buyer_id = "'.$best_bid['user_id'].'", '.
-                                                         'bid_no = "'.$best_bid['user_id'].'", '.
-                                                         'bid_book_top = "'.$best_bid['price'].'", '.
-                                                         'bid_final = "'.$best_bid['price'].'" '.
-                               'WHERE lot_id = '.$lot_id.' ';
+                        $sql = 'UPDATE `'.$table_lot.'` SET `buyer_id` = "'.$best_bid['user_id'].'", '.
+                                                         '`bid_no` = "'.$best_bid['user_id'].'", '.
+                                                         '`bid_book_top` = "'.$best_bid['price'].'", '.
+                                                         '`bid_final` = "'.$best_bid['price'].'" '.
+                               'WHERE `lot_id` = '.$lot_id.' ';
                         $db->executeSql($sql,$error); 
                         if($error !== '') {
                             $output['error'] .= 'Could not assign Best Bid for Lot no['.$lot['lot_no'].'] & ID['.$lot_id.']<br/>';
@@ -208,8 +208,8 @@ class Helpers {
         $table_category = TABLE_PREFIX.'category';
         $table_order = TABLE_PREFIX.'order';
 
-        $sql = 'SELECT auction_id,name,summary,status '.
-               'FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+        $sql = 'SELECT `auction_id`,`name`,`summary`,`status` '.
+               'FROM `'.$table_auction.'` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'" ';
         $auction = $db->readSqlRecord($sql);
         if($auction == 0) {
             $output['error'] .= 'Invalid Auction ID['.$auction_id.']';
@@ -219,7 +219,7 @@ class Helpers {
             } 
         }
 
-        $sql = 'SELECT SUM(lot_no) FROM '.$table_lot.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+        $sql = 'SELECT SUM(`lot_no`) FROM `'.$table_lot.'` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'" ';
         $sum_lot_no = $db->readSqlValue($sql,0);
         if($sum_lot_no > 0) {
             if($options['user_access'] !== 'GOD') {
@@ -241,12 +241,12 @@ class Helpers {
         }
 
         if($output['error'] === '') {
-            $sql = 'SELECT L.lot_id,L.name,L.status '.
-                   'FROM '.$table_lot.' AS L '.
-                         'JOIN '.$table_condition.' AS CN ON(L.condition_id = CN.condition_id) '.
-                         'JOIN '.$table_category.' AS CT ON(L.category_id = CT.id) '.
-                   'WHERE L.auction_id = "'.$db->escapeSql($auction_id).'" '.
-                   'ORDER BY CT.rank,L.type_txt1,L.type_txt2,CN.sort ';
+            $sql = 'SELECT L.`lot_id`,L.`name`,L.`status` '.
+                   'FROM `'.$table_lot.'` AS L '.
+                         'JOIN `'.$table_condition.'` AS CN ON(L.`condition_id` = CN.`condition_id`) '.
+                         'JOIN `'.$table_category.'` AS CT ON(L.`category_id` = CT.`id`) '.
+                   'WHERE L.`auction_id` = "'.$db->escapeSql($auction_id).'" '.
+                   'ORDER BY CT.`rank`,L.`type_txt1`,L.`type_txt2`,CN.`sort` ';
             $lots = $db->readSqlArray($sql);
             if($lots == 0) $output['error'] .= 'No lots found for auction!';
         }    
@@ -257,7 +257,7 @@ class Helpers {
             foreach($lots as $lot_id=>$lot) {
                 $lot_no++;
 
-                $sql = 'UPDATE '.$table_lot.' SET lot_no = '.$lot_no.' WHERE lot_id = '.$lot_id.' ';
+                $sql = 'UPDATE `'.$table_lot.'` SET `lot_no` = '.$lot_no.' WHERE `lot_id` = '.$lot_id.' ';
                 $db->executeSql($sql,$error); 
                 if($error != '') $output['error'] .= 'Could not assign Lot no['.$lot_no.'] to Lot ID['.$lot_id.'] ';
             }
@@ -306,7 +306,7 @@ class Helpers {
             $location_id = 'LOT'.$lot_id;
             $location_id_copy = 'LOT'.$lot_id_copy;
         
-            $sql = 'SELECT * FROM '.$table_file.' WHERE location_id = "'.$db->escapeSql($location_id).'" ';
+            $sql = 'SELECT * FROM `'.$table_file.'` WHERE `location_id` = "'.$db->escapeSql($location_id).'" ';
             $files = $db->readSqlArray($sql);
             if($files != 0) {
                 foreach($files as $file) {
@@ -332,10 +332,10 @@ class Helpers {
         $table_order = $table_prefix.'order';
         $table_order_item = $table_prefix.'order_item';
 
-        $sql = 'SELECT O.user_id,O.date_create,I.price '.
-               'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
-               'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" AND O.user_id > 0 AND O.status = "ACTIVE" '.
-               'ORDER BY I.price DESC, O.date_create '.
+        $sql = 'SELECT O.`user_id`,O.`date_create`,I.`price` '.
+               'FROM `'.$table_order.'` AS O JOIN `'.$table_order_item.'` AS I ON(O.`order_id` = I.`order_id`) '.
+               'WHERE I.`lot_id` = "'.$db->escapeSql($lot_id).'" AND O.`user_id` > 0 AND O.`status` = "ACTIVE" '.
+               'ORDER BY I.`price` DESC, O.`date_create` '.
                'LIMIT 1';
         $best_bid = $db->readSqlRecord($sql); 
         if($best_bid == 0) {
@@ -358,16 +358,16 @@ class Helpers {
         $table_order_item = $table_prefix.'order_item';
         $table_invoice_item = $table_prefix.'invoice_item';
 
-        $sql = 'SELECT lot_id,lot_no,auction_id,price_reserve,bid_final,buyer_id,bid_no,status '.
-               'FROM '.$table_lot.' WHERE lot_id = "'.$db->escapeSql($lot_id).'" ';
+        $sql = 'SELECT `lot_id`,`lot_no`,`auction_id`,`price_reserve`,`bid_final`,`buyer_id`,`bid_no`,`status` '.
+               'FROM `'.$table_lot.'` WHERE `lot_id` = "'.$db->escapeSql($lot_id).'" ';
         $lot = $db->readSqlRecord($sql);
         if($lot == 0) {
             $error .= 'Unrecognised Lot['.$lot_id.']';
         } else {
             if($lot['auction_id'] !== $auction_id) $error .= 'Lot No['.$lot['lot_no'].'] & ID['.$lot_id.'] auction ID['.$lot['auction_id'].'] not same as active auction ID['.$auction_id.'] ';
             if($lot['status'] === 'SOLD') {
-                $sql = 'SELECT invoice_id,price '.
-                       'FROM '.$table_invoice_item.' WHERE lot_id = "'.$db->escapeSql($lot_id).'" ';
+                $sql = 'SELECT `invoice_id`,`price` '.
+                       'FROM `'.$table_invoice_item.'` WHERE `lot_id` = "'.$db->escapeSql($lot_id).'" ';
                 $invoice_item = $db->readSqlRecord($sql);
 
                 $error .= 'Lot No['.$lot['lot_no'].'] & ID['.$lot_id.'] has a already been SOLD, see Invoice ID['.$invoice_item['invoice_id'].'] at price['.$invoice_item['price'].'] ';
@@ -385,10 +385,10 @@ class Helpers {
            
             //check that no valid order exists with a higher bid 
             if(MODULE_AUCTION['result']['check_bid_highest']) {
-                $sql = 'SELECT O.order_id,O.user_id,I.price '.
-                       'FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
-                       'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.status <> "HIDE" AND '.
-                             'I.lot_id = "'.$db->escapeSql($lot_id).'" AND I.price > "'.$db->escapeSql($price).'" ';
+                $sql = 'SELECT O.`order_id`,O.`user_id`,I.`price` '.
+                       'FROM `'.$table_order.'` AS O JOIN `'.$table_order_item.'` AS I ON(O.`order_id` = I.`order_id`) '.
+                       'WHERE O.`auction_id` = "'.$db->escapeSql($auction_id).'" AND O.`status` <> "HIDE" AND '.
+                             'I.`lot_id` = "'.$db->escapeSql($lot_id).'" AND I.`price` > "'.$db->escapeSql($price).'" ';
                 $shafted = $db->readSqlArray($sql);            
                 if($shafted != 0) {
                     foreach($shafted as $order_id => $order) {
@@ -413,8 +413,8 @@ class Helpers {
         $table_order_item = $table_prefix.'order_item';
 
         //bid_final is NOT set for post auction orders, and may also be modified in invoice creation process
-        $sql = 'UPDATE '.$table_lot.' SET status = "SOLD", bid_final = "'.$db->escapeSql($price).'" '.
-               'WHERE lot_id = "'.$db->escapeSql($lot_id).'" ';
+        $sql = 'UPDATE `'.$table_lot.'` SET `status` = "SOLD", `bid_final` = "'.$db->escapeSql($price).'" '.
+               'WHERE `lot_id` = "'.$db->escapeSql($lot_id).'" ';
         $db->executeSql($sql,$error_tmp);
         if($error_tmp != '') {
             $error .= 'Could not set status = SOLD for Lot['.$lot_id.'] '; 
@@ -423,15 +423,15 @@ class Helpers {
         }
 
         //update any related orders for this auction
-        $sql = 'UPDATE '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.auction_id = "'.$auction_id.'" AND O.user_id = "'.$user_id.'" AND O.order_id = I.order_id) '.
-               'SET I.status = "SUCCESS" '.
-               'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" ';
+        $sql = 'UPDATE `'.$table_order.'` AS O JOIN `'.$table_order_item.'` AS I ON(O.`auction_id` = "'.$auction_id.'" AND O.`user_id` = "'.$user_id.'" AND O.`order_id` = I.`order_id`) '.
+               'SET I.`status` = "SUCCESS" '.
+               'WHERE I.`lot_id` = "'.$db->escapeSql($lot_id).'" ';
         $db->executeSql($sql,$error_tmp);
         if($error_tmp != '') $error .= 'Could not set user['.$user_id.'] order item status = SUCCESS for Lot['.$lot_id.'] '; 
 
-        $sql = 'UPDATE '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.auction_id = "'.$auction_id.'" AND O.user_id <> "'.$user_id.'" AND O.order_id = I.order_id) '.
-               'SET I.status = "OUT_BID" '.
-               'WHERE I.lot_id = "'.$db->escapeSql($lot_id).'" ';
+        $sql = 'UPDATE `'.$table_order.'` AS O JOIN `'.$table_order_item.'` AS I ON(O.`auction_id` = "'.$auction_id.'" AND O.`user_id` <> "'.$user_id.'" AND O.`order_id` = I.`order_id`) '.
+               'SET I.`status` = "OUT_BID" '.
+               'WHERE I.`lot_id` = "'.$db->escapeSql($lot_id).'" ';
         $db->executeSql($sql,$error_tmp); 
         if($error_tmp != '') $error .= 'Could not set other users '.MODULE_AUCTION['labels']['order'].' item status = OUT_BID for Lot['.$lot_id.'] user['.$user_id.'] '; 
     }
@@ -444,10 +444,10 @@ class Helpers {
         $table_auction = $table_prefix.'auction';
         $table_order = $table_prefix.'order';
 
-        $sql = 'SELECT T.order_id,T.auction_id,T.status,'.
-                      'A.status AS auction_status,A.date_start_postal,A.date_start_live '.
-               'FROM '.$table_order.' AS T JOIN '.$table_auction.' AS A ON(T.auction_id = A.auction_id) '.
-               'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
+        $sql = 'SELECT T.`order_id`,T.`auction_id`,T.`status`,'.
+                      'A.`status` AS `auction_status`,A.`date_start_postal`,A.`date_start_live` '.
+               'FROM `'.$table_order.'` AS T JOIN `'.$table_auction.'` AS A ON(T.`auction_id` = A.`auction_id`) '.
+               'WHERE `order_id` = "'.$db->escapeSql($order_id).'" ';
         $data = $db->readSqlRecord($sql);       
         if($data == 0) {
             $error .= 'Could not find '.MODULE_AUCTION['labels']['order'].' details.';
@@ -474,24 +474,24 @@ class Helpers {
         $table_order = TABLE_PREFIX.'order';
         $table_order_item = TABLE_PREFIX.'order_item';
 
-        $sql = 'SELECT auction_id,status FROM '.$table_auction.' WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+        $sql = 'SELECT `auction_id`,`status` FROM `'.$table_auction.'` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'" ';
         $auction = $db->readSqlRecord($sql); 
         if($auction['status'] !== $status_new) {
             if($status_new === 'CLOSED') {
                 //first remove all bid form carts that have not been processed
-                $sql = 'DELETE O,I FROM '.$table_order.' AS O JOIN '.$table_order_item.' AS I ON(O.order_id = I.order_id) '.
-                       'WHERE O.auction_id = "'.$db->escapeSql($auction_id).'" AND O.status = "NEW" AND O.temp_token <> "" ';
+                $sql = 'DELETE O,I FROM `'.$table_order.'` AS O JOIN `'.$table_order_item.'` AS I ON(O.`order_id` = I.`order_id`) '.
+                       'WHERE O.`auction_id` = "'.$db->escapeSql($auction_id).'" AND O.`status` = "NEW" AND O.`temp_token` <> "" ';
                 $db->executeSql($sql,$error_tmp);
 
                 //now update all bid forms 
                 if($error_tmp === '') {
-                    $sql = 'UPDATE '.$table_order.' SET status = "CLOSED" WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+                    $sql = 'UPDATE `'.$table_order.'` SET `status` = "CLOSED" WHERE `auction_id` = "'.$db->escapeSql($auction_id).'" ';
                     $db->executeSql($sql,$error_tmp); 
                 }
             }
             /* this will allow users to delete lots from ACTIVE bid forms after an auction has been closed
             if($status_new === 'ACTIVE' and $auction['status'] === 'CLOSED') {
-                $sql = 'UPDATE '.$table_order.' SET status = "ACTIVE" WHERE auction_id = "'.$db->escapeSql($auction_id).'" ';
+                $sql = 'UPDATE `'.$table_order.'` SET `status` = "ACTIVE" WHERE `auction_id` = "'.$db->escapeSql($auction_id).'" ';
                 $db->executeSql($sql,$error_tmp); 
             }
             */
@@ -511,15 +511,15 @@ class Helpers {
         $table_order = $table_prefix.'order';
         $table_item = $table_prefix.'order_item';
 
-        $sql = 'SELECT SUM(price) as total_bid,COUNT(*) as no_items FROM '.$table_item.' '.
-               'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
+        $sql = 'SELECT SUM(`price`) as `total_bid`,COUNT(*) as `no_items` FROM `'.$table_item.'` '.
+               'WHERE `order_id` = "'.$db->escapeSql($order_id).'" ';
         $totals = $db->readSqlRecord($sql);
         if($totals == 0) {
             //maybe just delete order if not closed
             $error .= 'No '.MODULE_AUCTION['labels']['order'].' items exist.';
         } else {
-            $sql = 'UPDATE '.$table_order.' SET total_bid = "'.$totals['total_bid'].'", no_items = "'.$totals['no_items'].'" '.
-                   'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
+            $sql = 'UPDATE `'.$table_order.'` SET `total_bid` = "'.$totals['total_bid'].'", `no_items` = "'.$totals['no_items'].'" '.
+                   'WHERE `order_id` = "'.$db->escapeSql($order_id).'" ';
             $db->executeSql($sql,$error_tmp);
             if($error_tmp !== '') $error = 'could not update '.MODULE_AUCTION['labels']['order'].' totals';
         }
@@ -540,18 +540,19 @@ class Helpers {
         $table_ship_option = $table_prefix.'ship_option';
         $table_payment_option = $table_prefix.'pay_option';
 
-        $sql = 'SELECT O.order_id,O.auction_id,O.date_create,O.status,O.total_bid,O.total_success,'.
-                      'O.ship_address,O.ship_location_id,O.ship_option_id, '.
-                      'A.name AS auction, A.date_start_postal AS auction_start_postal, A.date_start_live AS auction_start_live, '.
-                      'O.user_id, U.name AS user_name, U.email AS user_email, '.
-                      'L.name AS ship_location, S.name AS ship_option, P.name AS pay_option '.
-               'FROM '.$table_order.' AS O '.
-                     'JOIN '.$table_auction.' AS A ON(O.auction_id = A.auction_id) '.
-                     'LEFT JOIN '.TABLE_USER.' AS U ON(O.user_id = U.user_id) '.
-                     'LEFT JOIN '.$table_ship_location.' AS L ON(O.ship_location_id = L.location_id) '.
-                     'LEFT JOIN '.$table_ship_option.' AS S ON(O.ship_option_id = S.option_id) '.
-                     'LEFT JOIN '.$table_payment_option.' AS P ON(O.pay_option_id = P.option_id) '.
-               'WHERE O.order_id = "'.$db->escapeSql($order_id).'" ';
+        $sql = 'SELECT O.`order_id`,O.`auction_id`,O.`date_create`,O.`status`,O.`total_bid`,O.`total_success`,'.
+                      'O.`ship_address`,O.`ship_location_id`,O.`ship_option_id`, '.
+                      'A.`name` AS `auction`, A.`date_start_postal` AS `auction_start_postal`, '.
+                      'A.`date_start_live` AS `auction_start_live`,A.`status` AS `auction_status`, '.
+                      'O.`user_id`, U.`name` AS `user_name`, U.`email` AS `user_email`, '.
+                      'L.`name` AS `ship_location`, S.`name` AS `ship_option`, P.`name` AS `pay_option` '.
+               'FROM `'.$table_order.'` AS O '.
+                     'JOIN `'.$table_auction.'` AS A ON(O.`auction_id` = A.`auction_id`) '.
+                     'LEFT JOIN `'.TABLE_USER.'` AS U ON(O.`user_id` = U.`user_id`) '.
+                     'LEFT JOIN `'.$table_ship_location.'` AS L ON(O.`ship_location_id` = L.`location_id`) '.
+                     'LEFT JOIN `'.$table_ship_option.'` AS S ON(O.`ship_option_id` = S.`option_id`) '.
+                     'LEFT JOIN `'.$table_payment_option.'` AS P ON(O.`pay_option_id` = P.`option_id`) '.
+               'WHERE O.`order_id` = "'.$db->escapeSql($order_id).'" ';
         $order = $db->readSqlRecord($sql);
         if($order === 0) {
             $error .= 'Invalid auction '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']. ';
@@ -559,10 +560,10 @@ class Helpers {
             $output['order'] = $order;
         }
 
-        $sql = 'SELECT I.item_id,I.lot_id,L.lot_no,L.name,I.price,I.status,L.weight,L.volume '.
-               'FROM '.$table_item.' AS I LEFT JOIN '.$table_lot.' AS L ON(I.lot_id = L.lot_id) '.
-               'WHERE I.order_id = "'.$db->escapeSql($order_id).'" '.
-               'ORDER BY L.lot_no ';
+        $sql = 'SELECT I.`item_id`,I.`lot_id`,L.`lot_no`,L.`name`,I.`price`,I.`status`,L.`weight`,L.`volume` '.
+               'FROM `'.$table_item.'` AS I LEFT JOIN `'.$table_lot.'` AS L ON(I.`lot_id` = L.`lot_id`) '.
+               'WHERE I.`order_id` = "'.$db->escapeSql($order_id).'" '.
+               'ORDER BY L.`lot_no` ';
         $items = $db->readSqlArray($sql);
         if($items === 0) {
             $error .= 'Invalid or no auction lots for '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']. ';
@@ -571,10 +572,10 @@ class Helpers {
         }
 
         //same as above but for presentation purposes.
-        $sql = 'SELECT I.item_id,L.lot_no,L.name,I.price AS bid '.
-               'FROM '.$table_item.' AS I LEFT JOIN '.$table_lot.' AS L ON(I.lot_id = L.lot_id) '.
-               'WHERE I.order_id = "'.$db->escapeSql($order_id).'" '.
-               'ORDER BY L.lot_no ';
+        $sql = 'SELECT I.`item_id`,L.`lot_no`,L.`name`,I.`price` AS `bid` '.
+               'FROM `'.$table_item.'` AS I LEFT JOIN `'.$table_lot.'` AS L ON(I.`lot_id` = L.`lot_id`) '.
+               'WHERE I.`order_id` = "'.$db->escapeSql($order_id).'" '.
+               'ORDER BY L.`lot_no` ';
         $items = $db->readSqlArray($sql);
         if($items === 0) {
             $error .= 'Invalid or no auction lots-2 for '.MODULE_AUCTION['labels']['order'].' ID['.$order_id.']. ';
@@ -583,8 +584,8 @@ class Helpers {
         }
 
         /*
-        $sql = 'SELECT  date_create,amount,status '.
-               'FROM '.$table_payment.' WHERE order_id = "'.$db->escapeSql($order_id).'" ';
+        $sql = 'SELECT  `date_create`,`amount`,`status` '.
+               'FROM `'.$table_payment.'` WHERE `order_id` = "'.$db->escapeSql($order_id).'" ';
         $output['payments'] = $db->readSqlArray($sql);
         */
 
@@ -601,6 +602,7 @@ class Helpers {
         if(!isset($param['cc_admin'])) $param['cc_admin'] = true;
 
         if(!isset($param['notify_higher_bid'])) $param['notify_higher_bid'] = false;
+        if(!isset($param['include_links'])) $param['include_links'] = false;
 
         $system = $container['system'];
         $mail = $container['mail'];
@@ -620,7 +622,19 @@ class Helpers {
             if($data['order']['user_id'] == 0 or $data['order']['user_email'] === '') $error .= 'No user data linked to '.MODULE_AUCTION['labels']['order'];
         } 
 
-        if($error === '' and $param['notify_higher_bid'])  {
+        if($error === '' and $param['include_links'] and $data['order']['auction_status'] === 'ACTIVE')  {
+            $message .= '<br/>You can view or review your bid form in <a href="'.BASE_URL.'public/account/dashboard">Your Account</a> and increase bids if you wish,  '.
+                        'or <a href="'.BASE_URL.'public/contact">contact us</a> and we will do so on your behalf.<br/>'.
+                        'If you want to delete any bids <a href="'.BASE_URL.'public/contact">contact us</a> and we will do so on your behalf<br/>'.
+                        'You may also simply generate another bid form. Multiple bid forms are not a problem.<br/>'.
+                        'If you want us to break any bidding ties, please <a href="'.BASE_URL.'public/contact">contact us</a> and we will increase your bid by one bidding step, '.
+                        'or more if you so choose.<br/>'.
+                        'You will be advised after completion of auction.<br/>';
+                       
+        }
+
+
+        if($error === '' and $param['notify_higher_bid'] and $data['order']['auction_status'] === 'ACTIVE')  {
             $outbid_no = 0;
             foreach($data['items'] as $item_id => $item) {
                 $bids = self::getBestBid($db,$table_prefix,$item['lot_id']);
@@ -683,9 +697,9 @@ class Helpers {
 
         if(!isset($param['access'])) $param['access'] = MODULE_AUCTION['images']['access'];
 
-        $sql = 'SELECT name,description '.
-               'FROM '.$table_prefix.'lot '.
-               'WHERE lot_id = "'.$db->escapeSql($lot_id).'" AND status <> "HIDE"';
+        $sql = 'SELECT `name`,`description` '.
+               'FROM `'.$table_prefix.'lot` '.
+               'WHERE `lot_id` = "'.$db->escapeSql($lot_id).'" AND `status` <> "HIDE"';
         $lot = $db->readSqlRecord($sql);
         if($lot === 0) {
             $html = '<h1>lot no longer available.</h1>';
@@ -696,9 +710,9 @@ class Helpers {
 
 
         $location_id = 'LOT'.$lot_id;
-        $sql = 'SELECT file_id,file_name,file_name_tn,caption AS title '.
-               'FROM '.$table_prefix.'file WHERE location_id = "'.$db->escapeSql($location_id).'" '.
-               'ORDER BY location_rank ';
+        $sql = 'SELECT `file_id`,`file_name`,`file_name_tn`,`caption` AS `title` '.
+               'FROM `'.$table_prefix.'file` WHERE `location_id` = "'.$db->escapeSql($location_id).'" '.
+               'ORDER BY `location_rank` ';
         $images = $db->readSqlArray($sql);
         if($images != 0) {
             //setup amazon links
@@ -728,11 +742,11 @@ class Helpers {
 
     public static function getLot($db,$table_prefix,$type,$lot_id,$auction_id)
     {
-        $sql = 'SELECT * FROM '.$table_prefix.'lot WHERE ';        
+        $sql = 'SELECT * FROM `'.$table_prefix.'lot` WHERE ';        
         if($type === 'LOT_NO') {
-            $sql .= 'auction_id = "'.$db->escapeSql($auction_id).'" AND lot_no = "'.$db->escapeSql($lot_id).'" ';    
+            $sql .= '`auction_id` = "'.$db->escapeSql($auction_id).'" AND `lot_no` = "'.$db->escapeSql($lot_id).'" ';    
         } else {
-            $sql .= 'lot_id = "'.$db->escapeSql($lot_id).'" ';    
+            $sql .= '`lot_id` = "'.$db->escapeSql($lot_id).'" ';    
         } 
         
         $lot = $db->readSqlRecord($sql);
@@ -751,9 +765,9 @@ class Helpers {
         
         $no_image_src = BASE_URL.'images/no_image.png';
 
-        $sql = 'SELECT lot_id,lot_no,name,description,price_reserve,status '.
-               'FROM '.$table_prefix.'lot '.
-               'WHERE lot_id = "'.$db->escapeSql($lot_id).'" AND status <> "HIDE"';
+        $sql = 'SELECT `lot_id`,`lot_no`,`name`,`description`,`price_reserve`,`status` '.
+               'FROM `'.$table_prefix.'lot` '.
+               'WHERE `lot_id` = "'.$db->escapeSql($lot_id).'" AND `status` <> "HIDE"';
         $lot = $db->readSqlRecord($sql);
         if($lot === 0) {
             $html = '<p>lot no longer available.</p>';
@@ -769,9 +783,9 @@ class Helpers {
 
 
         $location_id = 'LOT'.$lot_id;
-        $sql = 'SELECT file_id,file_name_tn AS file_name,file_name_orig AS name '.
-               'FROM '.$table_prefix.'file WHERE location_id = "'.$db->escapeSql($location_id).'" '.
-               'ORDER BY location_rank, file_date DESC LIMIT 1';
+        $sql = 'SELECT `file_id`,`file_name_tn` AS `file_name`,`file_name_orig` AS `name` '.
+               'FROM `'.$table_prefix.'file` WHERE `location_id` = "'.$db->escapeSql($location_id).'" '.
+               'ORDER BY `location_rank`, `file_date` DESC LIMIT 1';
         $image = $db->readSqlRecord($sql);
         if($image != 0) {
             $url = $s3->getS3Url($image['file_name'],['access'=>$param['access']]);
@@ -791,8 +805,8 @@ class Helpers {
     {
         $error = '';
 
-        $sql = 'DELETE E FROM '.TABLE_PREFIX.'user_extend AS E LEFT JOIN '.TABLE_USER.' AS U ON(E.user_id = U.user_id) '.
-               'WHERE U.name is NULL ';
+        $sql = 'DELETE E FROM `'.TABLE_PREFIX.'user_extend` AS E LEFT JOIN `'.TABLE_USER.'` AS U ON(E.`user_id` = U.`user_id`) '.
+               'WHERE U.`name` is NULL ';
         $recs = $db->executeSql($sql,$error);
 
         return $recs;
@@ -805,13 +819,14 @@ class Helpers {
 
         if($ref_value != '') {
             $where = '';
-            if($ref_type === 'USER_ID') $where .= 'U.user_id = "'.$db->escapeSql($ref_value).'" ';
-            if($ref_type === 'USER_EMAIL') $where .= 'U.email = "'.$db->escapeSql($ref_value).'" ';
-            if($ref_type === 'BID_NO') $where .= 'E.bid_no = "'.$db->escapeSql($ref_value).'" ';
+            if($ref_type === 'USER_ID') $where .= 'U.`user_id` = "'.$db->escapeSql($ref_value).'" ';
+            if($ref_type === 'USER_EMAIL') $where .= 'U.`email` = "'.$db->escapeSql($ref_value).'" ';
+            if($ref_type === 'BID_NO') $where .= 'E.`bid_no` = "'.$db->escapeSql($ref_value).'" ';
 
             if($where !== '') {
-                $sql = 'SELECT U.user_id,U.name,U.email,U.access,E.extend_id,E.name_invoice,E.bid_no,E.seller_id,E.cell,E.tel,E.email_alt,E.bill_address,E.ship_address '.
-                       'FROM '.TABLE_USER.' AS U LEFT JOIN '.TABLE_PREFIX.'user_extend AS E ON(U.user_id = E.user_id) '.
+                $sql = 'SELECT U.`user_id`,U.`name`,U.`email`,U.`access`,E.`extend_id`,E.`name_invoice`,E.`bid_no`,'.
+                              'E.`seller_id`,E.`cell`,E.`tel`,E.`email_alt`,E.`bill_address`,E.`ship_address` '.
+                       'FROM `'.TABLE_USER.'` AS U LEFT JOIN `'.TABLE_PREFIX.'user_extend` AS E ON(U.`user_id` = E.`user_id`) '.
                        'WHERE '.$where;
                 $rec = $db->readSqlRecord($sql); 
                 if($rec != 0) {
@@ -833,20 +848,20 @@ class Helpers {
         $table_cart = $table_prefix.'order';
         $table_item = $table_prefix.'order_item';
 
-        $sql = 'SELECT C.order_id,C.auction_id,C.date_create,C.status,A.name AS auction '.
-               'FROM '.$table_cart.' AS C JOIN '.$table_auction.' AS A ON(C.auction_id = A.auction_id) '.
-               'WHERE C.temp_token = "'.$db->escapeSql($temp_token).'" AND C.status = "NEW" ';
+        $sql = 'SELECT C.`order_id`,C.`auction_id`,C.`date_create`,C.`status`,A.`name` AS `auction` '.
+               'FROM `'.$table_cart.'` AS C JOIN `'.$table_auction.'` AS A ON(C.`auction_id` = A.`auction_id`) '.
+               'WHERE C.`temp_token` = "'.$db->escapeSql($temp_token).'" AND C.`status` = "NEW" ';
         $cart = $db->readSqlRecord($sql);
 
         if($cart !== 0 ) {
-            $sql = 'SELECT I.item_id,I.lot_id,L.lot_no,L.name,I.price,L.price_reserve,I.status,L.weight,L.volume '.
-                   'FROM '.$table_item.' AS I LEFT JOIN '.$table_lot.' AS L ON(I.lot_id = L.lot_id) '.
-                   'WHERE I.order_id = "'.$cart['order_id'].'" ';
+            $sql = 'SELECT I.`item_id`,I.`lot_id`,L.`lot_no`,L.`name`,I.`price`,L.`price_reserve`,I.`status`,L.`weight`,L.`volume` '.
+                   'FROM `'.$table_item.'` AS I LEFT JOIN `'.$table_lot.'` AS L ON(I.`lot_id` = L.`lot_id`) '.
+                   'WHERE I.`order_id` = "'.$cart['order_id'].'" ';
             $cart['items'] = $db->readSqlArray($sql);
 
-            $sql = 'SELECT SUM(price) AS total,COUNT(*) AS no_items '.
-                   'FROM '.$table_item.' '.
-                   'WHERE order_id = "'.$cart['order_id'].'" ';
+            $sql = 'SELECT SUM(`price`) AS `total`,COUNT(*) AS `no_items` '.
+                   'FROM `'.$table_item.'` '.
+                   'WHERE `order_id` = "'.$cart['order_id'].'" ';
             $totals = $db->readSqlRecord($sql);
             if($totals == 0) {
                 $cart['item_count'] = 0;
@@ -866,9 +881,9 @@ class Helpers {
         $error = '';
 
         $table = $table_prefix.'order_item';
-        $sql = 'SELECT SUM(price) AS total,COUNT(*) AS no_items '.
-               'FROM '.$table.' '.
-               'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
+        $sql = 'SELECT SUM(`price`) AS `total`,COUNT(*) AS `no_items` '.
+               'FROM `'.$table.'` '.
+               'WHERE `order_id` = "'.$db->escapeSql($order_id).'" ';
         $totals = $db->readSqlRecord($sql);
         
         if($totals === 0) {
@@ -936,9 +951,9 @@ class Helpers {
         } else { 
             $order_id = $cart['order_id'];
 
-            $sql = 'SELECT I.item_id,I.price,L.name,L.tax,L.weight,L.volume '.
-                   'FROM '.$table_item.' AS I LEFT JOIN '.$table_lot.' AS L ON(I.lot_id = L.lot_id) '.
-                   'WHERE order_id = "'.$db->escapeSql($order_id).'" ';
+            $sql = 'SELECT I.`item_id`,I.`price`,L.`name`,L.`tax`,L.`weight`,L.`volume` '.
+                   'FROM `'.$table_item.'` AS I LEFT JOIN `'.$table_lot.'` AS L ON(I.`lot_id` = L.`lot_id`) '.
+                   'WHERE `order_id` = "'.$db->escapeSql($order_id).'" ';
             $items = $db->readSqlArray($sql);
             if($items === 0) {
                 $error .= 'Cart no longer exists.';
@@ -958,8 +973,8 @@ class Helpers {
 
         //get shipping costs
         if($error === '') {
-            $sql = 'SELECT  cost_free,cost_max,cost_base,cost_weight,cost_volume,cost_item FROM '.$table_ship .' '.
-                   'WHERE option_id = "'.$db->escapeSql($ship_option_id).'" AND location_id = "'.$db->escapeSql($ship_location_id).'" ';
+            $sql = 'SELECT `cost_free`,`cost_max`,`cost_base`,`cost_weight`,`cost_volume`,`cost_item` FROM `'.$table_ship .'` '.
+                   'WHERE `option_id` = "'.$db->escapeSql($ship_option_id).'" AND `location_id` = "'.$db->escapeSql($ship_location_id).'" ';
             $ship_setup = $db->readSqlRecord($sql);
             if($ship_setup === 0) $error .= 'There is no valid shipping costs setup for your location and shipping option.'; 
         }
@@ -1016,8 +1031,8 @@ class Helpers {
         $table = $table_prefix.'order';
 
 
-        $sql = 'SELECT order_id,auction_id,date_create FROM '.$table.' '.
-               'WHERE temp_token = "'.$db->escapeSql($temp_token).'" AND status = "NEW" ';
+        $sql = 'SELECT `order_id`,`auction_id`,`date_create` FROM `'.$table.'` '.
+               'WHERE `temp_token` = "'.$db->escapeSql($temp_token).'" AND `status` = "NEW" ';
         $order = $db->readSqlRecord($sql);
         if($order === 0) {
             $data = [];
@@ -1066,9 +1081,9 @@ class Helpers {
 
         //validate lot setup and status
         if($error === '') {
-            $sql = 'SELECT lot_id,auction_id,name,status,price_reserve,weight,volume '.
-                   'FROM '.$table_prefix.'lot '.
-                   'WHERE lot_id = "'.$db->escapeSql($lot_id).'" ';
+            $sql = 'SELECT `lot_id`,`auction_id`,`name`,`status`,`price_reserve`,`weight`,`volume` '.
+                   'FROM `'.$table_prefix.'lot` '.
+                   'WHERE `lot_id` = "'.$db->escapeSql($lot_id).'" ';
             $lot = $db->readSqlRecord($sql);
             if($lot == 0 ) {
                 $error .= 'Invalid lot ID['.$lot_id.']';
@@ -1089,9 +1104,9 @@ class Helpers {
             }    
             
             if($error === '') {
-                $sql = 'SELECT item_id FROM '.$table_prefix.'order_item '.
-                       'WHERE order_id = "'.$db->escapeSql($order_id).'" AND '.
-                             'lot_id = "'.$db->escapeSql($lot_id).'" ';
+                $sql = 'SELECT `item_id` FROM `'.$table_prefix.'order_item` '.
+                       'WHERE `order_id` = "'.$db->escapeSql($order_id).'" AND '.
+                             '`lot_id` = "'.$db->escapeSql($lot_id).'" ';
                 $item_exist = $db->readSqlRecord($sql);
 
                 $item = [];

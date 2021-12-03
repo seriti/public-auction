@@ -63,7 +63,7 @@ class Config
         if(!isset($user_data['auction_id'])) {
             //first run on setup fails if table does not exist
             if($db->checkTableExists($table_auction)) {
-                $sql = 'SELECT auction_id FROM '.$table_auction.' ORDER BY name LIMIT 1';
+                $sql = 'SELECT `auction_id` FROM `'.$table_auction.'` ORDER BY `name` LIMIT 1';
                 $auction_id = $db->readSqlValue($sql,0);
                 if($auction_id !== 0) {
                     $user_data['auction_id'] = $auction_id;
@@ -73,8 +73,8 @@ class Config
         }   
 
         if(isset($user_data['auction_id'])) {
-            $sql = 'SELECT auction_id,name,description,status FROM '.$table_auction.' '.
-                   'WHERE auction_id = "'.$user_data['auction_id'].'" ';    
+            $sql = 'SELECT `auction_id`,`name`,`description`,`status` FROM `'.$table_auction.'` '.
+                   'WHERE `auction_id` = "'.$user_data['auction_id'].'" ';    
             $auction = $db->readSqlRecord($sql);
             define('AUCTION_ID',$user_data['auction_id']);
             define('AUCTION_NAME',$auction['name']);
