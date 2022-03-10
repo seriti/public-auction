@@ -104,7 +104,8 @@ class InvoiceWizard extends Wizard
                 if($source_type === 'ORDER') {
                     $sql = 'SELECT I.`lot_id`,L.`lot_no`,L.`name`,L.`description`,I.`price` AS `bid_final`,L.`weight`,L.`volume`,L.`status` '.
                            'FROM `'.TABLE_PREFIX.'order_item` AS I LEFT JOIN `'.TABLE_PREFIX.'lot` AS L ON(I.`lot_id` = L.`lot_id`) '.
-                           'WHERE I.`order_id` = "'.$this->db->escapeSql($order_id).'" ';
+                           'WHERE I.`order_id` = "'.$this->db->escapeSql($order_id).'" '.
+                           'ORDER BY L.`lot_no`';
                     $lots = $this->db->readSqlArray($sql);
                 } else {
                     $sql = 'SELECT `lot_id`,`lot_no`,`name`,`description`,`bid_final`,`weight`,`volume`,`status` '.

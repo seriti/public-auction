@@ -65,11 +65,15 @@ class Helpers {
             if($auction['status'] === 'CLOSED') {
                 $output['error'] .= 'Auction['.$auction['name'].'] is CLOSED. It is pointless to notify users as they cannot increase bids!';
             } 
+
+            if($auction['status'] !== 'ACTIVE') {
+                $output['error'] .= 'Auction['.$auction['name'].'] status['.$auction['status'].']. Auction must be ACTIVE!';
+            } 
         }
 
         //get all orders that have lower/not winning bid 
         if($output['error'] === '') {
-            $sql = 'SELECT I.`lot_id`,O.`order_id`,O.`date_create`,I.`price` '.
+            $sql = 'SELECT I.`lot_id`,O.`order_id`,O.`date_create`,I.`price`,O.`user_id` '.
                    'FROM `'.$table_order.'` AS O JOIN `'.$table_order_item.'` AS I ON(O.`order_id` = I.`order_id`) '.
                    'WHERE O.`auction_id` = "'.$db->escapeSql($auction_id).'" AND O.`user_id` > 0 AND O.`status` = "ACTIVE" '.
                    'ORDER BY I.`lot_id`,I.`price` DESC, O.`date_create` ';
@@ -77,11 +81,20 @@ class Helpers {
 
             $notify_orders = [];
             $lot_id_prev = '';
+            $top_bid = [];
             foreach($bids as $bid) {
-                //condition satisfied when more than one bid for a lot and first bid is best bid.
-                if($lot_id_prev !== '' and $lot_id_prev === $bid['lot_id']) {
+                
+                //first occurence of lot_id is top bid
+                if($lot_id_prev === '' or $bid['lot_id'] !== $lot_id_prev) {
+                    $top_bid = $bid;
+                }
+
+                //when more than one bid for a lot and first bid is best bid. 
+                //NB: user check necessary as can have multiple bid forms with same lot
+                if($lot_id_prev !== '' and $bid['lot_id'] === $lot_id_prev and $bid['user_id'] !== $top_bid['user_id'] ) {
                     $notify_orders[$bid['order_id']] = true;
                 }
+                
                 $lot_id_prev = $bid['lot_id'];
             }
 

@@ -23,10 +23,10 @@ class LotArchive extends Table
         
         $this->addTableCol(array('id'=>'lot_id','type'=>'INTEGER','title'=>'Lot ID','key'=>true,'key_auto'=>true,'list'=>true));
         $this->addTableCol(array('id'=>'auction_id','type'=>'INTEGER','title'=>'Auction',
-                                 'join'=>'`name` FROM `'.TABLE_PREFIX.'auction` WHERE `auction_id`'));
+                                 'join'=>'`name` FROM `'.TABLE_PREFIX.'auction` WHERE `auction_id`','edit'=>false));
         $this->addTableCol(array('id'=>'lot_no','type'=>'INTEGER','title'=>'Catalog No.','edit'=>false));
         $this->addTableCol(array('id'=>'seller_id','type'=>'INTEGER','title'=>'Seller',
-                                 'join'=>'`name` FROM `'.TABLE_PREFIX.'seller` WHERE `seller_id`'));
+                                 'join'=>'`name` FROM `'.TABLE_PREFIX.'seller` WHERE `seller_id`','edit'=>false));
         $this->addTableCol(array('id'=>'category_id','type'=>'INTEGER','title'=>$this->labels['category'],
                                  'join'=>'`title` FROM `'.TABLE_PREFIX.'category` WHERE `id`'));
         $this->addTableCol(array('id'=>'type_id','type'=>'INTEGER','title'=>$this->labels['type'],
@@ -39,21 +39,26 @@ class LotArchive extends Table
         $this->addTableCol(array('id'=>'description','type'=>'TEXT','title'=>'Lot Description','list'=>false));
         $this->addTableCol(array('id'=>'index_terms','type'=>'TEXT','title'=>'Index on terms',
                                  'hint'=>'Use comma to separate multiple index terms for catalogue index','required'=>false));
-        $this->addTableCol(array('id'=>'postal_only','type'=>'BOOLEAN','title'=>'Postal only','list'=>false));
-        $this->addTableCol(array('id'=>'price_reserve','type'=>'DECIMAL','title'=>'Reserve Price'));
-        $this->addTableCol(array('id'=>'price_estimate','type'=>'DECIMAL','title'=>'Estimate Price'));
+        $this->addTableCol(array('id'=>'postal_only','type'=>'BOOLEAN','title'=>'Postal only','list'=>false,'edit'=>false));
+        $this->addTableCol(array('id'=>'price_reserve','type'=>'DECIMAL','title'=>'Reserve Price','edit'=>false));
+        $this->addTableCol(array('id'=>'price_estimate','type'=>'DECIMAL','title'=>'Estimate Price','edit'=>false));
         $this->addTableCol(array('id'=>'bid_final','type'=>'DECIMAL','title'=>'Final bid','edit'=>false));
         $this->addTableCol(array('id'=>'weight','type'=>'DECIMAL','title'=>'Weight Kg','new'=>0,'list'=>false));
         $this->addTableCol(array('id'=>'volume','type'=>'DECIMAL','title'=>'Volume Litres','new'=>0,'list'=>false));
         $this->addTableCol(array('id'=>'buyer_id','type'=>'INTEGER','title'=>'Buyer ID','edit'=>false,'list'=>true));
-        $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status'));
+        $this->addTableCol(array('id'=>'status','type'=>'STRING','title'=>'Status','edit'=>false));
                 
         $this->addSql('JOIN','JOIN `'.TABLE_PREFIX.'category` AS CT ON(T.`category_id` = CT.`'.$this->tree_cols['node'].'`)');
         $this->addSql('JOIN','JOIN `'.TABLE_PREFIX.'condition` AS CN ON(T.`condition_id` = CN.`condition_id`)');
-
+        $this->addSql('JOIN','JOIN `'.TABLE_PREFIX.'auction` AS A ON(T.`auction_id` = A.`auction_id`)');
+        //$this->addSql('WHERE','A.`status` = "CLOSED"');
+        
         //$this->addSortOrder('CT.rank,T.name','Category, then Name');
         //$this->addSortOrder('CT.rank,T.name',$this->labels['category'].', then Name');
-        $this->addSortOrder('CT.`rank`,T.`type_txt1`,T.`type_txt2`,CN.`sort`',$this->labels['category'].', then '.$this->labels['type_txt1'].', then '.$this->labels['type_txt2'].', then Condition');
+        
+        $this->addSortOrder('CT.`rank`,T.`type_txt1`,T.`type_txt2`,CN.`sort`',$this->labels['category'].', then '.$this->labels['type_txt1'].
+                                       ', then '.$this->labels['type_txt2'].', then Condition');
+        
         $this->addSortOrder('T.`lot_id` DESC','Order of creation, most recent first.','DEFAULT');
 
         $this->addAction(array('type'=>'check_box','text'=>''));
@@ -70,7 +75,7 @@ class LotArchive extends Table
         $sql_status = '(SELECT "NEW") UNION (SELECT "OK") UNION (SELECT "SOLD") UNION (SELECT "HIDE")';
         $this->addSelect('status',$sql_status);
 
-        $this->addSelect('auction_id','SELECT `auction_id`,`name` FROM `'.TABLE_PREFIX.'auction` ORDER BY `name`');
+        $this->addSelect('auction_id','SELECT `auction_id`,`name` FROM `'.TABLE_PREFIX.'auction` WHERE status = "CLOSED" ORDER BY `auction_id` DESC');
         $this->addSelect('seller_id','SELECT `seller_id`,`name` FROM `'.TABLE_PREFIX.'seller` WHERE `status` <> "HIDE" ORDER BY `sort`');
         $this->addSelect('type_id','SELECT `type_id`,`name` FROM `'.TABLE_PREFIX.'type` WHERE `status` <> "HIDE" ORDER BY `sort`');
 
@@ -132,7 +137,7 @@ class LotArchive extends Table
                      '</span>'; 
             
             $param['class'] = 'form-control input-medium input-inline';       
-            $sql = 'SELECT `auction_id`,`name` FROM `'.TABLE_PREFIX.'auction` WHERE `status` <> "HIDE" ';
+            $sql = 'SELECT `auction_id`,`name` FROM `'.TABLE_PREFIX.'auction` WHERE `status` <> "HIDE" ORDER BY `auction_id` DESC';
             $html .= '<span id="auction_select" style="display:none"> To Auction&raquo;'.
                      Form::sqlList($sql,$this->db,'auction_id_copy',$auction_id_copy,$param).
                      '</span>';
