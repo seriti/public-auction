@@ -417,7 +417,8 @@ class HelpersReport {
                 if($lot_no_display) $lot_str = $lot['lot_no']; else $lot_str = $lot_id;
                 $cat_data[0][$row] = $lot_str;
                 $cat_data[1][$row] = $lot['cat_name'];
-                $cat_data[2][$row] = utf8_decode($lot['name'].': '.$lot['description']).$postal;
+                //$cat_data[2][$row] = utf8_decode($lot['name'].': '.$lot['description']).$postal;
+                $cat_data[2][$row] = utf8_decode($lot['name']).$postal;
                 $cat_data[3][$row] = CURRENCY_SYMBOL.$lot['price_reserve'];
                 $cat_data[4][$row] = CURRENCY_SYMBOL.$lot['price_estimate']; 
                 
