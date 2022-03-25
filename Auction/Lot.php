@@ -123,6 +123,7 @@ class Lot extends Table
             $list['SELECT'] = 'Action for selected '.$this->row_name_plural;
             $list['STATUS_CHANGE'] = 'Change Lot Status.';
             $list['COPY_LOT'] = 'Copy lot to another auction';
+            $list['REVERSE_SOLD'] = 'Reverse Lot Sale.';
         }  
         
         if(count($list) != 0){
@@ -195,6 +196,10 @@ class Lot extends Table
                 $audit_str = 'Copy Lot to auction['.$auction_id_copy.'] ';
             }
             
+            if($action === 'REVERSE_SOLD') {
+                $audit_str = 'REVERSE lot sales ';
+            }
+
             if(!$this->errors_found) {     
                 foreach($_POST as $key => $value) {
                     if(substr($key,0,8) === 'checked_') {
@@ -225,6 +230,18 @@ class Lot extends Table
                                 $this->addMessage('lot['.$lot_id.'] copied to auction['.$auction_id_copy.']');      
                             } else {
                                 $this->addError('Could NOT copy lot['.$lot_id.']:'.$error_tmp);
+                            }   
+                        } 
+
+                        if($action === 'REVERSE_SOLD') {
+                            Helpers::reverseSale($this->db,$lot_id,$error_tmp);
+                            
+                            if($error_tmp === '') {
+                                $audit_str .= ' success!';
+                                $audit_count++;
+                                $this->addMessage('lot['.$lot_id.'] REVERSED sale');      
+                            } else {
+                                $this->addError('Could not REVERSE sale for lot['.$lot_id.']:'.$error_tmp);
                             }   
                         }  
                     }   

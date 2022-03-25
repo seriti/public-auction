@@ -336,6 +336,45 @@ class Helpers {
                   
     }
 
+    public static function reverseSale($db,$lot_id,&$error)
+    {
+        $error = '';
+        $error_tmp = '';
+
+        $table_lot = TABLE_PREFIX.'lot';
+        $table_order_item = TABLE_PREFIX.'order_item';
+        
+        $sql = 'SELECT * FROM '.$table_lot.' '.
+               'WHERE lot_id = "'.$db->escapeSql($lot_id).'" ';
+        $lot = $db->readSqlRecord($sql);
+
+        if($lot['status'] !== 'SOLD') $error .= 'Lot status not = SOLD. ';
+
+        $sql = 'SELECT order_id FROM '.$table_order_item.' '.
+               'WHERE lot_id = "'.$db->escapeSql($lot_id).'" AND status = "SUCCESS" ';
+        $order_id = $db->readSqlValue($sql,0);
+        if($order_id != 0) $error .= 'Order['.$order_id.'] still has Lot status = SUCCESS.';
+
+        if($error === '') {
+            $where = ['lot_id'=>$lot_id];
+            $update = [];
+            $update['bid_no'] = '';
+            $update['buyer_id'] = 0;
+            $update['bid_open'] = 0;
+            $update['bid_book_top'] = 0;
+            $update['bid_final'] = 0;
+            $update['status'] = 'OK';
+
+            $db->updateRecord($table_lot,$update,$where,$error_tmp);
+            if($error_tmp !== '') {
+                $error .= 'Cound not reverse sale';
+            }
+        }    
+        
+        if($error === '') return true; else return false;
+                  
+    }
+
     //check for other higher bids
     public static function getBestBid($db,$table_prefix,$lot_id)
     {
