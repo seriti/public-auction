@@ -260,6 +260,7 @@ class SetupData extends SetupModuledata
                               `address` TEXT NOT NULL,
                               `status` VARCHAR(64) NOT NULL,
                               `comm_pct` DECIMAL(5,2) NOT NULL,
+                              `comm_base` DECIMAL(5,2) NOT NULL,
                               `seller_code` VARCHAR(64) NOT NULL,
                               PRIMARY KEY (`seller_id`)
                             ) ENGINE = MyISAM DEFAULT CHARSET=utf8');  
@@ -305,7 +306,7 @@ class SetupData extends SetupModuledata
         
         //updates use time stamp in ['YYYY-MM-DD HH:MM'] format, must be unique and sequential
         //$this->addUpdateSql('YYYY-MM-DD HH:MM','Update TABLE_PREFIX--- SET --- "X"');
-        //$this->addUpdateSql('2020-02-19 18:00','INSERT INTO TABLE_PREFIXseller (name,sort,status) VALUES("Internal",1,"OK")');
+        $this->addUpdateSql('2022-03-31 18:00','ALTER TABLE `TABLE_PREFIXseller` ADD COLUMN `comm_base` DECIMAL(5,2) NOT NULL AFTER `comm_pct`');
     }
 }
 

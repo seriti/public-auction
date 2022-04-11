@@ -19,6 +19,7 @@ class Seller extends Table
         $this->addTableCol(array('id'=>'sort','type'=>'INTEGER','title'=>'Sort order','hint'=>'Seller drop down list will be sorted by this number'));
         //$this->addTableCol(array('id'=>'seller_code','type'=>'STRING','title'=>'Reference code','hint'=>'Unique reference code to identify seller'));
         $this->addTableCol(array('id'=>'comm_pct','type'=>'DECIMAL','title'=>'Commission percentage(%)','min'=>1,'max'=>100,'new'=>$default_comm));
+        $this->addTableCol(array('id'=>'comm_base','type'=>'DECIMAL','title'=>'Commission Lot minimum','new'=>0,'hint'=>'Minimum commission amount per lot sold'));
         $this->addTableCol(array('id'=>'cell','type'=>'STRING','title'=>'Cellphone','required'=>false));
         $this->addTableCol(array('id'=>'tel','type'=>'STRING','title'=>'Telephone','required'=>false));
         $this->addTableCol(array('id'=>'email','type'=>'EMAIL','title'=>'Email','required'=>false));

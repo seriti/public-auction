@@ -268,6 +268,17 @@ class HelpersReport {
 
     }
 
+
+    public static function calcSellerCommission($base,$pct,$value)  
+    {
+        $comm = 0;
+
+        $comm = round(($value * $pct / 100),0);
+        if($base > $comm) $comm = $base;
+
+        return $comm;
+    }
+
     public static function createAuctionSellerPdf($db,$system,$auction_id,$seller_id,$options = [],&$doc_name,&$error)  
     {
         $error = '';
@@ -303,7 +314,7 @@ class HelpersReport {
         }
 
         
-        $sql = 'SELECT `seller_id`,`name`,`cell`,`tel`,`email`,`address`,`status`,`comm_pct` '.
+        $sql = 'SELECT `seller_id`,`name`,`cell`,`tel`,`email`,`address`,`status`,`comm_pct`,`comm_base` '.
                'FROM `'.$table_seller.'` WHERE `seller_id` = "'.$db->escapeSql($seller_id).'"';
         $seller = $db->readSqlRecord($sql,$db); 
         if($seller === 0) $error .= 'Invalid Seller['.$seller_id.'] selected.';
@@ -341,8 +352,14 @@ class HelpersReport {
         $total_fee = 0;
 
         //each seller has own commision rate
-        $comm_rate = $seller['comm_pct']/100;
-        $commission_str = $seller['comm_pct'].'%';
+        $comm_base = $seller['comm_base'];
+        $comm_pct = $seller['comm_pct'];
+
+        //temporary override for historical auctions 
+        if($auction_id <= 16) $comm_base = 0;
+        
+        $comm_str = $comm_pct.'%';
+        if($comm_base > 0.00) $comm_str .= ' (min '.$comm_base.' per lot)';
 
         //lot block setup
         $pdf_options = [];
@@ -370,6 +387,9 @@ class HelpersReport {
             $pdf->Cell(100,$row_h,'Seller :',0,0,'R',0);
             $pdf->Cell(100,$row_h,$seller['name'],0,0,'L',0);
             $pdf->Ln($row_h);
+            $pdf->Cell(100,$row_h,'Fee structure :',0,0,'R',0);
+            $pdf->Cell(100,$row_h,$comm_str,0,0,'L',0);
+            $pdf->Ln($row_h);
             $pdf->Ln($row_h);
 
             
@@ -387,7 +407,7 @@ class HelpersReport {
             $cat_data_initial[3][$row] = 'Reserve';
             $cat_data_initial[4][$row] = 'Estimate';
             $cat_data_initial[5][$row] = 'Sold';
-            $cat_data_initial[6][$row] = 'Fee '.$commission_str;
+            $cat_data_initial[6][$row] = 'Fee';
             
             foreach($lots as $lot_id => $lot) {
 
@@ -425,7 +445,7 @@ class HelpersReport {
                 if($lot['status'] === 'SOLD' or $lot['bid_final'] > 0) {
                     $sold = $lot['bid_final']; 
                     $sold_str = CURRENCY_SYMBOL.$sold;
-                    $fee = round(($lot['bid_final'] * $comm_rate),0);
+                    $fee = self::calcSellerCommission($comm_base,$comm_pct,$lot['bid_final']); 
                     $fee_str =  CURRENCY_SYMBOL.$fee;
                 } else {
                     $sold = 0;
@@ -459,7 +479,7 @@ class HelpersReport {
             $pdf->Cell(50,$row_h,'Total lots sold :',0,0,'R',0);
             $pdf->Cell(50,$row_h,CURRENCY_SYMBOL.number_format($total_sold,0),0,0,'L',0);
             $pdf->Ln($row_h);
-            $pdf->Cell(50,$row_h,'Less '.$commission_str.' commission:',0,0,'R',0);
+            $pdf->Cell(50,$row_h,'Less commission fee:',0,0,'R',0);
             $pdf->Cell(50,$row_h,CURRENCY_SYMBOL.number_format($total_fee,0),0,0,'L',0);
             $pdf->Ln($row_h);
             $pdf->Cell(50,$row_h,'Total due to you:',0,0,'R',0);
