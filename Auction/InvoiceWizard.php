@@ -196,33 +196,33 @@ class InvoiceWizard extends Wizard
         
         //PROCESS invoice options and manual items adjustments
         if($this->page_no == 2) {
-            $items=$this->data['items'];
-            $vat=$this->form['vat'];
+            $items = $this->data['items'];
+            $vat = $this->form['vat'];
             
             //check invoice_no unique
-            $sql='SELECT * FROM `'.TABLE_PREFIX.'invoice` '.
-                 'WHERE `invoice_no` = "'.$this->db->escapeSql($this->form['invoice_no']).'" ';
-            $invoice_dup=$this->db->readSqlRecord($sql);
+            $sql = 'SELECT * FROM `'.TABLE_PREFIX.'invoice` '.
+                   'WHERE `invoice_no` = "'.$this->db->escapeSql($this->form['invoice_no']).'" ';
+            $invoice_dup = $this->db->readSqlRecord($sql);
             if($invoice_dup!=0) {
                 $this->addError('Invoice No['.$this->form['invoice_no'].'] has been used before!'); 
             }  
             
             
-            $item_no=count($items[0])-1; //first row are headers
-            $item_total=0.00;
+            $item_no = count($items[0])-1; //first row are headers
+            $item_total = 0.00;
             //process standard items
-            for($i=1;$i<=$item_no;$i++) {  
+            for($i = 1 ; $i <= $item_no ; $i++) {  
                 //Validate::integer('Quantity',0,10000,$_POST['quant_'.$i],$error);
-                $items[0][$i]=Secure::clean('float',$_POST['quant_'.$i]);
-                $items[1][$i]=Secure::clean('string',$_POST['desc_'.$i]);
-                $items[2][$i]=Secure::clean('float',$_POST['price_'.$i]);
-                $items[3][$i]=Secure::clean('float',$_POST['total_'.$i]);
-                $item_total+=$items[3][$i];
+                $items[0][$i] = Secure::clean('float',$_POST['quant_'.$i]);
+                $items[1][$i] = Secure::clean('string',$_POST['desc_'.$i]);
+                $items[2][$i] = Secure::clean('float',$_POST['price_'.$i]);
+                $items[3][$i] = Secure::clean('float',$_POST['total_'.$i]);
+                $item_total += (float)$items[3][$i];
                 
-                if(round($items[0][$i]*$items[2][$i],2)!=round($items[3][$i],2)) {
+                if(round( (float)$items[0][$i] * (float)$items[2][$i],2)!=round((float)$items[3][$i],2)) {
                     $this->addError('Invoice item in Row['.$i.'] invalid total!');
                 }  
-                if($items[0][$i]==0) $items[0][$i]='';
+                if($items[0][$i] == 0) $items[0][$i] = '';
             }  
           
             if(VAT_CALC) {
@@ -251,7 +251,7 @@ class InvoiceWizard extends Wizard
             //get rid of empty rows in item array
             $item_no = count($items[0])-1; //first line contains headers
             for($i = 1; $i <= $item_no; $i++) {
-                if($items[0][$i] == 0) {
+                if($items[0][$i] == '') {
                     unset($items[0][$i]);
                     unset($items[1][$i]);
                     unset($items[2][$i]);

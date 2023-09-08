@@ -174,7 +174,7 @@ class Task extends SeritiTask
                 $auction_id = $param['auction_id']; 
                 $cache->store('auction_id',$auction_id);      
         
-                $location = 'dashboard';
+                $location = 'lot';
                 header('location: '.$location);
                 exit;             
             } else {

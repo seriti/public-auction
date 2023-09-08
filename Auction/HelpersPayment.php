@@ -125,7 +125,7 @@ class HelpersPayment {
         $pdf->Ln($row_h);
                 
         //invoice items table
-        if(count($data['items'] != 0)) {
+        if(count($data['items']) != 0) {
             $pdf->changeFont('TEXT');
             $col_width = array(20,100,20,20);
             $col_type = array('DBL2','','DBL2','DBL2');

@@ -16,7 +16,8 @@ class LotImage extends Upload
                   'update_calling_page'=>true,
                   'upload_access'=>IMAGE_CONFIG['access'],
                   'prefix'=>$id_prefix,//will prefix file_name if used, but file_id.ext is unique 
-                  'upload_location'=>$id_prefix]; 
+                  'upload_location'=>$id_prefix,
+                  'upload_max_size'=>20000000]; 
 
         parent::setup($param);
 
@@ -32,7 +33,7 @@ class LotImage extends Upload
         parent::setupImages(['resize'=>$resize,'thumbnail'=>$thumbnail]);
 
         //limit to web viewable images
-        $this->allow_ext = array('Images'=>array('jpg','jpeg','gif','png')); 
+        $this->allow_ext = array('Images'=>array('jpg','jpeg','gif','png','mp4')); 
 
         $param = [];
         $param['table']     = TABLE_PREFIX.'lot';

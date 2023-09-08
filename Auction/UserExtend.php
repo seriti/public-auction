@@ -29,7 +29,7 @@ class UserExtend extends Table
         $this->addAction(array('type'=>'view','text'=>'view'));
         $this->addAction(array('type'=>'delete','text'=>'delete','pos'=>'R'));
 
-        $this->addSearch(array('user_id','name_invoice','cell','tel','email_alt','bill_address','ship_address'),array('rows'=>2));
+        $this->addSearch(array('user_id','name_invoice','bid_no','seller_id','cell','tel','email_alt','bill_address','ship_address'),array('rows'=>3));
 
         $this->addSelect('user_id','SELECT `user_id`,`name` FROM `'.TABLE_USER.'` ORDER BY `name`');
         $this->addSelect('seller_id','(SELECT "0","NOT a seller") UNION SELECT `seller_id`,`name` FROM `'.TABLE_PREFIX.'seller` ');

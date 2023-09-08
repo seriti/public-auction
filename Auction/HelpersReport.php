@@ -356,7 +356,7 @@ class HelpersReport {
         $comm_pct = $seller['comm_pct'];
 
         //temporary override for historical auctions 
-        if($auction_id <= 16) $comm_base = 0;
+        if($auction_id <= 14) $comm_base = 0;
         
         $comm_str = $comm_pct.'%';
         if($comm_base > 0.00) $comm_str .= ' (min '.$comm_base.' per lot)';

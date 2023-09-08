@@ -16,6 +16,8 @@ use Seriti\Tools\BASE_URL;
 use Seriti\Tools\TABLE_USER;
 use Seriti\Tools\TABLE_SYSTEM;
 use Seriti\Tools\SITE_NAME;
+use Seriti\Tools\BASE_UPLOAD;
+use Seriti\Tools\UPLOAD_DOCS;
 
 use Psr\Container\ContainerInterface;
 
@@ -748,6 +750,7 @@ class Helpers {
         $html = '';
 
         if(!isset($param['access'])) $param['access'] = MODULE_AUCTION['images']['access'];
+        if(!isset($param['storage'])) $param['storage'] = STORAGE;
 
         $sql = 'SELECT `name`,`description` '.
                'FROM `'.$table_prefix.'lot` '.
@@ -762,25 +765,42 @@ class Helpers {
 
 
         $location_id = 'LOT'.$lot_id;
-        $sql = 'SELECT `file_id`,`file_name`,`file_name_tn`,`caption` AS `title` '.
+        $sql = 'SELECT `file_id`,`file_name`,`file_name_tn`,`caption` AS `title`,`file_ext` AS `extension` '.
                'FROM `'.$table_prefix.'file` WHERE `location_id` = "'.$db->escapeSql($location_id).'" '.
                'ORDER BY `location_rank` ';
         $images = $db->readSqlArray($sql);
         if($images != 0) {
             //setup amazon links
-            foreach($images as $id => $image) {
-                $url = $s3->getS3Url($image['file_name'],['access'=>$param['access']]);
-                $images[$id]['src'] = $url;
+            if($param['storage'] === 'amazon') {
+                foreach($images as $id => $image) {
+                    $url = $s3->getS3Url($image['file_name'],['access'=>$param['access']]);
+                    $images[$id]['src'] = $url;
+                }    
             }
+
+            if($param['storage'] === 'local') {
+                foreach($images as $id => $image) {
+                    $path = BASE_UPLOAD.UPLOAD_DOCS.$image['file_name'];
+                    $url = Image::getImage('SRC',$path,$error);
+                    $images[$id]['src'] = $url;
+                }
+            }    
 
             if(count($images) == 1) {
                 foreach($images as $image) {
-                    $html .= '<img src="'.$image['src'].'" class="img-responsive center-block">';    
+                    if(strtolower($image['extension']) === 'mp4') {
+                        $html .= '<video width="600" height="400" controls> '.
+                                   '<source src="'.$image['src'].'" type="video/mp4"> '.
+                                 '</video>'; 
+                    } else {
+                       $html .= '<img src="'.$image['src'].'" class="img-responsive center-block">'; 
+                    }
+                        
                 }  
             } else {  
                 $options = array();
                 $options['img_style'] = 'max-height:600px;';
-                //$options['src_root'] = ''; stored on AMAZON
+                $options['src_root'] = '';   //only used if NOT stored on AMAZON & image['src'] not defined
                 $type = 'CAROUSEL'; //'THUMBNAIL'
                 
                 $html .= Image::buildGallery($images,$type,$options);

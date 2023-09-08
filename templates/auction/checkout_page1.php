@@ -26,7 +26,7 @@ $list_param['class'] = 'form-control edit_input';
     <div class="col-sm-3">
     <?php 
     $sql = 'SELECT `location_id`, `name` FROM `'.MODULE_AUCTION['table_prefix'].'ship_location` WHERE `status` = "OK" ORDER BY `sort`';
-    echo Form::sqlList($sql,$db,'ship_location_id',$form['ship_location_id'],$list_param) 
+    echo Form::sqlList($sql,$db,'ship_location_id',$form['ship_location_id'],$list_param);
     ?>
     </div>
   </div>
@@ -36,7 +36,7 @@ $list_param['class'] = 'form-control edit_input';
     <div class="col-sm-3">
     <?php 
     $sql = 'SELECT `option_id`, `name` FROM `'.MODULE_AUCTION['table_prefix'].'ship_option` WHERE `status` = "OK" ORDER BY `sort`';
-    echo Form::sqlList($sql,$db,'ship_option_id',$form['ship_option_id'],$list_param) 
+    echo Form::sqlList($sql,$db,'ship_option_id',$form['ship_option_id'],$list_param);
     ?>
     </div>
   </div>
@@ -46,7 +46,7 @@ $list_param['class'] = 'form-control edit_input';
     <div class="col-sm-3">
     <?php 
     $sql = 'SELECT `option_id`, `name` FROM `'.MODULE_AUCTION['table_prefix'].'pay_option` WHERE `status` = "OK" ORDER BY `sort`';
-    echo Form::sqlList($sql,$db,'pay_option_id',$form['pay_option_id'],$list_param) 
+    echo Form::sqlList($sql,$db,'pay_option_id',$form['pay_option_id'],$list_param);
     ?>
     </div>
   </div>

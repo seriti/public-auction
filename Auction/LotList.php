@@ -5,6 +5,7 @@ use Seriti\Tools\Listing;
 
 //use Seriti\Tools\Form;
 use Seriti\Tools\Secure;
+use Seriti\Tools\Doc;
 //use Seriti\Tools\Template;
 //use Seriti\Tools\Image;
 //use Seriti\Tools\Calc;
@@ -154,7 +155,7 @@ class LotList extends Listing
     }
 
     //NB: If this returns any html then default actions NOT displayed
-    protected function customListAction($data,$row_no,$pos) 
+    protected function customListAction($data,$row_no,$pos = 'L') 
     {
         $html = '';
 
@@ -224,6 +225,19 @@ class LotList extends Listing
     public function getAuction() 
     {
         return $this->auction;
+    }
+
+    protected function renderListImage($image = [],$url) 
+    {
+        $html = '';
+
+        //$parts = Doc::fileNameParts($image['file_name']);
+        if(strtolower($image['file_ext']) === 'mp4') {
+            $html = 'Click to view MP4 video of Lot contents';
+        }
+
+        return $html;
+
     }
 }  
 

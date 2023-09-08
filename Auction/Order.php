@@ -66,7 +66,7 @@ class Order extends Table
 
     protected function beforeUpdate($id,$context,&$data,&$error) 
     {
-        if($context === 'UPDATE') {
+        if($context === 'UPDATE' and $this->user_access_level !== 'GOD') {
             Helpers::checkOrderUpdateOk($this->db,TABLE_PREFIX,$id,$error);    
         }
     }

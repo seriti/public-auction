@@ -32,6 +32,7 @@ class Config
         $menu = $this->container->menu;
         $cache = $this->container->cache;
         $db = $this->container->mysql;
+        $user = $this->container->user;
 
         $user_specific = true;
         $cache->setCache('Auction',$user_specific);
@@ -83,9 +84,14 @@ class Config
             define('AUCTION_NAME','');
         }
 
-        //define('MODULE_NAV',$menu->buildNav($module['route_list'],MODULE_PAGE));
-        $submenu_html = $menu->buildNav($module['route_list'],MODULE_PAGE);
-        $this->container->view->addAttribute('sub_menu',$submenu_html);
+        //only show module sub menu for users with normal non-route based access
+        if($user->getRouteAccess() === false) {
+            $submenu_html = $menu->buildNav($module['route_list'],MODULE_PAGE);
+            $this->container->view->addAttribute('sub_menu',$submenu_html);
+        }    
+
+        //$submenu_html = $menu->buildNav($module['route_list'],MODULE_PAGE);
+        //$this->container->view->addAttribute('sub_menu',$submenu_html);
 
         $response = $next($request, $response);
         

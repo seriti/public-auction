@@ -87,7 +87,7 @@ class Report extends ReportTool
         if($id === 'select_seller') {
             $param = [];
             $param['class'] = 'form-control input-medium';
-            $sql = 'SELECT `seller_id`,`name` FROM `'.TABLE_PREFIX.'seller` WHERE `status` <> "HIDE" ORDER BY `name`'; 
+            $sql = 'SELECT `seller_id`,CONCAT(`name`," (",`seller_id`,")") AS `seller` FROM `'.TABLE_PREFIX.'seller` WHERE `status` <> "HIDE" ORDER BY `name`'; 
             if(isset($form['seller_id'])) $seller_id = $form['seller_id']; else $seller_id = '';
             $html .= Form::sqlList($sql,$this->db,'seller_id',$seller_id,$param);
         }
