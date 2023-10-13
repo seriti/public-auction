@@ -53,7 +53,7 @@ for($i = 1; $i <= $item_no; $i++) {
                '<td>'.Form::textInput('price_'.$i,$items[2][$i],$param).'</td>'.
                '<td>'.Form::textInput('total_'.$i,$items[3][$i],$param).'</td>'.
                '</tr>';
-  $item_total += $items[3][$i]; 
+  $item_total += (float)$items[3][$i]; 
 }  
  
 

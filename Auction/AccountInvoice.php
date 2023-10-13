@@ -10,12 +10,13 @@ use App\Auction\Helpers;
 class AccountInvoice extends Table 
 {
     protected $table_prefix = MODULE_AUCTION['table_prefix'];
+    protected $payment_gateway = MODULE_AUCTION['access']['payment'];
     protected $user_id = 0;
 
     //configure
     public function setup($param = []) 
     {
-        $table_param = ['row_name'=>'Invoice','col_label'=>'date_create'];
+        $table_param = ['row_name'=>'Invoice','col_label'=>'date_create','action_header'=>'View info'];
         parent::setup($table_param);
        
         if(isset($param['table_prefix'])) $this->table_prefix = $param['table_prefix'];
@@ -39,6 +40,11 @@ class AccountInvoice extends Table
         $this->addSortOrder('T.`invoice_id` DESC','Most recent latest','DEFAULT');
 
         $this->addSql('WHERE','T.`user_id` = "'.$this->db->escapeSql($this->user_id).'" ');
+
+        //testing to allow pdf download but NO upload
+        $this->setupFiles(array('location'=>'INV','max_no'=>10,'manage'=>false,
+                                'table'=>$this->table_prefix.'file','list'=>true,'list_no'=>10,
+                                'link_url'=>'account_file','link_data'=>'SIMPLE','width'=>'700','height'=>'600'));
        
         //$this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit'));
         //$this->addAction(array('type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R'));
@@ -48,6 +54,18 @@ class AccountInvoice extends Table
     }
 
     
+    protected function modifyRowValue($col_id,$data,&$value)
+    {
+        if($col_id === 'status' and $this->payment_gateway) {
+            if($value === "OK") {
+                
+                $value .= ' <a href="payment_wizard?id='.$data['invoice_id'].'" target="_blank">Pay now</a>';
+                
+
+            }
+        
+        }
+    }
 
     //protected function beforeUpdate($id,$context,&$data,&$error) {}
     //protected function beforeDelete($id,&$error) {}

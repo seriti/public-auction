@@ -33,7 +33,7 @@ class LotAuction extends Table
         $this->addTableCol(array('id'=>'bid_open','type'=>'DECIMAL','title'=>'Opening bid'));
         $this->addTableCol(array('id'=>'bid_book_top','type'=>'DECIMAL','title'=>'Bid book top'));
         $this->addTableCol(array('id'=>'bid_final','type'=>'DECIMAL','title'=>'Bid FINAL'));
-        $this->addTableCol(array('id'=>'bid_no','type'=>'STRING','title'=>'Buyer ID/Number'));
+        $this->addTableCol(array('id'=>'bid_no','type'=>'STRING','title'=>'Buyer ID or "N"+Number'));
         $this->addTableCol(array('id'=>'buyer_id','type'=>'INTEGER','title'=>'Buyer ID','edit'=>false,'list'=>false));
         
         $this->addSql('WHERE','T.`auction_id` = "'.AUCTION_ID.'" and T.`status` <> "HIDE" ');

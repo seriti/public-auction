@@ -81,7 +81,7 @@ class CheckoutWizard extends Wizard
                 $this->data['ship_location'] = $this->db->readSqlValue($sql);
                 $sql = 'SELECT `name` FROM `'.$this->table_prefix.'ship_option` WHERE `option_id` = "'.$this->db->escapeSql($ship_option_id).'" ';
                 $this->data['ship_option'] = $this->db->readSqlValue($sql);
-                $sql = 'SELECT `name`,`type_id`,`config` FROM `'.$this->table_prefix.'pay_option` WHERE `option_id` = "'.$this->db->escapeSql($pay_option_id).'" ';
+                $sql = 'SELECT `name`,`provider_code`,`config` FROM `'.$this->table_prefix.'pay_option` WHERE `option_id` = "'.$this->db->escapeSql($pay_option_id).'" ';
                 $this->data['pay'] = $this->db->readSqlRecord($sql);
                 $this->data['pay_option'] = $this->data['pay']['name'];
                 

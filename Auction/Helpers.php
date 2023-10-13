@@ -40,6 +40,28 @@ class Helpers {
         return $record;
     }
 
+    //reset/update extended user settings for auctions
+    public static function UserReset($db,$options = [])
+    {
+        $error = '';
+        $output = [];
+
+        if(!isset($options['buyer_no'])) $options['buyer_no'] = false;
+
+        if($options['buyer_no']) {
+            $sql = 'UPDATE '.TABLE_PREFIX.'user_extend SET bid_no = "" ';
+            $no_recs = $db->executeSql($sql,$error);
+            if($error !== '') {
+                $output['error'] = 'Could not reset user buyer nos!';
+                if(DEBUG) $output['error'] .= ': '.$error;
+            } else {
+                $output['message'] = 'Successfuly removed '.$no_recs.' User Buyer No. settings.';
+            }
+        }
+
+        return $output;
+    }
+
     //email users who have ACTIVE orders with bids below winning bid
     public static function notifyLowerBids($db,ContainerInterface $container,$auction_id)
     {
@@ -580,7 +602,7 @@ class Helpers {
 
         if($error === '') return $totals; else return false;
     }    
-
+    
     public static function getOrderDetails($db,$table_prefix,$order_id,&$error)
     {
         $error = '';
@@ -829,6 +851,7 @@ class Helpers {
     public static function getLotSummary($db,$table_prefix,$s3,$lot_id,$param = [])
     {
         $html = '';
+        $error = '';
 
         $lot_id_display = false;
         $lot_no_display = true;
@@ -860,7 +883,15 @@ class Helpers {
                'ORDER BY `location_rank`, `file_date` DESC LIMIT 1';
         $image = $db->readSqlRecord($sql);
         if($image != 0) {
-            $url = $s3->getS3Url($image['file_name'],['access'=>$param['access']]);
+            if(STORAGE === 'amazon') {
+                $url = $s3->getS3Url($image['file_name'],['access'=>$param['access']]);
+            }    
+            if(STORAGE === 'local') {
+                $path = BASE_UPLOAD.UPLOAD_DOCS.$image['file_name'];
+                $url = Image::getImage('SRC',$path,$error);
+            }
+
+
             $title = $image['name'];
         } else {
             $url = $no_image_src;
@@ -1003,8 +1034,282 @@ class Helpers {
         }    
     }
 
+
+    public static function getInvoiceStatusText($status)
+    {
+        $text = '';
+        switch($status) {
+            case 'OK': $text = 'Invoice is valid but has not been paid yet.'; break;
+            case 'PAID': $text = 'Invoice payment received'; break;
+            case 'BAD_DEBT': $text = 'Invoice has written off as a bad debt.'; break;
+            default: $text = 'Unrecognised invoice status['.$status.']';
+        }
+
+        return $text;
+    }
+
+    public static function getInvoiceDetails($db,$table_prefix,$invoice_id,&$error)
+    {
+        $error = '';
+        $output = [];
+        
+        
+        $table_invoice = $table_prefix.'invoice';
+        $table_item = $table_prefix.'invoice_item';
+        $table_auction = $table_prefix.'auction';
+        $table_lot = $table_prefix.'lot';
+        $table_order = $table_prefix.'order';
+        $table_payment = $table_prefix.'payment';
+        
+        //$table_ship_location = $table_prefix.'ship_location';
+        //$table_ship_option = $table_prefix.'ship_option';
+        //$table_payment_option = $table_prefix.'pay_option';
+
+        $sql = 'SELECT I.`invoice_id`,I.`invoice_no`,I.`date`,I.`status`,I.`sub_total`,I.`tax`,I.`total`,I.`comment`,I.`status`,'.
+                      'I.`auction_id`,A.`name` AS `auction`, A.`status` AS `auction_status`, '.
+                      'I.`user_id`,U.`name` AS `user_name`, U.`email` AS `user_email`, '.
+                      'I.`order_id`, O.`ship_location_id`, O.`ship_option_id`, O.`pay_option_id`  '.
+               'FROM `'.$table_invoice.'` AS I '.
+                     'JOIN `'.$table_auction.'` AS A ON(I.`auction_id` = A.`auction_id`) '.
+                     'LEFT JOIN `'.TABLE_USER.'` AS U ON(I.`user_id` = U.`user_id`) '.
+                     'LEFT JOIN `'.$table_order.'` AS O ON(I.`order_id` = O.`order_id`) '.
+               'WHERE I.`Invoice_id` = "'.$db->escapeSql($invoice_id).'" ';
+        $invoice = $db->readSqlRecord($sql);
+        if($invoice === 0) {
+            $error .= 'Invalid auction invoice ID['.$invoice_id.']. ';
+        } else {
+            $output['invoice'] = $invoice;
+        }
+
+        //ALL invoice items including discounts, tax, commission etc
+        $sql = 'SELECT I.`item_id`,I.`item` AS `name`,I.`price`,I.`quantity`,I.`total` '.
+               'FROM `'.$table_item.'` AS I  '.
+               'WHERE I.`invoice_id` = "'.$db->escapeSql($invoice_id).'" '.
+               'ORDER BY I.`item_id` ';
+        $items = $db->readSqlArray($sql);
+        if($items === 0) {
+            $error .= 'Invalid or No items for Invoice ID['.$invoice_id.']. ';
+        } else {
+            $output['items'] = $items;
+        }
+
+        //NB: returns ONLY Lots due to JOIN
+        $sql = 'SELECT I.`lot_id`,L.`lot_no`,L.`name`,I.`price`,I.`quantity`,I.`total` '.
+               'FROM `'.$table_item.'` AS I JOIN `'.$table_lot.'` AS L ON(I.`lot_id` = L.`lot_id`) '.
+               'WHERE I.`invoice_id` = "'.$db->escapeSql($invoice_id).'" '.
+               'ORDER BY I.`item_id` ';
+        $lots = $db->readSqlArray($sql);
+        if($lots === 0) {
+            $output['no_lots'] = 0;
+            //$error .= 'Invalid or no lots for Invoice ID['.$invoice_id.']. ';
+        } else {
+            $output['lots'] = $lots;
+            $output['no_lots'] = count($lots);
+        }
+        
+        //get all existing payment data and total paid
+        $sql = 'SELECT  `date_create`,`amount`,`status` '.
+               'FROM `'.$table_payment.'` WHERE `invoice_id` = "'.$db->escapeSql($invoice_id).'" ';
+        $output['payments'] = $db->readSqlArray($sql);
+
+        $sql = 'SELECT  SUM(`amount`)'.
+               'FROM `'.$table_payment.'` WHERE `invoice_id` = "'.$db->escapeSql($invoice_id).'" ';
+        $output['payment_total'] = $db->readSqlValue($sql,0);
+        
+
+        if($error !== '') return false; else return $output;
+    }  
+
+    public static function sendInvoicePaymentMessage($db,$table_prefix,ContainerInterface $container,$invoice_id,$subject,$message,$param=[],&$error)
+    {
+        $html = '';
+        $error = '';
+        $error_tmp = '';
+
+        if(!isset($param['cc_admin'])) $param['cc_admin'] = true;
+
+        $system = $container['system'];
+        $mail = $container['mail'];
+
+        //setup email parameters
+        $mail_footer = $system->getDefault('AUCTION_EMAIL_FOOTER','');
+        $mail_param = [];
+        $mail_param['format'] = 'html';
+        if($param['cc_admin']) $mail_param['bcc'] = MAIL_FROM;
+       
+        $data = self::getInvoiceDetails($db,$table_prefix,$invoice_id,$error_tmp);
+        if($data === false or $error_tmp !== '') {
+            $error .= 'Could not get Invoice details: '.$error_tmp;
+        } else {
+            if($data['invoice']['user_id'] == 0 or $data['invoice']['user_email'] === '') $error .= 'No user data linked to invoice';
+
+            
+        }    
+
+        if($error === '') {
+            $mail_from = ''; //will use default MAIL_FROM
+            $mail_to = $data['invoice']['user_email'];
+ 
+            $mail_subject = SITE_NAME.' Invoice No['.$data['invoice']['invoice_no'].'] ';
+
+            if($subject !== '') $mail_subject .= ': '.$subject;
+            
+            $mail_body = '<h1>Hi there '.$data['invoice']['user_name'].'</h1>';
+            
+            if($message !== '') $mail_body .= '<h3>'.$message.'</h3>';
+            
+            //do not want bootstrap class default
+            $html_param = ['class'=>''];
+
+            $mail_body .= '<h3>Invoice items:</h3>'.Html::arrayDumpHtml($data['items'],$html_param);
+            $mail_body .= 'Sub Total: '.$data['invoice']['sub_total'].'<br/>'.
+                          'Tax: '.$data['invoice']['tax'].'<br/>'.
+                          '<strong>Total: '.CURRENCY_SYMBOL.$data['invoice']['total'].'</strong><br/>';
+
+            if($data['payments'] !== 0) {
+                $total_due = $data['invoice']['total'] - $data['payment_total'];
+
+                $mail_body .= '<h3>Less Payments</h3>'.Html::arrayDumpHtml($data['payments'],$html_param);
+                $mail_body .= '<h3>Total due: '.CURRENCY_SYMBOL.$total_due.'</h3>';
+            }
+
+            
+                
+            $mail_body .= '<br/><br/>'.$mail_footer;
+            
+            $mail->sendEmail($mail_from,$mail_to,$mail_subject,$mail_body,$error_tmp,$mail_param);
+            if($error_tmp != '') { 
+                $error .= 'Error sending Invoice details to email['. $mail_to.']:'.$error_tmp; 
+            }
+        }
+
+        if($error === '') return true; else return false;
+    }
+
+
+    //called from payment module code after a transaction SUCCESSFULLY confirmed or notified
+    public static function paymentGatewayInvoiceUpdate($db,$table_prefix,$invoice_id,$amount,&$error) 
+    {
+        $error = '';
+        $table_invoice = $table_prefix.'invoice';
+        $table_payment = $table_prefix.'payment';
+
+        //check if payment exists
+        $sql = 'SELECT `payment_id`,`date_create`,`status` '.
+               'FROM `'.$table_payment.'` '.
+               'WHERE `invoice_id` = "'.$db->escapeSql($invoice_id).'" AND `amount` = "'.$db->escapeSql($amount).'" ';
+        $payment = $db->readSqlRecord($sql); 
+        if($payment != 0) {
+            $error .= 'Auction invoice['.$invoice_id.'] already has a payment amount['.$amount.'] @ '.$payment['date_create'];
+        } else {
+            $data = [];
+            $data['invoice_id'] = $invoice_id;
+            $data['date_create'] = date('Y-m-d H:i:s');
+            $data['amount'] = $amount;
+            $data['status'] = 'CONFIRMED';
+
+            $payment_id = $db->insertRecord($table_payment,$data,$error);
+            if($error === '') {
+                //SEND SOME MESSAGE TO USER?
+            }
+        }  
+
+        //update invoice status if all paid up
+        if($error === '') {
+            self::updateInvoiceStatus($db,$table_prefix,$invoice_id,$error);
+        } 
+
+    } 
+
+    public static function updateInvoiceStatus($db,$table_prefix,$invoice_id,&$error)
+    {
+        $error = '';
+        $table_invoice = $table_prefix.'invoice';
+        $table_payment = $table_prefix.'payment';
+
+        $sql = 'SELECT * FROM '.$table_invoice.' WHERE invoice_id = "'.$db->escapeSql($invoice_id).'" ';
+        $invoice = $db->readSqlRecord($sql);
+        if($invoice == 0) {
+            $error .= 'Invalid invoice ID['.$invoice_id.']';
+        } else {
+            $sql = 'SELECT SUM(`amount`) FROM `'.$table_payment.'` WHERE `invoice_id` = "'.$db->escapeSql($invoice_id).'" AND `status` = "CONFIRMED" ';
+            $total_confirmed = $db->readSqlValue($sql,0);
+        }
+
+        if($error === '') {
+            //echo 'WTF'.$total_confirmed.'for '.$invoice['total'];
+            if($total_confirmed - $invoice['total'] > -1.00) $paid_up = true; else $paid_up = false;
+            if($paid_up and $invoice['status'] !== 'SHIPPED' and $invoice['status'] !== 'COMPLETED' ) {
+                $sql = 'UPDATE `'.$table_invoice.'` SET `status` = "PAID" WHERE `invoice_id` = "'.$db->escapeSql($invoice_id).'" ';
+                //die($sql);
+                $db->executeSql($sql,$error);
+                if($error === '') {
+                    //SEND SOME MESSAGE TO USER?
+                }
+            }
+        }
+    }
+
+    public static function getUnpaidInvoices($db,$table_prefix,$user_id)
+    {
+        $error = '';
+        $table_invoice = $table_prefix.'invoice';
+        $table_payment = $table_prefix.'payment';
+        $table_file = $table_prefix.'file';
+
+        $output = [];
+
+        //check if payment gateway active
+        $payment_gateway = MODULE_AUCTION['access']['payment'];
+        
+
+        $sql = 'SELECT `invoice_id`,`invoice_no`,`total`,`date` FROM `'.$table_invoice.'` '.
+               'WHERE `user_id` = "'.$db->escapeSql($user_id).'" AND `status` = "OK" ORDER BY `date` DESC';
+        $invoices = $db->readSqlArray($sql);
+        $html = '';
+        if($invoices == 0) {
+            $html .= 'No outstanding invoices found.';
+        } else {
+            $html .= '<ul>';
+            foreach($invoices as $invoice_id=>$invoice) {
+                $sql = 'SELECT SUM(`amount`) FROM `'.$table_payment.'` WHERE `invoice_id` = "'.$db->escapeSql($invoice_id).'" AND `status` = "CONFIRMED" ';
+                $total_confirmed = $db->readSqlValue($sql,0);
+                $total_due = $invoice['total'] - $total_confirmed;
+
+                $location_id = 'INV'.$invoice_id;
+                //should only be one file linked to invoice rec
+                $sql = 'SELECT `file_id` AS `id`,`file_name_orig` AS `name` '.
+                       'FROM `'.$table_file.'` WHERE `location_id` = "'.$location_id.'" LIMIT 1';
+                $file_rec = $db->readSqlRecord($sql);
+
+
+                $html .= '<li>';
+                if($file_rec == 0) {
+                    $name = $invoice['invoice_no'];
+                } else {
+                    $name = '<a href="account_file?mode=download&id='.$file_rec['id'].'" Target="_blank">'.$invoice['invoice_no'].'</a>';
+                }    
+                $html .= 'Invoice '.$name.'  issued on '.Date::formatDate($invoice['date']).', ';    
+
+                if($payment_gateway) {
+                    $html .= '<a href="payment_wizard?id='.$invoice_id.'" target="_blank">click to pay balance['.CURRENCY_SYMBOL.$total_due.']</a>';
+                } else {
+                    $html .= 'balance due['.CURRENCY_SYMBOL.$total_due.']';
+                }
+                
+                $html .= '</li>';
+            }
+            $html .= '</ul>';
+        }
+
+        $output['html'] = $html;
+
+        
+        return $output;
+    }  
+
     //NB: recalculates all item and cart totals based on latest lot data, ONLY call BEFORE invoice finalised.
-    //**** not finished ***
+    //**** not finished & not used anywhere***
     public static function calcInvoiceTotals($db,$table_prefix,$temp_token,$ship_option_id,$ship_location_id,&$error)  
     {
         $error = '';

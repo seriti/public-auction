@@ -188,7 +188,7 @@ class SetupData extends SetupModuledata
         $this->addCreateSql('pay_option',
                             'CREATE TABLE `TABLE_NAME` (
                               `option_id` INT NOT NULL AUTO_INCREMENT,
-                              `type_id` VARCHAR(250) NOT NULL,
+                              `provider_code` VARCHAR(250) NOT NULL,
                               `name` VARCHAR(250) NOT NULL,
                               `config` TEXT NOT NULL,
                               `sort` INT NOT NULL,
@@ -301,7 +301,7 @@ class SetupData extends SetupModuledata
                              'VALUES("Collect","1","OK"),("Courier","2","OK"),("Postnet","3","OK")','Created sample shipping options');
 
         $this->addInitialSql('INSERT INTO `TABLE_PREFIXship_cost` (`location_id`,`option_id`,`cost_free`,`cost_base`,'.
-                                                                   '`cost_weight`,`cost_volume`,`cost_item`,`cost_max`,status`) '.
+                                                                   '`cost_weight`,`cost_volume`,`cost_item`,`cost_max`,`status`) '.
                              'VALUES("1","1","0","0","0","0","0","0","OK"),("1","2","1000","100","100","0","0","1000","OK"),("1","3","1000","100","0","0","0","0","OK")','Created sample shipping costs');
         
         //updates use time stamp in ['YYYY-MM-DD HH:MM'] format, must be unique and sequential

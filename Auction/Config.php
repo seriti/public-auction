@@ -36,9 +36,16 @@ class Config
 
         $user_specific = true;
         $cache->setCache('Auction',$user_specific);
+        //NB: erase cache if re-installing module and old cache data exists
+        //$cache->eraseAll(); 
 
         //NB: Also defined in Website/ConfigPublic
         define('MODULE_AUCTION',$module);
+
+        if(MODULE_AUCTION['access']['payment']) {
+           $module_payment = $this->container->config->get('module','payment');
+           define('MODULE_PAYMENT',$module_payment);
+        }
         
         define('TABLE_PREFIX',$module['table_prefix']);
         if(!defined('CURRENCY_ID')) define('CURRENCY_ID','ZAR');

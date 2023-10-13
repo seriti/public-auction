@@ -17,6 +17,7 @@ class AccountDashboard extends DashboardTool
         $user = $this->getContainer('user'); 
 
         $temp_token = $user->getTempToken();
+        $user_id = $user->getId();
 
         //Class accessed outside /App/Auction so cannot use TABLE_PREFIX constant
         $module = $this->container->config->get('module','auction');
@@ -25,7 +26,7 @@ class AccountDashboard extends DashboardTool
         $order_name_plural = $order_name.'s';
 
 
-        $sql = 'SELECT * FROM `'.$table_prefix.'user_extend` WHERE `user_id` = "'.$user->getId().'" ';
+        $sql = 'SELECT * FROM `'.$table_prefix.'user_extend` WHERE `user_id` = "'.$user_id.'" ';
         $user_extend = $this->db->readSqlRecord($sql);
 
         $cart = Helpers::getCart($this->db,$table_prefix,$temp_token);
@@ -37,7 +38,7 @@ class AccountDashboard extends DashboardTool
 
         $sql = 'SELECT O.`order_id`,O.`auction_id`,O.`date_create`,O.`no_items`,O.`total_bid`,A.`name` AS `auction` '.
                'FROM `'.$table_prefix.'order` AS O JOIN `'.$table_prefix.'auction` AS A ON(O.`auction_id` = A.`auction_id`) '.
-               'WHERE O.`user_id` = "'.$user->getId().'" AND O.`status` = "ACTIVE" '.
+               'WHERE O.`user_id` = "'.$user_id.'" AND O.`status` = "ACTIVE" '.
                'ORDER BY O.`date_create` DESC ';
         $new_orders = $this->db->readSqlArray($sql);
         if($new_orders === 0) {
@@ -51,7 +52,10 @@ class AccountDashboard extends DashboardTool
                               'total bid value:'.CURRENCY_SYMBOL.$order['total_bid'].'</li>'; 
             }
             $order_html .= '</ul>';
-        }    
+        } 
+
+
+        $invoices = Helpers::getUnpaidInvoices($this->db,$table_prefix,$user_id);   
 
         //(block_id,col,row,title)
         $this->addBlock('USER',1,1,'User data: <a href="profile?mode=edit">edit</a>');
@@ -61,6 +65,9 @@ class AccountDashboard extends DashboardTool
         $this->addItem('USER','<strong>Landline:</strong> '.$user_extend['tel']);
         $this->addItem('USER','<strong>Shipping Address:</strong><br/>'.nl2br($user_extend['ship_address']));
         $this->addItem('USER','<strong>Billing Address:</strong><br/>'.nl2br($user_extend['bill_address']));
+
+        $this->addBlock('INVOICE',1,2,'Invoices outstanding');
+        $this->addItem('INVOICE',$invoices['html']);
         
         $this->addBlock('CART',2,1,'UNconfirmed '.$order_name.' Cart contents');
         $this->addItem('CART',$cart_html);  

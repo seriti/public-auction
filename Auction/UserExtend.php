@@ -10,7 +10,7 @@ class UserExtend extends Table
     //configure
     public function setup($param = []) 
     {
-        $param = ['row_name'=>'Setting','col_label'=>'parameter'];
+        $param = ['row_name'=>'User setting','col_label'=>'parameter'];
         parent::setup($param);        
 
         $this->addTableCol(array('id'=>'extend_id','type'=>'INTEGER','title'=>'Extend ID','key'=>true,'key_auto'=>true,'list'=>false));

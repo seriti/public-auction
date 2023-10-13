@@ -2,13 +2,14 @@
 namespace App\Auction;
 
 use Seriti\Tools\Table;
+use App\Auction\Helpers;
 
 class InvoicePayment extends Table 
 {
     //configure
     public function setup($param = []) 
     {
-        $param = ['row_name'=>'Payment','col_label'=>'amount','pop_up'=>true];
+        $param = ['row_name'=>'Payment','col_label'=>'amount','pop_up'=>true,'update_calling_page'=>true];
         parent::setup($param);        
                        
         //NB: specify master table relationship
@@ -25,7 +26,15 @@ class InvoicePayment extends Table
 
         $this->addAction(array('type'=>'edit','text'=>'edit','icon_text'=>'edit'));
         $this->addAction(array('type'=>'delete','text'=>'delete','icon_text'=>'delete','pos'=>'R'));
-    }    
+    } 
+
+
+    protected function afterUpdate($id,$context,$data) 
+    {
+        $invoice_id = $this->master['key_val'];
+        Helpers::updateInvoiceStatus($this->db,TABLE_PREFIX,$invoice_id,$error);
+    }
+      
 }
 
 ?>

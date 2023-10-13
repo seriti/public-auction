@@ -36,11 +36,12 @@ class Report extends ReportTool
         $this->addReport('AUCTION_REALISED_PDF','Create REALISED Auction lots listing PDF',$param); 
         $this->addReport('AUCTION_REALISED_SMALL','Create REALISED COMPRESSED Auction lots listing PDF',$param);
         $this->addReport('AUCTION_MASTER_PDF','Create MASTER Auction lots listing PDF',$param);
-
         
         $this->addReport('AUCTION_SELLER','Create Auction Sellers Lots listing',$param);  
 
         $this->addReport('AUCTION_BUYER_INVOICE','Create Auction Buyers Invoice Lots listing',$param);  
+
+        $this->addReport('AUCTION_BIDS','Create Live Auction bids listing',$param);
         
         //$param = ['input'=>['select_user','select_month_period']];
         //$this->addReport('ORDERS_NEW','Monthly performance over period',$param);
@@ -62,7 +63,8 @@ class Report extends ReportTool
             $param = [];
             $param['class'] = 'form-control input-medium';
             $param['xtra'] = ['ALL'=>'All auctions'];
-            $sql = 'SELECT `auction_id`,`name` FROM `'.TABLE_PREFIX.'auction` WHERE `status` <> "HIDE" ORDER BY `name`'; 
+            //could also ORDER BY auction_id DESC
+            $sql = 'SELECT `auction_id`,`name` FROM `'.TABLE_PREFIX.'auction` WHERE `status` <> "HIDE" ORDER BY `date_start_live` DESC'; 
             if(isset($form['auction_id'])) $auction_id = $form['auction_id']; else $auction_id = 'ALL';
             $html .= Form::sqlList($sql,$this->db,'auction_id',$auction_id,$param);
         }
@@ -228,6 +230,12 @@ class Report extends ReportTool
         if($id === 'AUCTION_BUYER_INVOICE') {
             $pdf_name = '';
             $html .= HelpersReport::buyerInvoiceLotsReport($this->db,$form['auction_id'],$options,$pdf_name,$error);
+            if($error !== '') $this->addError($error);
+        }
+
+        if($id === 'AUCTION_BIDS') {
+            $pdf_name = '';
+            $html .= HelpersReport::allBidsReport($this->db,$form['auction_id'],$options,$pdf_name,$error);
             if($error !== '') $this->addError($error);
         }
 

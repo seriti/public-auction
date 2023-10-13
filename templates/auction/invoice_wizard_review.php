@@ -31,7 +31,7 @@ $html .= '<table>'.
 $item_no = count($items[0])-1; //first line contains headers for pdf
 $html .= '<table class="table"><tr><th>Quantity</th><th width="300">Description</th><th>Unit price</th><th>Total</th></tr>';
 for($i = 1; $i <= $item_no; $i++) {
-  if($items[0][$i] != 0) {
+  if($items[0][$i] !== '') {
     $html .= '<tr><td>'.$items[0][$i].'</td>'.
              '<td>'.$items[1][$i].'</td>'.
              '<td>'.number_format($items[2][$i],2).'</td>'.

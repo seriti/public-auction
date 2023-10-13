@@ -25,6 +25,7 @@ $app->group('/admin', function () {
         $this->any('/lot_auction', \App\Auction\LotAuctionController::class);
         $this->any('/lot_archive', \App\Auction\LotArchiveController::class);
         $this->any('/lot_bid', \App\Auction\BidController::class);
+        $this->any('/lot_bid_pdf', \App\Auction\BidPdfController::class);
         $this->any('/lot_image', \App\Auction\LotImageController::class);
         $this->any('/lot_info', \App\Auction\LotInfoController::class);
         $this->any('/lot_no', \App\Auction\LotNoController::class);
@@ -47,6 +48,7 @@ $app->group('/admin', function () {
         $this->any('/ship_location', \App\Auction\ShipLocationController::class);
         $this->any('/ship_cost', \App\Auction\ShipCostController::class);
         $this->any('/user_extend', \App\Auction\UserExtendController::class);
+        $this->any('/user_reset', \App\Auction\UserResetController::class);
     })->add(\App\Auction\Config::class);
 
 
@@ -81,6 +83,8 @@ $app->group('/public', function () {
         $this->get('/invoice_item', \App\Auction\AccountInvoiceItemController::class);
         $this->get('/invoice_payment', \App\Auction\AccountInvoicePaymentController::class);
         $this->any('/profile', \App\Auction\AccountProfileController::class);
+        $this->any('/account_file', \App\Auction\AccountDownloadController::class);
+        $this->any('/payment_wizard', \App\Auction\PaymentWizardController::class);
     })->add(\App\Auction\ConfigAccount::class);
     
     $this->any('/download', \App\Website\PageDownloadController::class);

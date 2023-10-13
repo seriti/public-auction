@@ -28,6 +28,173 @@ use App\Auction\Helpers;
 
 //static functions for auction module
 class HelpersReport {
+
+    //show all bids received online ranked by price and time for use by live auctioneer.
+    public static function allBidsReport($db,$auction_id,$options = [],&$doc_name,&$error)  
+    {
+        $error = '';
+        $error_tmp = '';
+        $html = '';
+
+        $pdf_override = true;
+        $lot_separate_page = false;
+                
+        $doc_dir = BASE_UPLOAD.UPLOAD_DOCS;
+                
+        if(!isset($options['output'])) $options['output'] = 'BROWSER';
+        if(!isset($options['format'])) $options['format'] = 'PDF';
+        $options['format'] = strtoupper($options['format']);
+        
+        if($auction_id === 'ALL') {
+            $error .= 'Cannot run for ALL auctions. Please select an individual auction.';
+        } else {
+            $sql = 'SELECT `auction_id`,`name`,`summary`,`description`,`date_start_postal`,`date_start_live`,`status` '.
+                   'FROM `'.TABLE_PREFIX.'auction` WHERE `auction_id` = "'.$db->escapeSql($auction_id).'"';
+            $auction = $db->readSqlRecord($sql,$db); 
+            if($auction === 0) $error .= 'Invalid Auction['.$auction_id.'] selected.';
+        }    
+        
+        if($error !== '') return false;
+
+        $doc_name_base = 'all_bids_auction_'.str_replace(' ','_',$auction['name']).'_'.date('Y-m-d');
+
+        $table_lot = TABLE_PREFIX.'lot';
+        $table_order = TABLE_PREFIX.'order';
+        $table_item = TABLE_PREFIX.'order_item';
+        $lot_data = [];
+
+
+        $sql = 'SELECT I.`item_id`,L.`lot_no`,I.`lot_id`,L.`name` AS lot_name,O.`date_create`,U.`name` AS user_name,O.`user_id`,I.`price`,I.`status` '.
+               'FROM `'.$table_item.'` AS I JOIN `'.$table_order.'` AS O ON(I.`order_id` = O.`order_id`) '.
+                    'JOIN `'.TABLE_USER.'` AS U ON(O.`user_id` = U.`user_id`) '.
+                    'JOIN `'.$table_lot.'` AS L ON(I.`lot_id` = L.`lot_id`) '.
+               'WHERE O.`auction_id` = "'.$db->escapeSql($auction_id).'" AND O.`user_id` <> 0  '.
+               'ORDER BY L.`lot_no`,I.`price` DESC, O.`date_create` ';
+        
+        $bids = $db->readSqlArray($sql);
+        if($bids == 0) $error .= 'No online bids found for auction.';
+
+        if($error !== '') return false;
+        
+        if($options['format'] === 'PDF') {
+
+            $pdf_options = [];
+            $pdf_options['header_align'] = 'L'; 
+
+            $doc_name = $doc_name_base.'.pdf';
+            
+            $pdf = new Pdf('Portrait','mm','A4');
+            $pdf->AliasNbPages();
+                
+            $pdf->setupLayout(['db'=>$db]);
+
+            //NB:override PDF settings to economise on space (no logo, small margins,size-6 text)
+            if($pdf_override) {
+                $pdf->bg_image = array('images/logo.jpeg',5,140,50,20,'YES'); //NB: YES flag turns off logo image display
+                $pdf->page_margin = array(10,10,10,10);//top,left,right,bottom!!
+                $pdf->text = array(33,33,33,'',8);
+                $pdf->h1_title = array(33,33,33,'B',10,'',8,20,'L','YES',33,33,33,'B',12,20,180);
+            }
+            
+            //NB footer must be set before this
+            $pdf->AddPage();
+
+            $row_h = 5;
+
+            $pdf->changeFont('H1');
+            $pdf->Cell(60,$row_h,'All lot bids for :',0,0,'R',0);
+            $pdf->Cell(60,$row_h,$auction['name'],0,0,'L',0);
+            $pdf->Ln($row_h);
+            $pdf->Ln($row_h);
+
+            
+            $lot_id = ''; 
+            $header = [];
+            $row = 0;
+            
+            $col_width = array(20,40,40,40);
+            $col_type  = array('','','','CASH0'); 
+           
+            $header[0][$row] = 'User ID';
+            $header[1][$row] = 'User Name';
+            $header[2][$row] = 'Bid date & time';
+            $header[3][$row] = 'Bid Price';
+        
+                    
+            foreach($bids as $bid_id => $bid) {
+
+                if($bid['lot_id'] !== $lot_id) {
+                    if($lot_id !== '') {
+                        //all buyer invoice lots
+                        if($lot_separate_page) $pdf->AddPage();
+                        $pdf->changeFont('H1');
+                        $pdf->Cell(20,$row_h,'Lot:',0,0,'R',0);
+                        $pdf->Cell(20,$row_h,$lot_no.' ('.substr(utf8_decode($lot_name),1,32).')',0,0,'L',0);
+                        $pdf->Cell(80,$row_h,'FINAL BID :',0,0,'R',0);
+                        $pdf->Cell(80,$row_h,'Buyer No.[    ] or ID [    ]',0,0,'L',0);
+                        $pdf->Ln($row_h);
+                        $pdf->changeFont('TEXT');
+                        $pdf->arrayDrawTable($lot_data,$row_h,$col_width,$col_type,'L',$pdf_options);
+                        $pdf->ln($row_h);
+                    }
+                    
+
+                    $row = 0;
+                    $lot_data = $header;
+                    $lot_id = $bid['lot_id'];
+                    $lot_no = $bid['lot_no'];
+                    $lot_name = $bid['lot_name'];
+                } 
+
+                $row++;
+                $lot_data[0][$row] = $bid['user_id'];
+                $lot_data[1][$row] = $bid['user_name'];
+                $lot_data[2][$row] = Date::formatDateTime($bid['date_create']);
+                $lot_data[3][$row] = $bid['price'];
+            }
+
+            if($lot_separate_page) $pdf->AddPage();
+            $pdf->changeFont('H1');
+            $pdf->Cell(20,$row_h,'Lot :',0,0,'R',0);
+            $pdf->Cell(20,$row_h,$lot_no.' ('.substr(utf8_decode($lot_name),1,32).')',0,0,'L',0);
+            $pdf->Cell(80,$row_h,'FINAL BID :',0,0,'R',0);
+            $pdf->Cell(80,$row_h,'Buyer No.[    ] or ID [    ]',0,0,'L',0);
+            
+            $pdf->Ln($row_h);
+            $pdf->changeFont('TEXT');
+            $pdf->arrayDrawTable($lot_data,$row_h,$col_width,$col_type,'L',$pdf_options);
+            $pdf->ln($row_h); 
+
+            //finally create pdf file
+            if($options['output'] === 'FILE') {
+                $file_path = $doc_dir.$doc_name;
+                $pdf->Output($file_path,'F');  
+            }    
+
+            //send directly to browser
+            if($options['output'] === 'BROWSER') {
+                $pdf->Output($doc_name,'D');
+                exit();      
+            }    
+        } 
+
+        if($options['format'] === 'HTML') {
+            $html = Html::arrayDumpHtml($bids,['show_key'=>false]);
+        }
+
+        if($options['format'] === 'CSV') {
+            $csv_data = '';
+
+            $doc_name = $doc_name_base.'.csv';
+            //dumps key by default unlike html version
+            $csv_data = Csv::sqlArrayDumpCsv('ID',$bids);
+            Doc::outputDoc($csv_data,$doc_name,'DOWNLOAD');
+            exit();
+        }               
+
+        return $html;
+    }
+
     public static function AuctionStatistics($db,$auction_id,$options = [],&$error)  
     {
         $html = '';
@@ -381,12 +548,16 @@ class HelpersReport {
 
             $pdf->SetY(40);
             $pdf->changeFont('H1');
+            
             $pdf->Cell(100,$row_h,'Auction :',0,0,'R',0);
             $pdf->Cell(100,$row_h,$auction['name'],0,0,'L',0);
             $pdf->Ln($row_h);
+            
             $pdf->Cell(100,$row_h,'Seller :',0,0,'R',0);
-            $pdf->Cell(100,$row_h,$seller['name'],0,0,'L',0);
+            $str = $seller['name'].' ('.$seller['seller_id'].')';
+            $pdf->Cell(100,$row_h,$str,0,0,'L',0);
             $pdf->Ln($row_h);
+            
             $pdf->Cell(100,$row_h,'Fee structure :',0,0,'R',0);
             $pdf->Cell(100,$row_h,$comm_str,0,0,'L',0);
             $pdf->Ln($row_h);
