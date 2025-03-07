@@ -57,6 +57,7 @@ if($pay_type === 'GATEWAY_FORM')  $button_text = 'Proceed to '.$data['pay']['nam
       
       if($pay_type === 'EFT_TOKEN') {
           echo '<h2>You have been emailed payment instructions.</h2>'; 
+          echo '<br/><p>Click here to return <a href="/public/account/dashboard">to your account dashboard</a></p>';
       } 
       
       ?>
